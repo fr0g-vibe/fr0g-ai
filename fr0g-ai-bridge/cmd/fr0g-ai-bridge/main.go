@@ -17,6 +17,7 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/config"
+	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
 )
 
 func main() {
@@ -101,18 +102,17 @@ func main() {
 
 			grpcServer := grpc.NewServer()
 			
-			// TODO: Register the bridge service when protobuf generation is working
-			// bridgeServer := api.NewGRPCServer(openWebUIClient)
-			// pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
-			log.Printf("gRPC server created (service registration pending)")
+			bridgeServer := api.NewGRPCServer(openWebUIClient)
+			pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
+			log.Printf("gRPC server created and service registered")
 			
 			// Enable gRPC reflection for debugging and tools like grpcurl (if enabled)
 			if cfg.Security.EnableReflection {
 				reflection.Register(grpcServer)
-				log.Printf("gRPC server registered with reflection enabled")
+				log.Printf("gRPC reflection enabled")
 			}
 			
-			log.Printf("gRPC server ready (service registration will be enabled when protobuf is working)")
+			log.Printf("gRPC server ready and fully configured")
 
 			// Start server in goroutine
 			go func() {
