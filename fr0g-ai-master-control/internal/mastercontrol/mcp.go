@@ -103,8 +103,6 @@ type MCPConfig struct {
 	SystemConsciousness bool `yaml:"system_consciousness"`
 	EmergentCapabilities bool `yaml:"emergent_capabilities"`
 	
-	// Input settings
-	Input input.InputConfig `yaml:"input"`
 }
 
 // NewMasterControlProgram creates a new Master Control Program instance
@@ -141,7 +139,8 @@ func (mcp *MasterControlProgram) initializeComponents() {
 	mcp.monitor = NewSystemMonitor(mcp.config)
 	mcp.workflow = NewWorkflowEngine(mcp.config)
 	mcp.orchestrator = NewStrategyOrchestrator(mcp.config, mcp.cognitive, mcp.workflow)
-	mcp.input = input.NewInputManager(&mcp.config.Input)
+	// Input manager will be set externally for flexibility
+	mcp.input = nil
 	
 	log.Println("MCP: Cognitive architecture initialized successfully")
 }
@@ -164,7 +163,6 @@ func (mcp *MasterControlProgram) Start() error {
 		{"System Monitor", mcp.monitor},
 		{"Workflow Engine", mcp.workflow},
 		{"Strategy Orchestrator", mcp.orchestrator},
-		{"Input Manager", mcp.input},
 	}
 	
 	for _, comp := range components {
@@ -172,6 +170,16 @@ func (mcp *MasterControlProgram) Start() error {
 			return fmt.Errorf("failed to start %s: %w", comp.name, err)
 		}
 		log.Printf("MCP: %s started successfully", comp.name)
+	}
+	
+	// Start input manager if configured
+	if mcp.input != nil {
+		log.Println("MCP: Starting Input Manager...")
+		if err := mcp.input.Start(mcp.ctx); err != nil {
+			log.Printf("MCP: Failed to start Input Manager: %v", err)
+		} else {
+			log.Printf("MCP: Input Manager started successfully")
+		}
 	}
 	
 	// Start main control loop
@@ -195,6 +203,14 @@ func (mcp *MasterControlProgram) Stop() error {
 	log.Println("MCP: Initiating graceful shutdown...")
 	
 	mcp.cancel()
+	
+	// Stop input manager first
+	if mcp.input != nil {
+		if err := mcp.input.Stop(); err != nil {
+			log.Printf("MCP: Error stopping Input Manager: %v", err)
+		}
+	}
+	
 	mcp.wg.Wait()
 	
 	mcp.systemState.Status = "stopped"
@@ -295,6 +311,16 @@ func (mcp *MasterControlProgram) GetCapabilities() map[string]Capability {
 	}
 	
 	return capabilities
+}
+
+// SetInputManager sets the input manager for the MCP
+func (mcp *MasterControlProgram) SetInputManager(inputManager *input.InputManager) {
+	mcp.input = inputManager
+}
+
+// GetContext returns the MCP context
+func (mcp *MasterControlProgram) GetContext() context.Context {
+	return mcp.ctx
 }
 
 // Helper methods (to be implemented)

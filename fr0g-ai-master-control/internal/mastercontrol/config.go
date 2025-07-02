@@ -1,10 +1,28 @@
 package mastercontrol
 
 import (
+	"os"
 	"time"
-	
-	"fr0g-ai-master-control/internal/mastercontrol/input"
+
+	"gopkg.in/yaml.v2"
 )
+
+// MCPConfig holds the Master Control Program configuration
+type MCPConfig struct {
+	// Core settings
+	LearningEnabled         bool `yaml:"learning_enabled"`
+	SystemConsciousness     bool `yaml:"system_consciousness"`
+	EmergentCapabilities    bool `yaml:"emergent_capabilities"`
+	MaxConcurrentWorkflows  int  `yaml:"max_concurrent_workflows"`
+	
+	// Legacy settings for compatibility
+	AdaptationThreshold float64       `yaml:"adaptation_threshold"`
+	MemoryRetention     time.Duration `yaml:"memory_retention"`
+	HealthCheckInterval time.Duration `yaml:"health_check_interval"`
+	MetricsInterval     time.Duration `yaml:"metrics_interval"`
+	ResourceOptimization bool         `yaml:"resource_optimization"`
+	PredictiveManagement bool         `yaml:"predictive_management"`
+}
 
 // DefaultMCPConfig returns a default configuration for the Master Control Program
 func DefaultMCPConfig() *MCPConfig {
@@ -26,15 +44,25 @@ func DefaultMCPConfig() *MCPConfig {
 		// System settings
 		SystemConsciousness:  true,
 		EmergentCapabilities: true,
-		
-		// Input settings
-		Input: *input.DefaultInputConfig(),
 	}
 }
 
 // LoadMCPConfig loads MCP configuration from various sources
 func LoadMCPConfig(configPath string) (*MCPConfig, error) {
-	// For now, return default config
-	// In the future, this will load from YAML files, environment variables, etc.
-	return DefaultMCPConfig(), nil
+	config := DefaultMCPConfig()
+	
+	if configPath != "" {
+		if _, err := os.Stat(configPath); err == nil {
+			data, err := os.ReadFile(configPath)
+			if err != nil {
+				return nil, err
+			}
+			
+			if err := yaml.Unmarshal(data, config); err != nil {
+				return nil, err
+			}
+		}
+	}
+	
+	return config, nil
 }
