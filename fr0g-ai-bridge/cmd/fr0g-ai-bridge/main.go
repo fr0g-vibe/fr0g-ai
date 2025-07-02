@@ -104,7 +104,7 @@ func main() {
 			
 			bridgeServer := api.NewGRPCServer(openWebUIClient)
 			pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
-			log.Printf("gRPC server created and service registered")
+			log.Printf("gRPC bridge service registered successfully")
 			
 			// Enable gRPC reflection for debugging and tools like grpcurl (if enabled)
 			if cfg.Security.EnableReflection {
@@ -112,7 +112,7 @@ func main() {
 				log.Printf("gRPC reflection enabled")
 			}
 			
-			log.Printf("gRPC server ready and fully configured")
+			log.Printf("gRPC server ready with Fr0gAiBridgeService")
 
 			// Start server in goroutine
 			go func() {
