@@ -309,8 +309,14 @@ func (dp *DiscordWebhookProcessor) determineAction(review *CommunityReview) stri
 
 // Utility function for string contains check
 func containsString(text, substring string) bool {
-	// Simple case-insensitive contains check
-	// In production, you might want more sophisticated text matching
-	return len(text) >= len(substring) && 
-		   text != "" && substring != ""
+	// Proper case-insensitive contains check
+	if text == "" || substring == "" {
+		return false
+	}
+	
+	// Convert both to lowercase for case-insensitive comparison
+	lowerText := strings.ToLower(text)
+	lowerSubstring := strings.ToLower(substring)
+	
+	return strings.Contains(lowerText, lowerSubstring)
 }
