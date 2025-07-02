@@ -2,122 +2,93 @@ package input
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 )
 
-// InputManager manages all input sources for the MCP
+// InputManager manages all input processors (Discord, ESMTP, etc.)
 type InputManager struct {
 	webhookManager *WebhookManager
-	processors     map[string]WebhookProcessor
-	aipClient      *RealAIPersonaCommunityClient
-	config         *InputConfig
-	ctx            context.Context
-	cancel         context.CancelFunc
+	aiClient       AIPersonaCommunityClient
+	config         *InputManagerConfig
 }
 
-// InputConfig holds configuration for the input manager
-type InputConfig struct {
-	Webhook WebhookConfig `yaml:"webhook"`
-	Discord DiscordProcessorConfig `yaml:"discord"`
-	AIP     AIPClientConfig `yaml:"aip"`
+// InputManagerConfig holds configuration for the input manager
+type InputManagerConfig struct {
+	WebhookConfig *WebhookConfig         `yaml:"webhook"`
+	Discord       *DiscordProcessorConfig `yaml:"discord"`
+	ESMTP         *ESMTPConfig           `yaml:"esmtp"`
 }
 
 // NewInputManager creates a new input manager
-func NewInputManager(config *InputConfig) *InputManager {
-	ctx, cancel := context.WithCancel(context.Background())
+func NewInputManager(config *InputManagerConfig, aiClient AIPersonaCommunityClient) (*InputManager, error) {
+	// Create webhook manager
+	webhookManager := NewWebhookManager(config.WebhookConfig)
 	
 	return &InputManager{
-		webhookManager: NewWebhookManager(&config.Webhook),
-		processors:     make(map[string]WebhookProcessor),
+		webhookManager: webhookManager,
+		aiClient:       aiClient,
 		config:         config,
-		ctx:            ctx,
-		cancel:         cancel,
-	}
+	}, nil
 }
 
-// Start begins input manager operation
-func (im *InputManager) Start() error {
+// Start initializes and starts all input processors
+func (im *InputManager) Start(ctx context.Context) error {
 	log.Println("Input Manager: Starting input management...")
 	
 	// Start webhook manager
 	if err := im.webhookManager.Start(); err != nil {
-		return err
+		return fmt.Errorf("failed to start webhook manager: %w", err)
 	}
 	
-	// Register default processors
-	im.registerDefaultProcessors()
+	// Register Discord processor if enabled
+	if im.config.Discord != nil {
+		discordProcessor := NewDiscordWebhookProcessor(im.aiClient, im.config.Discord)
+		if err := im.webhookManager.RegisterProcessor(discordProcessor); err != nil {
+			return fmt.Errorf("failed to register Discord processor: %w", err)
+		}
+		log.Printf("Input Manager: Registered Discord processor")
+	}
+	
+	// Register ESMTP processor if enabled
+	if im.config.ESMTP != nil {
+		esmtpProcessor, err := NewESMTPProcessor(im.config.ESMTP, im.aiClient)
+		if err != nil {
+			return fmt.Errorf("failed to create ESMTP processor: %w", err)
+		}
+		
+		if err := im.webhookManager.RegisterProcessor(esmtpProcessor); err != nil {
+			return fmt.Errorf("failed to register ESMTP processor: %w", err)
+		}
+		log.Printf("Input Manager: Registered ESMTP processor")
+	}
 	
 	log.Println("Input Manager: Input management started successfully")
 	return nil
 }
 
-// Stop gracefully stops the input manager
+// Stop gracefully stops all input processors
 func (im *InputManager) Stop() error {
 	log.Println("Input Manager: Stopping input management...")
 	
-	im.cancel()
-	
-	// Close AIP client if it exists
-	if im.aipClient != nil {
-		if err := im.aipClient.Close(); err != nil {
-			log.Printf("Input Manager: Error closing AIP client: %v", err)
-		}
-	}
-	
 	if err := im.webhookManager.Stop(); err != nil {
-		return err
+		return fmt.Errorf("failed to stop webhook manager: %w", err)
 	}
 	
 	log.Println("Input Manager: Input management stopped")
 	return nil
 }
 
-// RegisterProcessor registers a webhook processor
-func (im *InputManager) RegisterProcessor(processor WebhookProcessor) error {
-	tag := processor.GetTag()
-	im.processors[tag] = processor
-	return im.webhookManager.RegisterProcessor(processor)
-}
-
-// GetWebhookManager returns the webhook manager
+// GetWebhookManager returns the webhook manager for external access
 func (im *InputManager) GetWebhookManager() *WebhookManager {
 	return im.webhookManager
 }
 
-// GetProcessors returns all registered processors
-func (im *InputManager) GetProcessors() map[string]string {
-	return im.webhookManager.GetRegisteredProcessors()
-}
-
-// registerDefaultProcessors registers the default webhook processors
-func (im *InputManager) registerDefaultProcessors() {
-	// Try to create real AIP client first, fallback to mock if it fails
-	var client AIPersonaCommunityClient
-	
-	realClient, err := NewRealAIPersonaCommunityClient(&im.config.AIP)
-	if err != nil {
-		log.Printf("Input Manager: Failed to create real AIP client, using mock: %v", err)
-		client = NewMockAIPersonaCommunityClient()
-	} else {
-		log.Println("Input Manager: Using real AIP client for Discord processor")
-		im.aipClient = realClient
-		client = realClient
-	}
-	
-	discordProcessor := NewDiscordWebhookProcessor(client, &im.config.Discord)
-	
-	if err := im.RegisterProcessor(discordProcessor); err != nil {
-		log.Printf("Input Manager: Failed to register Discord processor: %v", err)
-	}
-	
-	// Additional processors can be registered here
-}
-
-// DefaultInputConfig returns a default input configuration
-func DefaultInputConfig() *InputConfig {
-	return &InputConfig{
-		Webhook: WebhookConfig{
+// DefaultInputManagerConfig returns a default input manager configuration
+func DefaultInputManagerConfig() *InputManagerConfig {
+	return &InputManagerConfig{
+		WebhookConfig: &WebhookConfig{
 			Port:           8081,
 			Host:           "0.0.0.0",
 			ReadTimeout:    30 * time.Second,
@@ -126,7 +97,7 @@ func DefaultInputConfig() *InputConfig {
 			EnableLogging:  true,
 			AllowedOrigins: []string{"*"},
 		},
-		Discord: DiscordProcessorConfig{
+		Discord: &DiscordProcessorConfig{
 			CommunityTopic:    "general_discussion",
 			PersonaCount:      3,
 			ReviewTimeout:     60 * time.Second,
@@ -134,11 +105,20 @@ func DefaultInputConfig() *InputConfig {
 			EnableSentiment:   true,
 			FilterKeywords:    []string{"spam", "inappropriate"},
 		},
-		AIP: AIPClientConfig{
-			AIPAddress:    "localhost:50051",
-			BridgeAddress: "localhost:50052",
-			Timeout:       30 * time.Second,
-			MaxRetries:    3,
+		ESMTP: &ESMTPConfig{
+			Host:              "0.0.0.0",
+			Port:              2525,
+			TLSPort:           2465,
+			Hostname:          "fr0g-ai-interceptor.local",
+			MaxMessageSize:    10 * 1024 * 1024, // 10MB
+			Timeout:           5 * time.Minute,
+			EnableTLS:         false,
+			CertFile:          "",
+			KeyFile:           "",
+			CommunityTopic:    "email-threat-analysis",
+			PersonaCount:      5,
+			ReviewTimeout:     2 * time.Minute,
+			RequiredConsensus: 0.7,
 		},
 	}
 }
