@@ -23,44 +23,6 @@ type WebhookManager struct {
 	cancel     context.CancelFunc
 }
 
-// WebhookConfig holds webhook manager configuration
-type WebhookConfig struct {
-	Port            int           `yaml:"port"`
-	Host            string        `yaml:"host"`
-	ReadTimeout     time.Duration `yaml:"read_timeout"`
-	WriteTimeout    time.Duration `yaml:"write_timeout"`
-	MaxRequestSize  int64         `yaml:"max_request_size"`
-	EnableLogging   bool          `yaml:"enable_logging"`
-	AllowedOrigins  []string      `yaml:"allowed_origins"`
-}
-
-// WebhookRequest represents an incoming webhook request
-type WebhookRequest struct {
-	ID          string                 `json:"id"`
-	Source      string                 `json:"source"`
-	Tag         string                 `json:"tag"`
-	Timestamp   time.Time              `json:"timestamp"`
-	Headers     map[string]string      `json:"headers"`
-	Body        interface{}            `json:"body"`
-	Metadata    map[string]interface{} `json:"metadata"`
-	ProcessedAt *time.Time             `json:"processed_at,omitempty"`
-}
-
-// WebhookResponse represents the response to a webhook
-type WebhookResponse struct {
-	Success   bool                   `json:"success"`
-	Message   string                 `json:"message"`
-	RequestID string                 `json:"request_id"`
-	Data      map[string]interface{} `json:"data,omitempty"`
-	Timestamp time.Time              `json:"timestamp"`
-}
-
-// WebhookProcessor defines the interface for processing webhooks
-type WebhookProcessor interface {
-	ProcessWebhook(ctx context.Context, request *WebhookRequest) (*WebhookResponse, error)
-	GetTag() string
-	GetDescription() string
-}
 
 // NewWebhookManager creates a new webhook manager
 func NewWebhookManager(config *WebhookConfig) *WebhookManager {
