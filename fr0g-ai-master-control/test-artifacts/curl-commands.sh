@@ -183,6 +183,74 @@ curl -X POST "$BASE_URL/webhook/discord" \
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
+# ESMTP Threat Vector Interceptor Tests
+echo "12. Testing ESMTP Email Threat Vector (Webhook Mode)..."
+curl -X POST "$BASE_URL/webhook/esmtp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "suspicious@example.com",
+    "to": ["admin@company.com"],
+    "subject": "Urgent: Please verify your account immediately",
+    "body": "Dear user, your account has been compromised. Click here to verify: http://malicious-site.com/verify",
+    "headers": {
+      "X-Originating-IP": "192.168.1.100",
+      "User-Agent": "Suspicious-Mailer/1.0"
+    },
+    "timestamp": "2025-07-02T15:00:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Legitimate Email Test
+echo "13. Testing ESMTP Legitimate Email..."
+curl -X POST "$BASE_URL/webhook/esmtp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "newsletter@company.com",
+    "to": ["subscriber@example.com"],
+    "subject": "Weekly Newsletter - AI Security Updates",
+    "body": "Welcome to our weekly newsletter featuring the latest in AI security research and threat intelligence.",
+    "headers": {
+      "X-Originating-IP": "203.0.113.10",
+      "User-Agent": "Company-Mailer/2.1"
+    },
+    "timestamp": "2025-07-02T15:15:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Phishing Email Test
+echo "14. Testing ESMTP Phishing Email Detection..."
+curl -X POST "$BASE_URL/webhook/esmtp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "security@bank-fake.com",
+    "to": ["customer@example.com"],
+    "subject": "URGENT: Account Security Alert",
+    "body": "Your account will be suspended in 24 hours unless you verify your credentials immediately. Click here: http://fake-bank-security.com/login",
+    "headers": {
+      "X-Originating-IP": "198.51.100.50",
+      "User-Agent": "PhishingBot/1.0"
+    },
+    "timestamp": "2025-07-02T15:30:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Business Email Test
+echo "15. Testing ESMTP Business Email..."
+curl -X POST "$BASE_URL/webhook/esmtp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "ceo@company.com",
+    "to": ["team@company.com"],
+    "subject": "Q4 Strategy Meeting",
+    "body": "Team, please join us for the Q4 strategy meeting on Friday at 2 PM. We will discuss our AI security initiatives and upcoming product launches.",
+    "headers": {
+      "X-Originating-IP": "203.0.113.25",
+      "User-Agent": "Exchange/16.0"
+    },
+    "timestamp": "2025-07-02T15:45:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
 echo "✅ Enhanced test suite completed!"
 echo ""
 echo "🎯 New Tests Added:"
@@ -190,6 +258,13 @@ echo "- Technical Discussion (specialized Technical_Architect, Performance_Optim
 echo "- AI Consciousness (specialized Consciousness_Researcher, Ethics_Philosopher personas)"
 echo "- Code Review (specialized Senior_Developer, Security_Auditor personas)"
 echo "- Multi-Topic Content (tests topic detection algorithms)"
+echo "- ESMTP Threat Vector Interceptor (email intelligence gathering and analysis)"
+echo ""
+echo "📧 ESMTP Tests Include:"
+echo "- Suspicious/Phishing email detection"
+echo "- Legitimate business email processing"
+echo "- Email threat vector analysis"
+echo "- AI community review of email content"
 echo ""
 echo "💡 Tips:"
 echo "- Make sure the MCP is running: cd fr0g-ai-master-control && go run cmd/mcp-demo/main.go"
@@ -197,3 +272,4 @@ echo "- Check logs for AI persona reviews and cognitive insights"
 echo "- Monitor system consciousness and pattern recognition"
 echo "- Watch for different AI persona types based on content analysis"
 echo "- Each test should trigger AI community analysis with specialized experts"
+echo "- ESMTP tests will show email threat vector analysis and community review"
