@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"fr0g-ai-master-control/internal/mastercontrol/cognitive"
+	"fr0g-ai-master-control/internal/mastercontrol/input"
 	"fr0g-ai-master-control/internal/mastercontrol/learning"
 	"fr0g-ai-master-control/internal/mastercontrol/memory"
 	"fr0g-ai-master-control/internal/mastercontrol/monitor"
@@ -24,6 +25,7 @@ type MasterControlProgram struct {
 	learning     *learning.LearningEngine
 	monitor      *monitor.SystemMonitor
 	workflow     *workflow.WorkflowEngine
+	input        *input.InputManager
 
 	// System state
 	systemState  *SystemState
@@ -100,6 +102,9 @@ type MCPConfig struct {
 	// System settings
 	SystemConsciousness bool `yaml:"system_consciousness"`
 	EmergentCapabilities bool `yaml:"emergent_capabilities"`
+	
+	// Input settings
+	Input input.InputConfig `yaml:"input"`
 }
 
 // NewMasterControlProgram creates a new Master Control Program instance
@@ -136,6 +141,7 @@ func (mcp *MasterControlProgram) initializeComponents() {
 	mcp.monitor = NewSystemMonitor(mcp.config)
 	mcp.workflow = NewWorkflowEngine(mcp.config)
 	mcp.orchestrator = NewStrategyOrchestrator(mcp.config, mcp.cognitive, mcp.workflow)
+	mcp.input = input.NewInputManager(&mcp.config.Input)
 	
 	log.Println("MCP: Cognitive architecture initialized successfully")
 }
@@ -158,6 +164,7 @@ func (mcp *MasterControlProgram) Start() error {
 		{"System Monitor", mcp.monitor},
 		{"Workflow Engine", mcp.workflow},
 		{"Strategy Orchestrator", mcp.orchestrator},
+		{"Input Manager", mcp.input},
 	}
 	
 	for _, comp := range components {

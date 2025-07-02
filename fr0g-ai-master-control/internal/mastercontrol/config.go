@@ -24,6 +24,9 @@ func DefaultMCPConfig() *MCPConfig {
 		// System settings
 		SystemConsciousness:  true,
 		EmergentCapabilities: true,
+		
+		// Input settings
+		Input: *input.DefaultInputConfig(),
 	}
 }
 
