@@ -99,8 +99,8 @@ func main() {
 			}
 
 			grpcServer := grpc.NewServer()
-			// TODO: Create and register gRPC service when protobuf service is properly defined
-			// bridgeServer := api.NewGRPCServer(openWebUIClient)
+			bridgeServer := api.NewGRPCServer(openWebUIClient)
+			// TODO: Uncomment when protobuf is generated
 			// pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
 
 			// Start server in goroutine

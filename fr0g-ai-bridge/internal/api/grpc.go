@@ -12,6 +12,7 @@ import (
 
 // GRPCServer implements the Fr0gAiBridge gRPC service
 type GRPCServer struct {
+	pb.UnimplementedFr0gAiBridgeServiceServer
 	client *client.OpenWebUIClient
 }
 
@@ -85,8 +86,12 @@ func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest
 // protoToModel converts protobuf request to internal model
 func (s *GRPCServer) protoToModel(req *pb.ChatCompletionRequest) *models.ChatCompletionRequest {
 	modelReq := &models.ChatCompletionRequest{
-		Model:         req.Model,
-		PersonaPrompt: req.PersonaPrompt,
+		Model: req.Model,
+	}
+
+	// Handle optional persona prompt
+	if req.PersonaPrompt != nil {
+		modelReq.PersonaPrompt = *req.PersonaPrompt
 	}
 
 	// Convert messages
@@ -99,7 +104,7 @@ func (s *GRPCServer) protoToModel(req *pb.ChatCompletionRequest) *models.ChatCom
 
 	// Convert optional fields
 	if req.Temperature != nil {
-		temp := *req.Temperature
+		temp := float64(*req.Temperature)
 		modelReq.Temperature = &temp
 	}
 
@@ -144,69 +149,3 @@ func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *pb.ChatC
 
 	return protoResp
 }
-package api
-
-import (
-	"context"
-	"time"
-
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-)
-
-// GRPCServer implements the gRPC bridge service
-type GRPCServer struct {
-	openWebUIClient *client.OpenWebUIClient
-}
-
-// NewGRPCServer creates a new gRPC server instance
-func NewGRPCServer(openWebUIClient *client.OpenWebUIClient) *GRPCServer {
-	return &GRPCServer{
-		openWebUIClient: openWebUIClient,
-	}
-}
-
-// TODO: Implement actual gRPC service methods once protobuf definitions are created
-// This is a placeholder structure for the gRPC bridge functionality
-
-// Example method structure for when protobuf is defined:
-/*
-func (s *GRPCServer) SendMessage(ctx context.Context, req *pb.ChatRequest) (*pb.ChatResponse, error) {
-	if req.Message == "" {
-		return nil, status.Error(codes.InvalidArgument, "message is required")
-	}
-
-	response, err := s.openWebUIClient.SendMessage(req.Message, req.Model)
-	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to process message: "+err.Error())
-	}
-
-	return &pb.ChatResponse{
-		Response:  response,
-		Model:     req.Model,
-		Timestamp: time.Now().Unix(),
-	}, nil
-}
-
-func (s *GRPCServer) GetModels(ctx context.Context, req *pb.ModelsRequest) (*pb.ModelsResponse, error) {
-	models, err := s.openWebUIClient.GetModels()
-	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to fetch models: "+err.Error())
-	}
-
-	var pbModels []*pb.Model
-	for _, model := range models {
-		pbModels = append(pbModels, &pb.Model{
-			Id:      model.ID,
-			Object:  model.Object,
-			Created: model.Created,
-			OwnedBy: model.OwnedBy,
-		})
-	}
-
-	return &pb.ModelsResponse{
-		Models: pbModels,
-	}, nil
-}
-*/

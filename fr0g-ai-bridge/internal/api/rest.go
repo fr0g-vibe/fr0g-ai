@@ -35,8 +35,14 @@ func (s *RESTServer) setupRoutes() {
 	// Health check endpoint
 	s.router.HandleFunc("/health", s.handleHealth).Methods("GET")
 
-	// Chat completion endpoint
+	// Chat completion endpoint (OpenAI compatible)
 	s.router.HandleFunc("/api/chat/completions", s.handleChatCompletion).Methods("POST")
+
+	// Legacy simple chat endpoint
+	s.router.HandleFunc("/api/v1/chat", s.handleSimpleChat).Methods("POST")
+	
+	// Models endpoint
+	s.router.HandleFunc("/api/v1/models", s.handleModels).Methods("GET")
 
 	// Add CORS middleware
 	s.router.Use(s.corsMiddleware)
@@ -73,7 +79,7 @@ func (s *RESTServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-// handleChatCompletion handles chat completion requests
+// handleChatCompletion handles OpenAI-compatible chat completion requests
 func (s *RESTServer) handleChatCompletion(w http.ResponseWriter, r *http.Request) {
 	// Parse request
 	var req models.ChatCompletionRequest
@@ -102,6 +108,66 @@ func (s *RESTServer) handleChatCompletion(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
+}
+
+// SimpleChatRequest represents a simple chat request
+type SimpleChatRequest struct {
+	Message string `json:"message"`
+	Model   string `json:"model,omitempty"`
+}
+
+// SimpleChatResponse represents a simple chat response
+type SimpleChatResponse struct {
+	Response  string    `json:"response"`
+	Model     string    `json:"model"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// handleSimpleChat handles simple chat requests (legacy endpoint)
+func (s *RESTServer) handleSimpleChat(w http.ResponseWriter, r *http.Request) {
+	var req SimpleChatRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		s.writeError(w, http.StatusBadRequest, "Invalid request format", err)
+		return
+	}
+
+	if req.Message == "" {
+		s.writeError(w, http.StatusBadRequest, "Message is required", nil)
+		return
+	}
+
+	// Bridge request to OpenWebUI using legacy method
+	response, err := s.client.SendMessage(req.Message, req.Model)
+	if err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Failed to process request", err)
+		return
+	}
+
+	chatResp := SimpleChatResponse{
+		Response:  response,
+		Model:     req.Model,
+		Timestamp: time.Now().UTC(),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(chatResp)
+}
+
+// handleModels handles requests for available AI models
+func (s *RESTServer) handleModels(w http.ResponseWriter, r *http.Request) {
+	models, err := s.client.GetModels()
+	if err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Failed to fetch models", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"models":    models,
+		"timestamp": time.Now().UTC().Format(time.RFC3339),
+	})
 }
 
 // validateChatCompletionRequest validates the chat completion request
@@ -155,144 +221,4 @@ func (s *RESTServer) corsMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-package api
-
-import (
-	"encoding/json"
-	"net/http"
-	"time"
-
-	"github.com/gorilla/mux"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
-)
-
-// RESTServer handles HTTP REST API requests
-type RESTServer struct {
-	openWebUIClient *client.OpenWebUIClient
-	router          *mux.Router
-}
-
-// NewRESTServer creates a new REST server instance
-func NewRESTServer(openWebUIClient *client.OpenWebUIClient) *RESTServer {
-	server := &RESTServer{
-		openWebUIClient: openWebUIClient,
-		router:          mux.NewRouter(),
-	}
-	
-	server.setupRoutes()
-	return server
-}
-
-// GetRouter returns the configured router
-func (s *RESTServer) GetRouter() *mux.Router {
-	return s.router
-}
-
-// setupRoutes configures all REST API routes
-func (s *RESTServer) setupRoutes() {
-	// Health check endpoint
-	s.router.HandleFunc("/health", s.healthHandler).Methods("GET")
-	
-	// AI chat endpoint - bridge to external AI systems
-	s.router.HandleFunc("/api/v1/chat", s.chatHandler).Methods("POST")
-	
-	// AI models endpoint - list available models
-	s.router.HandleFunc("/api/v1/models", s.modelsHandler).Methods("GET")
-}
-
-// ChatRequest represents an incoming chat request
-type ChatRequest struct {
-	Message string `json:"message"`
-	Model   string `json:"model,omitempty"`
-}
-
-// ChatResponse represents a chat response
-type ChatResponse struct {
-	Response  string    `json:"response"`
-	Model     string    `json:"model"`
-	Timestamp time.Time `json:"timestamp"`
-}
-
-// ErrorResponse represents an error response
-type ErrorResponse struct {
-	Error   string `json:"error"`
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
-// healthHandler handles health check requests
-func (s *RESTServer) healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
-		"status": "healthy",
-		"service": "fr0g-ai-bridge",
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
-	})
-}
-
-// chatHandler handles chat requests and bridges to external AI systems
-func (s *RESTServer) chatHandler(w http.ResponseWriter, r *http.Request) {
-	var req ChatRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.sendError(w, http.StatusBadRequest, "Invalid request format", err.Error())
-		return
-	}
-
-	if req.Message == "" {
-		s.sendError(w, http.StatusBadRequest, "Message is required", "")
-		return
-	}
-
-	// Bridge request to OpenWebUI or other external AI system
-	response, err := s.openWebUIClient.SendMessage(req.Message, req.Model)
-	if err != nil {
-		s.sendError(w, http.StatusInternalServerError, "Failed to process request", err.Error())
-		return
-	}
-
-	chatResp := ChatResponse{
-		Response:  response,
-		Model:     req.Model,
-		Timestamp: time.Now().UTC(),
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(chatResp)
-}
-
-// modelsHandler handles requests for available AI models
-func (s *RESTServer) modelsHandler(w http.ResponseWriter, r *http.Request) {
-	models, err := s.openWebUIClient.GetModels()
-	if err != nil {
-		s.sendError(w, http.StatusInternalServerError, "Failed to fetch models", err.Error())
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"models": models,
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
-	})
-}
-
-// sendError sends a standardized error response
-func (s *RESTServer) sendError(w http.ResponseWriter, statusCode int, message, details string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	
-	errorResp := ErrorResponse{
-		Error:   http.StatusText(statusCode),
-		Code:    statusCode,
-		Message: message,
-	}
-	
-	if details != "" {
-		errorResp.Message += ": " + details
-	}
-	
-	json.NewEncoder(w).Encode(errorResp)
 }

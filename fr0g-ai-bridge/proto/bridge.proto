@@ -61,3 +61,68 @@ message HealthResponse {
   string service = 2;
   int64 timestamp = 3;
 }
+syntax = "proto3";
+
+package fr0g.ai.bridge.v1;
+
+option go_package = "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb";
+
+// Fr0gAiBridgeService provides bridge functionality between fr0g.ai and external AI systems
+service Fr0gAiBridgeService {
+  // HealthCheck performs a health check
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+  
+  // ChatCompletion processes chat completion requests
+  rpc ChatCompletion(ChatCompletionRequest) returns (ChatCompletionResponse);
+}
+
+// HealthCheckRequest represents a health check request
+message HealthCheckRequest {
+  // Empty for now
+}
+
+// HealthCheckResponse represents a health check response
+message HealthCheckResponse {
+  string status = 1;
+  string version = 2;
+}
+
+// ChatMessage represents a chat message
+message ChatMessage {
+  string role = 1;
+  string content = 2;
+}
+
+// ChatCompletionRequest represents a chat completion request
+message ChatCompletionRequest {
+  string model = 1;
+  repeated ChatMessage messages = 2;
+  optional string persona_prompt = 3;
+  optional float temperature = 4;
+  optional int32 max_tokens = 5;
+  optional bool stream = 6;
+}
+
+// Choice represents a completion choice
+message Choice {
+  int32 index = 1;
+  ChatMessage message = 2;
+  string finish_reason = 3;
+}
+
+// Usage represents token usage information
+message Usage {
+  int32 prompt_tokens = 1;
+  int32 completion_tokens = 2;
+  int32 total_tokens = 3;
+}
+
+// ChatCompletionResponse represents a chat completion response
+message ChatCompletionResponse {
+  string id = 1;
+  string object = 2;
+  int64 created = 3;
+  string model = 4;
+  repeated Choice choices = 5;
+  Usage usage = 6;
+}
