@@ -7,8 +7,44 @@ import (
 
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/models"
-	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
 )
+
+// Temporary placeholder until protobuf is properly generated
+type HealthCheckRequest struct{}
+type HealthCheckResponse struct {
+	Status  string
+	Version string
+}
+type ChatCompletionRequest struct {
+	Model         string
+	Messages      []*ChatMessage
+	PersonaPrompt *string
+	Temperature   *float32
+	MaxTokens     *int32
+	Stream        *bool
+}
+type ChatMessage struct {
+	Role    string
+	Content string
+}
+type ChatCompletionResponse struct {
+	Id      string
+	Object  string
+	Created int64
+	Model   string
+	Choices []*Choice
+	Usage   *Usage
+}
+type Choice struct {
+	Index        int32
+	Message      *ChatMessage
+	FinishReason string
+}
+type Usage struct {
+	PromptTokens     int32
+	CompletionTokens int32
+	TotalTokens      int32
+}
 
 // GRPCServer implements the Fr0gAiBridge gRPC service
 type GRPCServer struct {

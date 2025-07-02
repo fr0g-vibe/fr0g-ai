@@ -33,7 +33,8 @@ test:
 proto:
 	@echo "Generating protobuf code..."
 	@mkdir -p internal/pb
-	protoc --go_out=. --go-grpc_out=. proto/bridge.proto
+	@chmod +x scripts/generate-proto.sh
+	@./scripts/generate-proto.sh
 
 # Generate protobuf only if files don't exist
 proto-if-needed:
