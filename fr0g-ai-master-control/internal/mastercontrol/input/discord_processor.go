@@ -251,7 +251,7 @@ func (dp *DiscordWebhookProcessor) parseDiscordMessage(body interface{}) (*Disco
 func (dp *DiscordWebhookProcessor) shouldFilterContent(content string) bool {
 	// Simple keyword filtering
 	for _, keyword := range dp.config.FilterKeywords {
-		if contains(content, keyword) {
+		if containsString(content, keyword) {
 			return true
 		}
 	}
@@ -303,8 +303,8 @@ func (dp *DiscordWebhookProcessor) determineAction(review *CommunityReview) stri
 	}
 }
 
-// Utility function
-func contains(text, substring string) bool {
+// Utility function for string contains check
+func containsString(text, substring string) bool {
 	// Simple case-insensitive contains check
 	// In production, you might want more sophisticated text matching
 	return len(text) >= len(substring) && 
