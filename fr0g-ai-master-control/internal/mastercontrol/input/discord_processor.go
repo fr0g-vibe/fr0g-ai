@@ -165,8 +165,11 @@ func (dp *DiscordWebhookProcessor) ProcessWebhook(ctx context.Context, request *
 		}, nil
 	}
 	
+	// Determine appropriate topic based on content
+	topic := dp.determineTopicFromContent(discordMsg.Content)
+	
 	// Create AI community for review
-	community, err := dp.aiCommunityClient.CreateCommunity(ctx, dp.config.CommunityTopic, dp.config.PersonaCount)
+	community, err := dp.aiCommunityClient.CreateCommunity(ctx, topic, dp.config.PersonaCount)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create AI community: %w", err)
 	}
@@ -308,6 +311,37 @@ func (dp *DiscordWebhookProcessor) determineAction(review *CommunityReview) stri
 	default:
 		return "reject"
 	}
+}
+
+// determineTopicFromContent analyzes content to determine the best AI community topic
+func (dp *DiscordWebhookProcessor) determineTopicFromContent(content string) string {
+	lowerContent := strings.ToLower(content)
+	
+	// Check for technical/code content
+	if strings.Contains(lowerContent, "```") || 
+	   strings.Contains(lowerContent, "algorithm") ||
+	   strings.Contains(lowerContent, "code") ||
+	   strings.Contains(lowerContent, "function") ||
+	   strings.Contains(lowerContent, "performance") ||
+	   strings.Contains(lowerContent, "optimization") {
+		if strings.Contains(lowerContent, "review") {
+			return "code_review"
+		}
+		return "technical_discussion"
+	}
+	
+	// Check for AI consciousness content
+	if strings.Contains(lowerContent, "consciousness") ||
+	   strings.Contains(lowerContent, "awareness") ||
+	   strings.Contains(lowerContent, "intelligence") ||
+	   strings.Contains(lowerContent, "cognitive") ||
+	   strings.Contains(lowerContent, "emergent") ||
+	   strings.Contains(lowerContent, "ai personas") {
+		return "ai_consciousness"
+	}
+	
+	// Default to general discussion
+	return "general_discussion"
 }
 
 // Utility function for string contains check

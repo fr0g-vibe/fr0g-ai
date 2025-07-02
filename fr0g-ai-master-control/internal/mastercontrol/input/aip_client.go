@@ -244,18 +244,76 @@ func (r *RealAIPersonaCommunityClient) getPersonaTemplatesForTopic(topic string,
 				Description: "AI expert focused on content quality and engagement",
 				Model:       "gpt-4",
 			},
-		},
-		"technical_discussion": {
 			{
-				Name:        "Technical_Expert",
-				Expertise:   []string{"technical_analysis", "engineering", "problem_solving"},
-				Description: "AI expert focused on technical content analysis",
+				Name:        "Ethics_Advisor",
+				Expertise:   []string{"ethics", "bias_detection", "fairness"},
+				Description: "AI expert focused on ethical considerations and bias detection",
 				Model:       "gpt-4",
 			},
 			{
-				Name:        "Code_Reviewer",
-				Expertise:   []string{"code_review", "best_practices", "security"},
-				Description: "AI expert focused on code quality and security",
+				Name:        "Innovation_Catalyst",
+				Expertise:   []string{"creativity", "innovation", "future_thinking"},
+				Description: "AI expert focused on innovative ideas and creative solutions",
+				Model:       "gpt-4",
+			},
+		},
+		"technical_discussion": {
+			{
+				Name:        "Technical_Architect",
+				Expertise:   []string{"system_design", "architecture", "scalability"},
+				Description: "AI expert focused on technical architecture and system design",
+				Model:       "gpt-4",
+			},
+			{
+				Name:        "Code_Security_Expert",
+				Expertise:   []string{"security", "vulnerability_analysis", "best_practices"},
+				Description: "AI expert focused on code security and vulnerability assessment",
+				Model:       "gpt-4",
+			},
+			{
+				Name:        "Performance_Optimizer",
+				Expertise:   []string{"performance", "optimization", "efficiency"},
+				Description: "AI expert focused on performance optimization and efficiency",
+				Model:       "gpt-4",
+			},
+		},
+		"ai_consciousness": {
+			{
+				Name:        "Consciousness_Researcher",
+				Expertise:   []string{"consciousness", "cognitive_science", "philosophy"},
+				Description: "AI expert focused on consciousness research and cognitive science",
+				Model:       "gpt-4",
+			},
+			{
+				Name:        "Ethics_Philosopher",
+				Expertise:   []string{"ai_ethics", "philosophy", "moral_reasoning"},
+				Description: "AI expert focused on AI ethics and philosophical implications",
+				Model:       "gpt-4",
+			},
+			{
+				Name:        "Emergence_Analyst",
+				Expertise:   []string{"emergent_behavior", "complex_systems", "intelligence"},
+				Description: "AI expert focused on emergent intelligence and complex systems",
+				Model:       "gpt-4",
+			},
+		},
+		"code_review": {
+			{
+				Name:        "Senior_Developer",
+				Expertise:   []string{"code_quality", "maintainability", "design_patterns"},
+				Description: "AI expert focused on code quality and maintainability",
+				Model:       "gpt-4",
+			},
+			{
+				Name:        "Security_Auditor",
+				Expertise:   []string{"security_audit", "vulnerability_detection", "secure_coding"},
+				Description: "AI expert focused on security auditing and secure coding practices",
+				Model:       "gpt-4",
+			},
+			{
+				Name:        "Performance_Engineer",
+				Expertise:   []string{"performance_analysis", "optimization", "profiling"},
+				Description: "AI expert focused on performance analysis and optimization",
 				Model:       "gpt-4",
 			},
 		},
@@ -311,25 +369,72 @@ func (r *RealAIPersonaCommunityClient) generatePersonaReview(persona PersonaInfo
 	var score float64
 	var tags []string
 	
+	// Analyze content characteristics
+	contentLength := len(content)
+	hasCode := strings.Contains(content, "```")
+	hasTechnicalTerms := strings.Contains(strings.ToLower(content), "algorithm") || 
+						strings.Contains(strings.ToLower(content), "performance") ||
+						strings.Contains(strings.ToLower(content), "optimization")
+	
 	switch {
+	case contains(persona.Expertise, "consciousness"):
+		if strings.Contains(strings.ToLower(content), "consciousness") || strings.Contains(strings.ToLower(content), "awareness") {
+			reviewText = fmt.Sprintf("As %s, this content demonstrates deep philosophical insight into AI consciousness. The discussion of awareness and emergent intelligence is particularly compelling.", persona.Name)
+			score = 0.85 + (float64(time.Now().UnixNano()%15) / 100.0)
+		} else {
+			reviewText = fmt.Sprintf("From %s's perspective, while this content is valuable, it could benefit from deeper exploration of consciousness implications.", persona.Name)
+			score = 0.70 + (float64(time.Now().UnixNano()%20) / 100.0)
+		}
+		tags = []string{"consciousness", "philosophy", "deep_analysis"}
+		
+	case contains(persona.Expertise, "security"):
+		if hasCode {
+			reviewText = fmt.Sprintf("As %s, I've analyzed this code for security vulnerabilities. The implementation appears secure with good practices demonstrated.", persona.Name)
+			score = 0.80 + (float64(time.Now().UnixNano()%20) / 100.0)
+		} else {
+			reviewText = fmt.Sprintf("%s here - this content discusses important security considerations for the system.", persona.Name)
+			score = 0.75 + (float64(time.Now().UnixNano()%20) / 100.0)
+		}
+		tags = []string{"security", "code_analysis", "best_practices"}
+		
+	case contains(persona.Expertise, "performance"):
+		if hasTechnicalTerms {
+			reviewText = fmt.Sprintf("From %s's perspective, this content shows excellent understanding of performance optimization principles. The technical depth is impressive.", persona.Name)
+			score = 0.88 + (float64(time.Now().UnixNano()%12) / 100.0)
+		} else {
+			reviewText = fmt.Sprintf("As %s, I find this content relevant though it could benefit from more performance-focused analysis.", persona.Name)
+			score = 0.72 + (float64(time.Now().UnixNano()%18) / 100.0)
+		}
+		tags = []string{"performance", "optimization", "technical_excellence"}
+		
 	case contains(persona.Expertise, "moderation"):
 		reviewText = fmt.Sprintf("As %s, I've analyzed this content for community guidelines compliance. The message appears appropriate for the community context.", persona.Name)
-		score = 0.8 + (float64(time.Now().UnixNano()%20) / 100.0) // 0.8-0.99
+		score = 0.8 + (float64(time.Now().UnixNano()%20) / 100.0)
 		tags = []string{"moderation", "guidelines", "safety"}
 		
 	case contains(persona.Expertise, "technical_analysis"):
-		reviewText = fmt.Sprintf("From %s's perspective, this content shows technical merit and contributes to the discussion.", persona.Name)
-		score = 0.7 + (float64(time.Now().UnixNano()%30) / 100.0) // 0.7-0.99
+		if hasTechnicalTerms || hasCode {
+			reviewText = fmt.Sprintf("From %s's perspective, this content demonstrates strong technical merit and contributes valuable insights to the discussion.", persona.Name)
+			score = 0.82 + (float64(time.Now().UnixNano()%18) / 100.0)
+		} else {
+			reviewText = fmt.Sprintf("As %s, this content shows good understanding though could benefit from more technical depth.", persona.Name)
+			score = 0.70 + (float64(time.Now().UnixNano()%25) / 100.0)
+		}
 		tags = []string{"technical", "analysis", "merit"}
 		
 	case contains(persona.Expertise, "content_curation"):
-		reviewText = fmt.Sprintf("%s here - this content demonstrates good engagement potential and aligns with community interests.", persona.Name)
-		score = 0.75 + (float64(time.Now().UnixNano()%25) / 100.0) // 0.75-0.99
+		if contentLength > 100 {
+			reviewText = fmt.Sprintf("%s here - this content demonstrates excellent engagement potential with comprehensive detail that will spark meaningful community discussion.", persona.Name)
+			score = 0.85 + (float64(time.Now().UnixNano()%15) / 100.0)
+		} else {
+			reviewText = fmt.Sprintf("%s here - this content shows good engagement potential and aligns with community interests.", persona.Name)
+			score = 0.75 + (float64(time.Now().UnixNano()%20) / 100.0)
+		}
 		tags = []string{"curation", "engagement", "quality"}
 		
 	default:
 		reviewText = fmt.Sprintf("As %s, I find this content suitable for community discussion and within acceptable parameters.", persona.Name)
-		score = 0.6 + (float64(time.Now().UnixNano()%40) / 100.0) // 0.6-0.99
+		score = 0.6 + (float64(time.Now().UnixNano()%40) / 100.0)
 		tags = []string{"general", "review", "acceptable"}
 	}
 	
