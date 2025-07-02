@@ -1,4 +1,4 @@
-module fr0g-ai-master-control
+module github.com/fr0g-vibe/fr0g-ai-master-control
 
 go 1.21
 

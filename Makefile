@@ -1,4 +1,4 @@
-.PHONY: help setup init-submodules update-submodules build-all clean test-all run-aip run-bridge docker-build-all deps dev lint fmt health docker-logs docker-clean
+.PHONY: help setup init-submodules update-submodules build-all clean test-all run-aip run-bridge run-esmtp docker-build-all deps dev lint fmt health docker-logs docker-clean
 
 # Default target
 help:
@@ -59,6 +59,8 @@ build-all: init-submodules deps
 	cd fr0g-ai-aip && make build-with-grpc
 	@echo "Building fr0g-ai-bridge..."
 	cd fr0g-ai-bridge && make build-with-grpc
+	@echo "Building fr0g-ai-master-control..."
+	cd fr0g-ai-master-control && go build -o bin/esmtp-interceptor ./cmd/esmtp-interceptor
 
 # Build bridge only
 build: proto
@@ -77,6 +79,11 @@ run-bridge: build
 run-aip: build-all
 	cd fr0g-ai-aip && ./bin/fr0g-ai-aip -server -grpc
 
+# Run fr0g-ai-master-control ESMTP interceptor
+run-esmtp: build-all
+	@echo "Starting fr0g-ai ESMTP Threat Vector Interceptor..."
+	cd fr0g-ai-master-control && ./bin/esmtp-interceptor -config configs/esmtp.yaml
+
 # Run tests for bridge only
 test:
 	@echo "Running fr0g-ai-bridge tests..."
@@ -88,6 +95,8 @@ test-all:
 	cd fr0g-ai-aip && make test
 	@echo "Testing fr0g-ai-bridge..."
 	cd fr0g-ai-bridge && go test ./...
+	@echo "Testing fr0g-ai-master-control..."
+	cd fr0g-ai-master-control && go test ./...
 
 # Generate protobuf code for bridge
 proto:
@@ -104,6 +113,8 @@ deps: init-submodules
 	cd fr0g-ai-bridge && make proto-if-needed || make proto || true
 	@echo "Installing dependencies for fr0g-ai-bridge..."
 	cd fr0g-ai-bridge && go mod tidy && go mod download
+	@echo "Installing dependencies for fr0g-ai-master-control..."
+	cd fr0g-ai-master-control && go mod tidy && go mod download
 
 # Clean all build artifacts
 clean:
@@ -112,6 +123,8 @@ clean:
 	@echo "Cleaning fr0g-ai-bridge..."
 	rm -rf fr0g-ai-bridge/bin/
 	rm -rf fr0g-ai-bridge/internal/pb/*.pb.go
+	@echo "Cleaning fr0g-ai-master-control..."
+	rm -rf fr0g-ai-master-control/bin/
 
 # Build Docker images
 docker:
@@ -130,17 +143,20 @@ lint:
 	@echo "🔍 Running linters..."
 	@cd fr0g-ai-aip && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
 	@cd fr0g-ai-bridge && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
+	@cd fr0g-ai-master-control && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
 
 fmt:
 	@echo "🎨 Formatting code..."
 	@cd fr0g-ai-aip && go fmt ./...
 	@cd fr0g-ai-bridge && go fmt ./...
+	@cd fr0g-ai-master-control && go fmt ./...
 
 # Health check all services
 health:
 	@echo "🏥 Checking service health..."
 	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
 	@curl -sf http://localhost:8081/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
+	@nc -z localhost 2525 && echo "✅ ESMTP Interceptor healthy" || echo "❌ ESMTP Interceptor down"
 
 # Development helpers
 dev-deps:
