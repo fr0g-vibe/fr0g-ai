@@ -14,19 +14,21 @@ Provides HTTP REST and gRPC interfaces for external clients.
 - **Engineers**: Focus on API design, protocol handling, and client communication
 - **Key Files**: HTTP handlers, gRPC services, middleware, API models
 
-### 🎛️ [Master Control Component](./master-control-component.md)
-Manages system configuration, health monitoring, and orchestration.
-- **Engineers**: Focus on system coordination, monitoring, and configuration management
-- **Key Files**: Config managers, health checkers, lifecycle controllers
+### 🎛️ [Master Control Program (MCP)](./master-control-component.md)
+The central intelligence and orchestration engine of the fr0g.ai system.
+- **Engineers**: Focus on cognitive architecture, intelligent orchestration, and emergent capabilities
+- **Key Files**: Cognitive engines, learning systems, workflow generators, system consciousness
 
 ## Inter-Component Communication
 
 ```
 External Clients
        ↓
-   Bridge Component ←→ Master Control Component
+   Bridge Component ←→ Master Control Program (MCP)
        ↓                      ↓
    AI Persona Component ←-----┘
+       ↑                      ↓
+       └── Intelligent Orchestration ←┘
 ```
 
 ## Getting Started
