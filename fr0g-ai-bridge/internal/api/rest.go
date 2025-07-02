@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -96,8 +97,13 @@ func (s *RESTServer) setupRoutes() {
 	s.router.HandleFunc("/api/v1/models", s.handleModels).Methods("GET")
 
 	// Add middleware
+	s.router.Use(s.securityHeadersMiddleware)
+	s.router.Use(s.requestSizeLimitMiddleware)
 	s.router.Use(s.loggingMiddleware)
 	s.router.Use(s.rateLimitMiddleware)
+	if s.config.Security.RequireAPIKey {
+		s.router.Use(s.apiKeyMiddleware)
+	}
 	if s.config.Security.EnableCORS {
 		s.router.Use(s.corsMiddleware)
 	}
@@ -191,6 +197,18 @@ func (s *RESTServer) handleSimpleChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate message length and content
+	if len(req.Message) > 10000 {
+		s.writeError(w, http.StatusBadRequest, "Message too long (max 10000 characters)", nil)
+		return
+	}
+
+	// Sanitize input
+	req.Message = strings.TrimSpace(req.Message)
+	if req.Model != "" {
+		req.Model = strings.TrimSpace(req.Model)
+	}
+
 	// Bridge request to OpenWebUI using legacy method
 	response, err := s.client.SendMessage(req.Message, req.Model)
 	if err != nil {
@@ -233,6 +251,9 @@ func (s *RESTServer) validateChatCompletionRequest(req *models.ChatCompletionReq
 	if len(req.Messages) == 0 {
 		return fmt.Errorf("messages are required")
 	}
+	if len(req.Messages) > 100 {
+		return fmt.Errorf("too many messages (max 100)")
+	}
 	for i, msg := range req.Messages {
 		if msg.Role == "" {
 			return fmt.Errorf("message %d: role is required", i)
@@ -240,8 +261,37 @@ func (s *RESTServer) validateChatCompletionRequest(req *models.ChatCompletionReq
 		if msg.Content == "" {
 			return fmt.Errorf("message %d: content is required", i)
 		}
+		if len(msg.Content) > 10000 {
+			return fmt.Errorf("message %d: content too long (max 10000 characters)", i)
+		}
+		// Sanitize role to prevent injection
+		if !isValidRole(msg.Role) {
+			return fmt.Errorf("message %d: invalid role", i)
+		}
+	}
+	// Validate persona prompt length
+	if len(req.PersonaPrompt) > 5000 {
+		return fmt.Errorf("persona prompt too long (max 5000 characters)")
+	}
+	// Validate optional parameters
+	if req.Temperature != nil && (*req.Temperature < 0 || *req.Temperature > 2) {
+		return fmt.Errorf("temperature must be between 0 and 2")
+	}
+	if req.MaxTokens != nil && (*req.MaxTokens < 1 || *req.MaxTokens > 4096) {
+		return fmt.Errorf("max_tokens must be between 1 and 4096")
 	}
 	return nil
+}
+
+// isValidRole checks if the role is one of the allowed values
+func isValidRole(role string) bool {
+	validRoles := []string{"system", "user", "assistant", "function"}
+	for _, validRole := range validRoles {
+		if role == validRole {
+			return true
+		}
+	}
+	return false
 }
 
 // writeError writes an error response
@@ -326,4 +376,80 @@ type responseWriter struct {
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+// securityHeadersMiddleware adds security headers to all responses
+func (s *RESTServer) securityHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Prevent clickjacking
+		w.Header().Set("X-Frame-Options", "DENY")
+		// Prevent MIME type sniffing
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		// Enable XSS protection
+		w.Header().Set("X-XSS-Protection", "1; mode=block")
+		// Enforce HTTPS (when behind a proxy)
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		// Prevent referrer leakage
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		// Content Security Policy
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'none'; object-src 'none'")
+		
+		next.ServeHTTP(w, r)
+	})
+}
+
+// requestSizeLimitMiddleware limits the size of request bodies
+func (s *RESTServer) requestSizeLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Limit request body size to 1MB
+		r.Body = http.MaxBytesReader(w, r.Body, 1024*1024)
+		next.ServeHTTP(w, r)
+	})
+}
+
+// apiKeyMiddleware validates API keys
+func (s *RESTServer) apiKeyMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip API key check for health endpoint
+		if r.URL.Path == "/health" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Extract API key from Authorization header or X-API-Key header
+		var apiKey string
+		authHeader := r.Header.Get("Authorization")
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			apiKey = strings.TrimPrefix(authHeader, "Bearer ")
+		} else {
+			apiKey = r.Header.Get("X-API-Key")
+		}
+
+		if apiKey == "" {
+			s.writeError(w, http.StatusUnauthorized, "API key required", nil)
+			return
+		}
+
+		// Validate API key
+		if !s.isValidAPIKey(apiKey) {
+			s.writeError(w, http.StatusUnauthorized, "Invalid API key", nil)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// isValidAPIKey checks if the provided API key is valid
+func (s *RESTServer) isValidAPIKey(apiKey string) bool {
+	if len(s.config.Security.AllowedAPIKeys) == 0 {
+		return true // No API keys configured, allow all
+	}
+	
+	for _, validKey := range s.config.Security.AllowedAPIKeys {
+		if apiKey == validKey {
+			return true
+		}
+	}
+	return false
 }

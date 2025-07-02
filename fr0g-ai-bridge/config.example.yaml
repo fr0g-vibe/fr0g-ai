@@ -39,13 +39,18 @@ logging:
   level: "info"    # debug, info, warn, error
   format: "json"   # json, text
 
-# Advanced settings (optional)
+# Security settings
 security:
   enable_cors: true
-  allowed_origins: ["*"]
+  allowed_origins: ["*"]  # Change to specific domains in production
   rate_limit_requests_per_minute: 60
+  require_api_key: false  # Set to true in production
+  allowed_api_keys: []    # Add your API keys here when require_api_key is true
+  enable_reflection: true # Set to false in production
 
+# Monitoring settings
 monitoring:
   enable_metrics: true
   metrics_port: 8082
   health_check_interval: 30
+  enable_tracing: false

@@ -71,6 +71,9 @@ func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest
 	if len(req.Messages) == 0 {
 		return fmt.Errorf("messages are required")
 	}
+	if len(req.Messages) > 100 {
+		return fmt.Errorf("too many messages (max 100)")
+	}
 	for i, msg := range req.Messages {
 		if msg.Role == "" {
 			return fmt.Errorf("message %d: role is required", i)
@@ -78,8 +81,37 @@ func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest
 		if msg.Content == "" {
 			return fmt.Errorf("message %d: content is required", i)
 		}
+		if len(msg.Content) > 10000 {
+			return fmt.Errorf("message %d: content too long (max 10000 characters)", i)
+		}
+		// Sanitize role to prevent injection
+		if !isValidRole(msg.Role) {
+			return fmt.Errorf("message %d: invalid role", i)
+		}
+	}
+	// Validate persona prompt length
+	if req.PersonaPrompt != nil && len(*req.PersonaPrompt) > 5000 {
+		return fmt.Errorf("persona prompt too long (max 5000 characters)")
+	}
+	// Validate optional parameters
+	if req.Temperature != nil && (*req.Temperature < 0 || *req.Temperature > 2) {
+		return fmt.Errorf("temperature must be between 0 and 2")
+	}
+	if req.MaxTokens != nil && (*req.MaxTokens < 1 || *req.MaxTokens > 4096) {
+		return fmt.Errorf("max_tokens must be between 1 and 4096")
 	}
 	return nil
+}
+
+// isValidRole checks if the role is one of the allowed values
+func isValidRole(role string) bool {
+	validRoles := []string{"system", "user", "assistant", "function"}
+	for _, validRole := range validRoles {
+		if role == validRole {
+			return true
+		}
+	}
+	return false
 }
 
 // protoToModel converts protobuf request to internal model

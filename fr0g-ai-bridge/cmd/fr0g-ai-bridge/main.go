@@ -41,6 +41,17 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	// Log security configuration warnings
+	if cfg.Security.RequireAPIKey && len(cfg.Security.AllowedAPIKeys) == 0 {
+		log.Println("WARNING: API key authentication enabled but no keys configured")
+	}
+	if cfg.Security.EnableReflection {
+		log.Println("WARNING: gRPC reflection is enabled - disable in production")
+	}
+	if len(cfg.Security.AllowedOrigins) == 1 && cfg.Security.AllowedOrigins[0] == "*" {
+		log.Println("WARNING: CORS allows all origins - restrict in production")
+	}
+
 	// Create OpenWebUI client
 	openWebUIClient := client.NewOpenWebUIClient(
 		cfg.OpenWebUI.BaseURL,
