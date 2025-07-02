@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -13,141 +12,8 @@ import (
 	"net/textproto"
 	"strings"
 	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
-// WebhookProcessor interface for modular input processing
-type WebhookProcessor interface {
-	ProcessWebhook(ctx context.Context, request *WebhookRequest) (*WebhookResponse, error)
-	GetTag() string
-	GetDescription() string
-}
-
-// WebhookRequest represents an incoming webhook request
-type WebhookRequest struct {
-	ID        string                 `json:"id"`
-	Headers   map[string]string      `json:"headers"`
-	Body      interface{}            `json:"body"`
-	Timestamp time.Time              `json:"timestamp"`
-	Source    string                 `json:"source"`
-}
-
-// WebhookResponse represents a webhook response
-type WebhookResponse struct {
-	Success   bool                   `json:"success"`
-	Message   string                 `json:"message"`
-	RequestID string                 `json:"request_id"`
-	Data      map[string]interface{} `json:"data,omitempty"`
-	Timestamp time.Time              `json:"timestamp"`
-}
-
-// AIPersonaCommunityClient interface for AI community interactions
-type AIPersonaCommunityClient interface {
-	CreateCommunity(ctx context.Context, topic string, personaCount int) (*Community, error)
-	SubmitForReview(ctx context.Context, communityID string, content string) (*CommunityReview, error)
-	GetReviewStatus(ctx context.Context, reviewID string) (*CommunityReview, error)
-}
-
-// Community represents an AI persona community
-type Community struct {
-	ID          string    `json:"id"`
-	Topic       string    `json:"topic"`
-	PersonaCount int      `json:"persona_count"`
-	CreatedAt   time.Time `json:"created_at"`
-}
-
-// CommunityReview represents a community review result
-type CommunityReview struct {
-	ReviewID    string                 `json:"review_id"`
-	CommunityID string                 `json:"community_id"`
-	Content     string                 `json:"content"`
-	Consensus   float64                `json:"consensus"`
-	Results     map[string]interface{} `json:"results"`
-	Status      string                 `json:"status"`
-	CreatedAt   time.Time              `json:"created_at"`
-	CompletedAt *time.Time             `json:"completed_at,omitempty"`
-}
-
-// MockAIPersonaCommunityClient for testing
-type MockAIPersonaCommunityClient struct{}
-
-func (m *MockAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topic string, personaCount int) (*Community, error) {
-	return &Community{
-		ID:          fmt.Sprintf("community_%d", time.Now().UnixNano()),
-		Topic:       topic,
-		PersonaCount: personaCount,
-		CreatedAt:   time.Now(),
-	}, nil
-}
-
-func (m *MockAIPersonaCommunityClient) SubmitForReview(ctx context.Context, communityID string, content string) (*CommunityReview, error) {
-	reviewJSON, _ := json.MarshalIndent(map[string]interface{}{
-		"content": content,
-		"community_id": communityID,
-	}, "", "  ")
-	log.Printf("🧠 AI COMMUNITY REVIEW SUBMITTED:\n%s", string(reviewJSON))
-	
-	return &CommunityReview{
-		ReviewID:    fmt.Sprintf("review_%d", time.Now().UnixNano()),
-		CommunityID: communityID,
-		Content:     content,
-		Consensus:   0.85, // Mock consensus
-		Results:     map[string]interface{}{"threat_level": "low", "confidence": 0.85},
-		Status:      "completed",
-		CreatedAt:   time.Now(),
-		CompletedAt: &[]time.Time{time.Now()}[0],
-	}, nil
-}
-
-func (m *MockAIPersonaCommunityClient) GetReviewStatus(ctx context.Context, reviewID string) (*CommunityReview, error) {
-	return &CommunityReview{
-		ReviewID: reviewID,
-		Status:   "completed",
-	}, nil
-}
-
-// WebhookConfig represents webhook manager configuration
-type WebhookConfig struct {
-	Port           int           `yaml:"port"`
-	Host           string        `yaml:"host"`
-	ReadTimeout    time.Duration `yaml:"read_timeout"`
-	WriteTimeout   time.Duration `yaml:"write_timeout"`
-	MaxRequestSize int64         `yaml:"max_request_size"`
-	EnableLogging  bool          `yaml:"enable_logging"`
-	AllowedOrigins []string      `yaml:"allowed_origins"`
-}
-
-// WebhookManager manages webhook processors
-type WebhookManager struct {
-	config     *WebhookConfig
-	processors map[string]WebhookProcessor
-}
-
-func NewWebhookManager(config *WebhookConfig) (*WebhookManager, error) {
-	return &WebhookManager{
-		config:     config,
-		processors: make(map[string]WebhookProcessor),
-	}, nil
-}
-
-func (wm *WebhookManager) RegisterProcessor(processor WebhookProcessor) error {
-	wm.processors[processor.GetTag()] = processor
-	log.Printf("📝 Registered webhook processor: %s - %s", processor.GetTag(), processor.GetDescription())
-	return nil
-}
-
-func (wm *WebhookManager) Start(ctx context.Context) error {
-	log.Printf("🌐 Webhook Manager starting on %s:%d", wm.config.Host, wm.config.Port)
-	// Mock implementation - would start HTTP server
-	return nil
-}
-
-func (wm *WebhookManager) Stop() error {
-	log.Printf("🛑 Webhook Manager stopping")
-	return nil
-}
 
 // ESMTPProcessor handles incoming ESMTP connections and processes emails
 // Acting as the "intelligent front desk" for email threat vector analysis
@@ -517,7 +383,7 @@ func (p *ESMTPProcessor) ProcessWebhook(ctx context.Context, request *WebhookReq
 		Data: map[string]interface{}{
 			"review_id":    review.ReviewID,
 			"threat_level": vector.ThreatLevel,
-			"consensus":    review.Consensus,
+			"consensus":    review.Consensus.OverallScore,
 		},
 		Timestamp: time.Now(),
 	}, nil
