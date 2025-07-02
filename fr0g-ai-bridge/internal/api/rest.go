@@ -283,16 +283,6 @@ func (s *RESTServer) validateChatCompletionRequest(req *models.ChatCompletionReq
 	return nil
 }
 
-// isValidRole checks if the role is one of the allowed values
-func isValidRole(role string) bool {
-	validRoles := []string{"system", "user", "assistant", "function"}
-	for _, validRole := range validRoles {
-		if role == validRole {
-			return true
-		}
-	}
-	return false
-}
 
 // writeError writes an error response
 func (s *RESTServer) writeError(w http.ResponseWriter, statusCode int, message string, err error) {
