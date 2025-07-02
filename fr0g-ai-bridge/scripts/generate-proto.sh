@@ -29,7 +29,12 @@ fi
 
 echo "Generating Go code from protobuf..."
 
+# Debug: Show protoc version
+echo "Protoc version:"
+protoc --version
+
 # Generate Go code from protobuf with explicit output directory
+echo "Running protoc command..."
 protoc \
     --go_out=. \
     --go_opt=paths=source_relative \
@@ -38,6 +43,8 @@ protoc \
     --go-grpc_opt=paths=source_relative \
     --go-grpc_opt=Mproto/bridge.proto=github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb \
     proto/bridge.proto
+
+echo "Protoc command completed with exit code: $?"
 
 # Check if files were generated in proto directory and move them
 if [ -f proto/bridge.pb.go ]; then
