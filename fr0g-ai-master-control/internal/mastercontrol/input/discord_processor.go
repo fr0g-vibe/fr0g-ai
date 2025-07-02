@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -249,14 +250,17 @@ func (dp *DiscordWebhookProcessor) parseDiscordMessage(body interface{}) (*Disco
 
 // shouldFilterContent determines if content should be filtered
 func (dp *DiscordWebhookProcessor) shouldFilterContent(content string) bool {
-	// Simple keyword filtering
-	for _, keyword := range dp.config.FilterKeywords {
+	// Only filter truly harmful content
+	harmfulKeywords := []string{"spam", "abuse", "harmful", "toxic", "hate"}
+	
+	for _, keyword := range harmfulKeywords {
 		if containsString(content, keyword) {
 			return true
 		}
 	}
 	
-	// Additional filtering logic can be added here
+	// Allow most content through for AI community review
+	// The AI personas will provide the real content analysis
 	return false
 }
 
