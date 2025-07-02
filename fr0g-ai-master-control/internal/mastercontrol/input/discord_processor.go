@@ -174,7 +174,7 @@ func (dp *DiscordWebhookProcessor) ProcessWebhook(ctx context.Context, request *
 		return nil, fmt.Errorf("failed to create AI community: %w", err)
 	}
 	
-	log.Printf("Discord Processor: Created AI community %s for topic '%s'", community.ID, dp.config.CommunityTopic)
+	log.Printf("Discord Processor: Created AI community %s for topic '%s'", community.ID, topic)
 	
 	// Submit content for review
 	review, err := dp.aiCommunityClient.SubmitForReview(ctx, community.ID, discordMsg.Content)
