@@ -216,7 +216,11 @@ func (dp *DiscordWebhookProcessor) GetTag() string {
 
 // GetDescription returns the processor description
 func (dp *DiscordWebhookProcessor) GetDescription() string {
-	return fmt.Sprintf("Discord message processor for AI community review on topic: %s", dp.config.CommunityTopic)
+	clientType := "mock"
+	if _, ok := dp.aiCommunityClient.(*RealAIPersonaCommunityClient); ok {
+		clientType = "real"
+	}
+	return fmt.Sprintf("Discord message processor (%s AIP client) for AI community review on topic: %s", clientType, dp.config.CommunityTopic)
 }
 
 // parseDiscordMessage parses the Discord message from webhook body

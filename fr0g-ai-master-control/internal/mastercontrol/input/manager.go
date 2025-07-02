@@ -10,6 +10,7 @@ import (
 type InputManager struct {
 	webhookManager *WebhookManager
 	processors     map[string]WebhookProcessor
+	aipClient      *RealAIPersonaCommunityClient
 	config         *InputConfig
 	ctx            context.Context
 	cancel         context.CancelFunc
@@ -19,6 +20,7 @@ type InputManager struct {
 type InputConfig struct {
 	Webhook WebhookConfig `yaml:"webhook"`
 	Discord DiscordProcessorConfig `yaml:"discord"`
+	AIP     AIPClientConfig `yaml:"aip"`
 }
 
 // NewInputManager creates a new input manager
@@ -56,6 +58,13 @@ func (im *InputManager) Stop() error {
 	
 	im.cancel()
 	
+	// Close AIP client if it exists
+	if im.aipClient != nil {
+		if err := im.aipClient.Close(); err != nil {
+			log.Printf("Input Manager: Error closing AIP client: %v", err)
+		}
+	}
+	
 	if err := im.webhookManager.Stop(); err != nil {
 		return err
 	}
@@ -83,9 +92,20 @@ func (im *InputManager) GetProcessors() map[string]string {
 
 // registerDefaultProcessors registers the default webhook processors
 func (im *InputManager) registerDefaultProcessors() {
-	// Register Discord processor with mock client
-	mockClient := NewMockAIPersonaCommunityClient()
-	discordProcessor := NewDiscordWebhookProcessor(mockClient, &im.config.Discord)
+	// Try to create real AIP client first, fallback to mock if it fails
+	var client AIPersonaCommunityClient
+	
+	realClient, err := NewRealAIPersonaCommunityClient(&im.config.AIP)
+	if err != nil {
+		log.Printf("Input Manager: Failed to create real AIP client, using mock: %v", err)
+		client = NewMockAIPersonaCommunityClient()
+	} else {
+		log.Println("Input Manager: Using real AIP client for Discord processor")
+		im.aipClient = realClient
+		client = realClient
+	}
+	
+	discordProcessor := NewDiscordWebhookProcessor(client, &im.config.Discord)
 	
 	if err := im.RegisterProcessor(discordProcessor); err != nil {
 		log.Printf("Input Manager: Failed to register Discord processor: %v", err)
@@ -113,6 +133,12 @@ func DefaultInputConfig() *InputConfig {
 			RequiredConsensus: 0.7,
 			EnableSentiment:   true,
 			FilterKeywords:    []string{"spam", "inappropriate"},
+		},
+		AIP: AIPClientConfig{
+			AIPAddress:    "localhost:50051",
+			BridgeAddress: "localhost:50052",
+			Timeout:       30 * time.Second,
+			MaxRetries:    3,
 		},
 	}
 }
