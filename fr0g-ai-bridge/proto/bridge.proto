@@ -2,69 +2,6 @@ syntax = "proto3";
 
 package fr0g.ai.bridge.v1;
 
-option go_package = "github.com/fr0g-vibe/fr0g-ai-bridge/proto/gen";
-
-// Fr0gAiBridgeService provides bridge functionality between fr0g.ai and external AI systems
-service Fr0gAiBridgeService {
-  // SendMessage sends a message to an external AI system and returns the response
-  rpc SendMessage(ChatRequest) returns (ChatResponse);
-  
-  // GetModels retrieves available AI models from external systems
-  rpc GetModels(ModelsRequest) returns (ModelsResponse);
-  
-  // Health check for the bridge service
-  rpc Health(HealthRequest) returns (HealthResponse);
-}
-
-// ChatRequest represents a request to send a message to an AI system
-message ChatRequest {
-  string message = 1;
-  string model = 2;
-  map<string, string> metadata = 3;
-}
-
-// ChatResponse represents a response from an AI system
-message ChatResponse {
-  string response = 1;
-  string model = 2;
-  int64 timestamp = 3;
-  map<string, string> metadata = 4;
-}
-
-// ModelsRequest represents a request to get available models
-message ModelsRequest {
-  // Empty for now, could include filters in the future
-}
-
-// Model represents an AI model
-message Model {
-  string id = 1;
-  string object = 2;
-  int64 created = 3;
-  string owned_by = 4;
-  map<string, string> metadata = 5;
-}
-
-// ModelsResponse represents a response containing available models
-message ModelsResponse {
-  repeated Model models = 1;
-}
-
-// HealthRequest represents a health check request
-message HealthRequest {
-  // Empty for now
-}
-
-// HealthResponse represents a health check response
-message HealthResponse {
-  string status = 1;
-  string service = 2;
-  int64 timestamp = 3;
-}
-syntax = "proto3";
-
-package fr0g.ai.bridge.v1;
-
 option go_package = "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb";
 
 // Fr0gAiBridgeService provides bridge functionality between fr0g.ai and external AI systems
