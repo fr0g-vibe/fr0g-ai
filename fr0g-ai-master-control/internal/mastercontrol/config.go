@@ -2,6 +2,8 @@ package mastercontrol
 
 import (
 	"time"
+	
+	"fr0g-ai-master-control/internal/mastercontrol/input"
 )
 
 // DefaultMCPConfig returns a default configuration for the Master Control Program
