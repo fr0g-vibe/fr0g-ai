@@ -190,70 +190,115 @@ curl -X POST "$BASE_URL/webhook/discord" \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
 # ESMTP Threat Vector Interceptor Tests
-echo "12. Testing ESMTP Email Threat Vector (Webhook Mode)..."
+echo "12. 📧 Testing ESMTP Advanced Threat Detection..."
 curl -X POST "$BASE_URL/webhook/esmtp" \
   -H "Content-Type: application/json" \
   -d '{
-    "from": "suspicious@example.com",
-    "to": ["admin@company.com"],
-    "subject": "Urgent: Please verify your account immediately",
-    "body": "Dear user, your account has been compromised. Click here to verify: http://malicious-site.com/verify",
+    "from": "admin@suspicious-domain.ru",
+    "to": ["victim@company.com"],
+    "subject": "Invoice Attached - Please Review URGENT",
+    "body": "Please find attached invoice. Download and execute the file to view: http://malware-site.com/invoice.exe. This is time sensitive and requires immediate action.",
     "headers": {
-      "X-Originating-IP": "192.168.1.100",
-      "User-Agent": "Suspicious-Mailer/1.0"
+      "X-Originating-IP": "185.220.101.50",
+      "User-Agent": "MalwareBot/2.0",
+      "X-Spam-Score": "8.5",
+      "Received": "from suspicious-domain.ru ([185.220.101.50])"
     },
-    "timestamp": "2025-07-02T15:00:00Z"
+    "timestamp": "2025-07-02T15:00:00Z",
+    "attachments": ["invoice.exe", "document.pdf"]
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
 # Legitimate Email Test
-echo "13. Testing ESMTP Legitimate Email..."
+echo "13. 📰 Testing ESMTP Legitimate Newsletter..."
 curl -X POST "$BASE_URL/webhook/esmtp" \
   -H "Content-Type: application/json" \
   -d '{
     "from": "newsletter@company.com",
     "to": ["subscriber@example.com"],
     "subject": "Weekly Newsletter - AI Security Updates",
-    "body": "Welcome to our weekly newsletter featuring the latest in AI security research and threat intelligence.",
+    "body": "Welcome to our weekly newsletter featuring the latest in AI security research and threat intelligence. This week we cover: 1) New ML-based threat detection, 2) Zero-day vulnerability analysis, 3) Emerging attack vectors in AI systems.",
     "headers": {
       "X-Originating-IP": "203.0.113.10",
-      "User-Agent": "Company-Mailer/2.1"
+      "User-Agent": "Company-Mailer/2.1",
+      "DKIM-Signature": "v=1; a=rsa-sha256; d=company.com",
+      "SPF": "pass"
     },
     "timestamp": "2025-07-02T15:15:00Z"
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
-# Phishing Email Test
-echo "14. Testing ESMTP Phishing Email Detection..."
+# Advanced Phishing Test
+echo "14. 🎣 Testing ESMTP Advanced Phishing Detection..."
 curl -X POST "$BASE_URL/webhook/esmtp" \
   -H "Content-Type: application/json" \
   -d '{
     "from": "security@bank-fake.com",
     "to": ["customer@example.com"],
-    "subject": "URGENT: Account Security Alert",
-    "body": "Your account will be suspended in 24 hours unless you verify your credentials immediately. Click here: http://fake-bank-security.com/login",
+    "subject": "URGENT: Account Security Alert - Action Required Within 24 Hours",
+    "body": "Dear Valued Customer, Our security systems have detected unusual activity on your account. Your account will be permanently suspended in 24 hours unless you verify your credentials immediately. Click here to secure your account: http://fake-bank-security.com/urgent-verification?token=abc123. This is not a drill. Failure to act will result in permanent account closure.",
     "headers": {
       "X-Originating-IP": "198.51.100.50",
-      "User-Agent": "PhishingBot/1.0"
+      "User-Agent": "PhishingBot/3.0",
+      "X-Mailer": "Bulk-Mailer-Pro",
+      "Return-Path": "bounce@different-domain.com"
     },
     "timestamp": "2025-07-02T15:30:00Z"
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
 # Business Email Test
-echo "15. Testing ESMTP Business Email..."
+echo "15. 💼 Testing ESMTP Legitimate Business Communication..."
 curl -X POST "$BASE_URL/webhook/esmtp" \
   -H "Content-Type: application/json" \
   -d '{
     "from": "ceo@company.com",
     "to": ["team@company.com"],
-    "subject": "Q4 Strategy Meeting",
-    "body": "Team, please join us for the Q4 strategy meeting on Friday at 2 PM. We will discuss our AI security initiatives and upcoming product launches.",
+    "subject": "Q4 Strategy Meeting - AI Security Initiatives",
+    "body": "Team, please join us for the Q4 strategy meeting on Friday at 2 PM in Conference Room A. We will discuss our AI security initiatives, upcoming product launches, and the integration of our new threat detection systems. Please review the attached agenda and come prepared with your departmental updates.",
     "headers": {
       "X-Originating-IP": "203.0.113.25",
-      "User-Agent": "Exchange/16.0"
+      "User-Agent": "Microsoft Outlook 16.0",
+      "Message-ID": "<abc123@company.com>",
+      "DKIM-Signature": "v=1; a=rsa-sha256; d=company.com"
     },
     "timestamp": "2025-07-02T15:45:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Social Engineering Test
+echo "16. 🕵️ Testing ESMTP Social Engineering Detection..."
+curl -X POST "$BASE_URL/webhook/esmtp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "it-support@company-fake.com",
+    "to": ["employee@company.com"],
+    "subject": "IT Security Update Required - Password Expiration Notice",
+    "body": "Dear Employee, Your company password expires today at 5 PM. To avoid account lockout and maintain access to company systems, please update your password immediately by clicking the secure link below: http://fake-company-portal.com/update-password?user=employee. This is an automated security notice from IT Support. Do not reply to this email.",
+    "headers": {
+      "X-Originating-IP": "192.168.1.200",
+      "User-Agent": "SocialEngineer/1.0",
+      "Reply-To": "no-reply@different-domain.org"
+    },
+    "timestamp": "2025-07-02T16:00:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Ransomware Email Test
+echo "17. 🔒 Testing ESMTP Ransomware Detection..."
+curl -X POST "$BASE_URL/webhook/esmtp" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "payment@crypto-ransom.onion",
+    "to": ["victim@company.com"],
+    "subject": "Your Files Have Been Encrypted - Payment Required",
+    "body": "All your files have been encrypted with military-grade encryption. To decrypt your files, you must pay 0.5 Bitcoin to the following address: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa. You have 72 hours to pay or your files will be permanently deleted. Download the decryption tool: http://dark-web-ransom.onion/decrypt",
+    "headers": {
+      "X-Originating-IP": "185.220.101.75",
+      "User-Agent": "RansomMailer/4.0",
+      "X-Priority": "1 (Highest)"
+    },
+    "timestamp": "2025-07-02T16:15:00Z"
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
