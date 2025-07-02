@@ -13,9 +13,10 @@ import (
 
 // RealAIPersonaCommunityClient provides real integration with fr0g-ai-aip and fr0g-ai-bridge
 type RealAIPersonaCommunityClient struct {
-	aipConn    *grpc.ClientConn
-	bridgeConn *grpc.ClientConn
-	config     *AIPClientConfig
+	aipConn        *grpc.ClientConn
+	bridgeConn     *grpc.ClientConn
+	config         *AIPClientConfig
+	communityStore map[string]*Community // In-memory store for demo
 }
 
 // AIPClientConfig holds configuration for the real AIP client
@@ -74,9 +75,10 @@ func NewRealAIPersonaCommunityClient(config *AIPClientConfig) (*RealAIPersonaCom
 	}
 
 	return &RealAIPersonaCommunityClient{
-		aipConn:    aipConn,
-		bridgeConn: bridgeConn,
-		config:     config,
+		aipConn:        aipConn,
+		bridgeConn:     bridgeConn,
+		config:         config,
+		communityStore: make(map[string]*Community),
 	}, nil
 }
 
@@ -124,7 +126,10 @@ func (r *RealAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topi
 		Status:    "active",
 	}
 	
-	log.Printf("Real AIP Client: Created community %s with %d personas", communityID, len(members))
+	// Store the community for later retrieval
+	r.communityStore[communityID] = community
+	
+	log.Printf("Real AIP Client: Created community %s with %d personas for topic '%s'", communityID, len(members), topic)
 	return community, nil
 }
 
@@ -561,14 +566,16 @@ func (r *RealAIPersonaCommunityClient) generateRecommendations(reviews []Persona
 
 func (r *RealAIPersonaCommunityClient) getCommunityByID(communityID string) (*Community, error) {
 	// In a real implementation, this would retrieve from storage
-	// For now, we'll create a mock community with the same personas that were created
-	// This is a simplified approach - in production, we'd store the actual community data
+	// For now, we'll use the stored community data from the creation process
+	// This is a simplified approach - in production, we'd store this properly
 	
-	// Extract topic from community ID or use a default
-	// This is a hack for the demo - in production, we'd store this properly
-	topic := "general_discussion" // Default fallback
+	// For the demo, we'll retrieve the community from our in-memory store
+	if community, exists := r.communityStore[communityID]; exists {
+		return community, nil
+	}
 	
-	// Create personas based on the topic (matching what was created)
+	// Fallback to general discussion if not found
+	topic := "general_discussion"
 	personaTemplates := r.getPersonaTemplatesForTopic(topic, 3)
 	
 	members := make([]PersonaInfo, len(personaTemplates))
