@@ -88,6 +88,8 @@ func (r *RealAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topi
 	
 	// Define persona templates based on topic
 	personaTemplates := r.getPersonaTemplatesForTopic(topic, personaCount)
+	log.Printf("Real AIP Client: Selected %d persona templates for topic '%s': %v", 
+		len(personaTemplates), topic, getPersonaNames(personaTemplates))
 	
 	members := make([]PersonaInfo, 0, personaCount)
 	
@@ -559,33 +561,31 @@ func (r *RealAIPersonaCommunityClient) generateRecommendations(reviews []Persona
 
 func (r *RealAIPersonaCommunityClient) getCommunityByID(communityID string) (*Community, error) {
 	// In a real implementation, this would retrieve from storage
-	// For now, we'll create a mock community
+	// For now, we'll create a mock community with the same personas that were created
+	// This is a simplified approach - in production, we'd store the actual community data
+	
+	// Extract topic from community ID or use a default
+	// This is a hack for the demo - in production, we'd store this properly
+	topic := "general_discussion" // Default fallback
+	
+	// Create personas based on the topic (matching what was created)
+	personaTemplates := r.getPersonaTemplatesForTopic(topic, 3)
+	
+	members := make([]PersonaInfo, len(personaTemplates))
+	for i, template := range personaTemplates {
+		members[i] = PersonaInfo{
+			ID:          fmt.Sprintf("persona_%s_001", strings.ToLower(strings.ReplaceAll(template.Name, "_", ""))),
+			Name:        template.Name,
+			Expertise:   template.Expertise,
+			Description: template.Description,
+			Model:       template.Model,
+		}
+	}
+	
 	return &Community{
-		ID:    communityID,
-		Topic: "general_discussion",
-		Members: []PersonaInfo{
-			{
-				ID:          "persona_analytical_001",
-				Name:        "Analytical_Reviewer",
-				Expertise:   []string{"analysis", "critical_thinking"},
-				Description: "AI expert focused on analytical review",
-				Model:       "gpt-4",
-			},
-			{
-				ID:          "persona_moderator_001",
-				Name:        "Community_Moderator",
-				Expertise:   []string{"moderation", "safety"},
-				Description: "AI expert focused on community moderation",
-				Model:       "gpt-4",
-			},
-			{
-				ID:          "persona_curator_001",
-				Name:        "Content_Curator",
-				Expertise:   []string{"content_curation", "quality"},
-				Description: "AI expert focused on content curation",
-				Model:       "gpt-4",
-			},
-		},
+		ID:        communityID,
+		Topic:     topic,
+		Members:   members,
 		CreatedAt: time.Now(),
 		Status:    "active",
 	}, nil
@@ -599,4 +599,13 @@ func contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// Helper function to get persona names from templates
+func getPersonaNames(templates []PersonaRequest) []string {
+	names := make([]string, len(templates))
+	for i, template := range templates {
+		names[i] = template.Name
+	}
+	return names
 }

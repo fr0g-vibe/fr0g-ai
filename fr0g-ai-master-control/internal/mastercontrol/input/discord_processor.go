@@ -318,6 +318,10 @@ func (dp *DiscordWebhookProcessor) determineTopicFromContent(content string) str
 	lowerContent := strings.ToLower(content)
 	
 	log.Printf("Discord Processor: Analyzing content for topic detection: '%s'", content[:min(100, len(content))])
+	log.Printf("Discord Processor: Content analysis - hasCode: %v, hasAlgorithm: %v, hasConsciousness: %v", 
+		strings.Contains(lowerContent, "```"),
+		strings.Contains(lowerContent, "algorithm"),
+		strings.Contains(lowerContent, "consciousness"))
 	
 	// Check for code review content first (most specific)
 	if strings.Contains(lowerContent, "```") && strings.Contains(lowerContent, "review") {
