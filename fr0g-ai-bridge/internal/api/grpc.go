@@ -59,11 +59,11 @@ func NewGRPCServer(openWebUIClient *client.OpenWebUIClient) *GRPCServer {
 }
 
 // HealthCheck implements the health check endpoint
-func (s *GRPCServer) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
+func (s *GRPCServer) HealthCheck(ctx context.Context, req *HealthCheckRequest) (*HealthCheckResponse, error) {
 	// Check OpenWebUI health
 	err := s.client.HealthCheck(ctx)
 	
-	response := &pb.HealthCheckResponse{
+	response := &HealthCheckResponse{
 		Version: "1.0.0",
 	}
 
@@ -78,7 +78,7 @@ func (s *GRPCServer) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest
 }
 
 // ChatCompletion implements the chat completion endpoint
-func (s *GRPCServer) ChatCompletion(ctx context.Context, req *pb.ChatCompletionRequest) (*pb.ChatCompletionResponse, error) {
+func (s *GRPCServer) ChatCompletion(ctx context.Context, req *ChatCompletionRequest) (*ChatCompletionResponse, error) {
 	// Validate request
 	if err := s.validateChatCompletionRequest(req); err != nil {
 		return nil, fmt.Errorf("invalid request: %w", err)
@@ -100,7 +100,7 @@ func (s *GRPCServer) ChatCompletion(ctx context.Context, req *pb.ChatCompletionR
 }
 
 // validateChatCompletionRequest validates the gRPC chat completion request
-func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest) error {
+func (s *GRPCServer) validateChatCompletionRequest(req *ChatCompletionRequest) error {
 	if req.Model == "" {
 		return fmt.Errorf("model is required")
 	}
@@ -119,7 +119,7 @@ func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest
 }
 
 // protoToModel converts protobuf request to internal model
-func (s *GRPCServer) protoToModel(req *pb.ChatCompletionRequest) *models.ChatCompletionRequest {
+func (s *GRPCServer) protoToModel(req *ChatCompletionRequest) *models.ChatCompletionRequest {
 	modelReq := &models.ChatCompletionRequest{
 		Model: req.Model,
 	}
@@ -157,13 +157,13 @@ func (s *GRPCServer) protoToModel(req *pb.ChatCompletionRequest) *models.ChatCom
 }
 
 // modelToProto converts internal model response to protobuf
-func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *pb.ChatCompletionResponse {
-	protoResp := &pb.ChatCompletionResponse{
+func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *ChatCompletionResponse {
+	protoResp := &ChatCompletionResponse{
 		Id:      resp.ID,
 		Object:  resp.Object,
 		Created: resp.Created,
 		Model:   resp.Model,
-		Usage: &pb.Usage{
+		Usage: &Usage{
 			PromptTokens:     int32(resp.Usage.PromptTokens),
 			CompletionTokens: int32(resp.Usage.CompletionTokens),
 			TotalTokens:      int32(resp.Usage.TotalTokens),
@@ -172,9 +172,9 @@ func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *pb.ChatC
 
 	// Convert choices
 	for _, choice := range resp.Choices {
-		protoResp.Choices = append(protoResp.Choices, &pb.Choice{
+		protoResp.Choices = append(protoResp.Choices, &Choice{
 			Index: int32(choice.Index),
-			Message: &pb.ChatMessage{
+			Message: &ChatMessage{
 				Role:    choice.Message.Role,
 				Content: choice.Message.Content,
 			},
