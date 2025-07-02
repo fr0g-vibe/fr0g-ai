@@ -174,7 +174,7 @@ func (dp *DiscordWebhookProcessor) ProcessWebhook(ctx context.Context, request *
 		return nil, fmt.Errorf("failed to create AI community: %w", err)
 	}
 	
-	log.Printf("Discord Processor: Created AI community %s for topic '%s'", community.ID, topic)
+	log.Printf("Discord Processor: Created AI community %s for topic '%s' (detected from content)", community.ID, topic)
 	
 	// Submit content for review
 	review, err := dp.aiCommunityClient.SubmitForReview(ctx, community.ID, discordMsg.Content)
@@ -317,30 +317,56 @@ func (dp *DiscordWebhookProcessor) determineAction(review *CommunityReview) stri
 func (dp *DiscordWebhookProcessor) determineTopicFromContent(content string) string {
 	lowerContent := strings.ToLower(content)
 	
-	// Check for technical/code content
-	if strings.Contains(lowerContent, "```") || 
-	   strings.Contains(lowerContent, "algorithm") ||
-	   strings.Contains(lowerContent, "code") ||
-	   strings.Contains(lowerContent, "function") ||
+	log.Printf("Discord Processor: Analyzing content for topic detection: '%s'", content[:min(100, len(content))])
+	
+	// Check for code review content first (most specific)
+	if strings.Contains(lowerContent, "```") && strings.Contains(lowerContent, "review") {
+		log.Printf("Discord Processor: Detected code_review topic (contains code blocks + review)")
+		return "code_review"
+	}
+	
+	// Check for security-related code content
+	if strings.Contains(lowerContent, "```") && 
+	   (strings.Contains(lowerContent, "security") || 
+	    strings.Contains(lowerContent, "vulnerability") ||
+	    strings.Contains(lowerContent, "eval(")) {
+		log.Printf("Discord Processor: Detected code_review topic (security-related code)")
+		return "code_review"
+	}
+	
+	// Check for technical/algorithm content
+	if strings.Contains(lowerContent, "algorithm") ||
 	   strings.Contains(lowerContent, "performance") ||
-	   strings.Contains(lowerContent, "optimization") {
-		if strings.Contains(lowerContent, "review") {
-			return "code_review"
-		}
+	   strings.Contains(lowerContent, "optimization") ||
+	   strings.Contains(lowerContent, "complexity") ||
+	   strings.Contains(lowerContent, "o(n") ||
+	   strings.Contains(lowerContent, "scalability") {
+		log.Printf("Discord Processor: Detected technical_discussion topic")
 		return "technical_discussion"
 	}
 	
 	// Check for AI consciousness content
 	if strings.Contains(lowerContent, "consciousness") ||
 	   strings.Contains(lowerContent, "awareness") ||
-	   strings.Contains(lowerContent, "intelligence") ||
-	   strings.Contains(lowerContent, "cognitive") ||
 	   strings.Contains(lowerContent, "emergent") ||
+	   strings.Contains(lowerContent, "cognitive architecture") ||
+	   strings.Contains(lowerContent, "self-awareness") ||
+	   strings.Contains(lowerContent, "subjective experience") ||
 	   strings.Contains(lowerContent, "ai personas") {
+		log.Printf("Discord Processor: Detected ai_consciousness topic")
 		return "ai_consciousness"
 	}
 	
+	// Check for general code content
+	if strings.Contains(lowerContent, "```") ||
+	   strings.Contains(lowerContent, "function") ||
+	   strings.Contains(lowerContent, "code") {
+		log.Printf("Discord Processor: Detected technical_discussion topic (general code)")
+		return "technical_discussion"
+	}
+	
 	// Default to general discussion
+	log.Printf("Discord Processor: Using default general_discussion topic")
 	return "general_discussion"
 }
 
@@ -356,4 +382,11 @@ func containsString(text, substring string) bool {
 	lowerSubstring := strings.ToLower(substring)
 	
 	return strings.Contains(lowerText, lowerSubstring)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
