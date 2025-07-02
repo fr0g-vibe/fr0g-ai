@@ -22,3 +22,30 @@ logging:
   level: "info"
   # Log format: json, text
   format: "json"
+# fr0g-ai-bridge Configuration Example
+# Copy this file to config.yaml and customize for your environment
+
+server:
+  http_port: 8081
+  grpc_port: 9091
+  host: "0.0.0.0"
+
+openwebui:
+  base_url: "http://localhost:3000"
+  api_key: ""  # Set your OpenWebUI API key here
+  timeout: 30  # Request timeout in seconds
+
+logging:
+  level: "info"    # debug, info, warn, error
+  format: "json"   # json, text
+
+# Advanced settings (optional)
+security:
+  enable_cors: true
+  allowed_origins: ["*"]
+  rate_limit_requests_per_minute: 60
+
+monitoring:
+  enable_metrics: true
+  metrics_port: 8082
+  health_check_interval: 30

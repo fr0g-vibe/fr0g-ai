@@ -144,3 +144,84 @@ monitoring-up:
 monitoring-down:
 	@echo "📊 Stopping monitoring stack..."
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml stop prometheus grafana
+.PHONY: help setup build run test clean proto docker
+
+# Default target
+help:
+	@echo "fr0g.ai Development Commands:"
+	@echo "  setup     - Initialize development environment"
+	@echo "  build     - Build all services"
+	@echo "  run       - Run the bridge service"
+	@echo "  test      - Run tests"
+	@echo "  proto     - Generate protobuf code"
+	@echo "  clean     - Clean build artifacts"
+	@echo "  docker    - Build Docker images"
+	@echo "  health    - Check service health"
+
+# Setup development environment
+setup:
+	@echo "Setting up fr0g.ai development environment..."
+	cp .env.example .env
+	cp fr0g-ai-bridge/config.example.yaml fr0g-ai-bridge/config.yaml
+	cd fr0g-ai-bridge && go mod tidy
+
+# Build all services
+build:
+	@echo "Building fr0g-ai-bridge..."
+	cd fr0g-ai-bridge && go build -o bin/fr0g-ai-bridge cmd/fr0g-ai-bridge/main.go
+
+# Run the bridge service
+run:
+	@echo "Starting fr0g-ai-bridge..."
+	cd fr0g-ai-bridge && go run cmd/fr0g-ai-bridge/main.go
+
+# Run tests
+test:
+	@echo "Running tests..."
+	cd fr0g-ai-bridge && go test ./...
+
+# Generate protobuf code
+proto:
+	@echo "Generating protobuf code..."
+	cd fr0g-ai-bridge && protoc --go_out=. --go-grpc_out=. proto/bridge.proto
+
+# Clean build artifacts
+clean:
+	@echo "Cleaning build artifacts..."
+	rm -rf fr0g-ai-bridge/bin/
+	rm -rf fr0g-ai-bridge/internal/pb/*.pb.go
+
+# Build Docker images
+docker:
+	@echo "Building Docker images..."
+	docker-compose build
+
+# Check service health
+health:
+	@echo "Checking service health..."
+	@curl -s http://localhost:8081/health | jq . || echo "Service not running"
+
+# Development helpers
+dev-deps:
+	@echo "Installing development dependencies..."
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Test endpoints
+test-rest:
+	@echo "Testing REST endpoints..."
+	curl -X POST http://localhost:8081/api/v1/chat \
+		-H "Content-Type: application/json" \
+		-d '{"message": "Hello from fr0g.ai!", "model": "gpt-3.5-turbo"}' | jq .
+
+test-grpc:
+	@echo "Testing gRPC endpoints..."
+	grpcurl -plaintext localhost:9091 list
+
+# Format code
+fmt:
+	cd fr0g-ai-bridge && go fmt ./...
+
+# Lint code
+lint:
+	cd fr0g-ai-bridge && golangci-lint run

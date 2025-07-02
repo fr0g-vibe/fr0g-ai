@@ -10,9 +10,11 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	Server    ServerConfig    `yaml:"server"`
-	OpenWebUI OpenWebUIConfig `yaml:"openwebui"`
-	Logging   LoggingConfig   `yaml:"logging"`
+	Server     ServerConfig     `yaml:"server"`
+	OpenWebUI  OpenWebUIConfig  `yaml:"openwebui"`
+	Logging    LoggingConfig    `yaml:"logging"`
+	Security   SecurityConfig   `yaml:"security"`
+	Monitoring MonitoringConfig `yaml:"monitoring"`
 }
 
 // ServerConfig holds server-related configuration
@@ -35,6 +37,24 @@ type LoggingConfig struct {
 	Format string `yaml:"format"`
 }
 
+// SecurityConfig holds security-related configuration
+type SecurityConfig struct {
+	EnableCORS           bool     `yaml:"enable_cors"`
+	AllowedOrigins       []string `yaml:"allowed_origins"`
+	RateLimitRPM         int      `yaml:"rate_limit_requests_per_minute"`
+	RequireAPIKey        bool     `yaml:"require_api_key"`
+	AllowedAPIKeys       []string `yaml:"allowed_api_keys"`
+	EnableReflection     bool     `yaml:"enable_reflection"`
+}
+
+// MonitoringConfig holds monitoring configuration
+type MonitoringConfig struct {
+	EnableMetrics         bool `yaml:"enable_metrics"`
+	MetricsPort          int  `yaml:"metrics_port"`
+	HealthCheckInterval  int  `yaml:"health_check_interval"`
+	EnableTracing        bool `yaml:"enable_tracing"`
+}
+
 // LoadConfig loads configuration from file and environment variables
 func LoadConfig(configPath string) (*Config, error) {
 	config := &Config{
@@ -50,6 +70,19 @@ func LoadConfig(configPath string) (*Config, error) {
 		Logging: LoggingConfig{
 			Level:  "info",
 			Format: "json",
+		},
+		Security: SecurityConfig{
+			EnableCORS:           true,
+			AllowedOrigins:       []string{"*"},
+			RateLimitRPM:         60,
+			RequireAPIKey:        false,
+			EnableReflection:     true,
+		},
+		Monitoring: MonitoringConfig{
+			EnableMetrics:        true,
+			MetricsPort:         8082,
+			HealthCheckInterval: 30,
+			EnableTracing:       false,
 		},
 	}
 
@@ -100,6 +133,32 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	if level := os.Getenv("LOG_LEVEL"); level != "" {
 		config.Logging.Level = level
+	}
+
+	// Security environment variables
+	if enableCORS := os.Getenv("ENABLE_CORS"); enableCORS == "false" {
+		config.Security.EnableCORS = false
+	}
+
+	if rateLimitStr := os.Getenv("RATE_LIMIT_RPM"); rateLimitStr != "" {
+		if rateLimit, err := strconv.Atoi(rateLimitStr); err == nil {
+			config.Security.RateLimitRPM = rateLimit
+		}
+	}
+
+	if enableReflection := os.Getenv("ENABLE_REFLECTION"); enableReflection == "false" {
+		config.Security.EnableReflection = false
+	}
+
+	// Monitoring environment variables
+	if metricsPortStr := os.Getenv("METRICS_PORT"); metricsPortStr != "" {
+		if metricsPort, err := strconv.Atoi(metricsPortStr); err == nil {
+			config.Monitoring.MetricsPort = metricsPort
+		}
+	}
+
+	if enableMetrics := os.Getenv("ENABLE_METRICS"); enableMetrics == "false" {
+		config.Monitoring.EnableMetrics = false
 	}
 
 	return config, nil

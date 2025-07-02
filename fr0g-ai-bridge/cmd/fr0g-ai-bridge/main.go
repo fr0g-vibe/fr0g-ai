@@ -13,9 +13,11 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/config"
+	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
 )
 
 func main() {
@@ -58,7 +60,7 @@ func main() {
 		go func() {
 			log.Printf("Starting HTTP REST server on %s:%d", cfg.Server.Host, cfg.Server.HTTPPort)
 			
-			restServer := api.NewRESTServer(openWebUIClient)
+			restServer := api.NewRESTServer(openWebUIClient, cfg)
 			
 			httpServer := &http.Server{
 				Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.HTTPPort),
@@ -100,8 +102,15 @@ func main() {
 
 			grpcServer := grpc.NewServer()
 			bridgeServer := api.NewGRPCServer(openWebUIClient)
-			// Note: Protobuf registration will be enabled after generation
-			// pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
+			
+			// Register the bridge service
+			pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
+			
+			// Enable gRPC reflection for debugging and tools like grpcurl (if enabled)
+			if cfg.Security.EnableReflection {
+				reflection.Register(grpcServer)
+				log.Printf("gRPC server registered with reflection enabled")
+			}
 
 			// Start server in goroutine
 			go func() {
