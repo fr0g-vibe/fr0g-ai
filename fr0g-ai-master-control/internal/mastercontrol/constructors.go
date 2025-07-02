@@ -56,12 +56,7 @@ func NewCognitiveEngine(config *MCPConfig, mem *memory.MemoryManager, learn *lea
 
 // NewSystemMonitor creates a new system monitor with default config
 func NewSystemMonitor(config *MCPConfig) *monitor.SystemMonitor {
-	monConfig := &monitor.MonitorConfig{
-		HealthCheckInterval: config.HealthCheckInterval,
-		MetricsInterval:     config.MetricsInterval,
-	}
-	
-	return monitor.NewSystemMonitor(monConfig)
+	return monitor.NewSystemMonitor()
 }
 
 // NewWorkflowEngine creates a new workflow engine with default config

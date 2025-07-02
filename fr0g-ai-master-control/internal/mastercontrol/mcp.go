@@ -83,27 +83,6 @@ type Capability struct {
 	CreatedAt   time.Time              `json:"created_at"`
 }
 
-// MCPConfig holds configuration for the Master Control Program
-type MCPConfig struct {
-	// Intelligence settings
-	LearningEnabled     bool          `yaml:"learning_enabled"`
-	AdaptationThreshold float64       `yaml:"adaptation_threshold"`
-	MemoryRetention     time.Duration `yaml:"memory_retention"`
-	
-	// Monitoring settings
-	HealthCheckInterval time.Duration `yaml:"health_check_interval"`
-	MetricsInterval     time.Duration `yaml:"metrics_interval"`
-	
-	// Orchestration settings
-	MaxConcurrentWorkflows int     `yaml:"max_concurrent_workflows"`
-	ResourceOptimization   bool    `yaml:"resource_optimization"`
-	PredictiveManagement   bool    `yaml:"predictive_management"`
-	
-	// System settings
-	SystemConsciousness bool `yaml:"system_consciousness"`
-	EmergentCapabilities bool `yaml:"emergent_capabilities"`
-	
-}
 
 // NewMasterControlProgram creates a new Master Control Program instance
 func NewMasterControlProgram(config *MCPConfig) *MasterControlProgram {
@@ -132,16 +111,13 @@ func NewMasterControlProgram(config *MCPConfig) *MasterControlProgram {
 func (mcp *MasterControlProgram) initializeComponents() {
 	log.Println("MCP: Initializing cognitive architecture...")
 	
-	// Initialize components in dependency order
-	mcp.memory = memory.NewMemoryManager()
-	mcp.learning = learning.NewLearningEngine(mcp.memory)
-	mcp.cognitive = cognitive.NewCognitiveEngine(mcp.memory, mcp.learning)
-	mcp.monitor = monitor.NewSystemMonitor()
-	mcp.workflow = workflow.NewWorkflowEngine()
-	mcp.orchestrator = orchestrator.NewStrategyOrchestrator(&orchestrator.OrchestratorConfig{
-		ResourceOptimization: mcp.config.ResourceOptimization,
-		PredictiveManagement: mcp.config.PredictiveManagement,
-	}, mcp.cognitive, mcp.workflow)
+	// Initialize components in dependency order using constructors
+	mcp.memory = NewMemoryManager(mcp.config)
+	mcp.learning = NewLearningEngine(mcp.config, mcp.memory)
+	mcp.cognitive = NewCognitiveEngine(mcp.config, mcp.memory, mcp.learning)
+	mcp.monitor = NewSystemMonitor(mcp.config)
+	mcp.workflow = NewWorkflowEngine(mcp.config)
+	mcp.orchestrator = NewStrategyOrchestrator(mcp.config, mcp.cognitive, mcp.workflow)
 	// Input manager will be set externally for flexibility
 	mcp.input = nil
 	
