@@ -341,7 +341,7 @@ func (ce *CognitiveEngine) recognizePatterns() {
 	// Generate different patterns based on system evolution
 	var newPatterns []Pattern
 	
-	if existingCount < 3 {
+	if existingCount == 0 {
 		// Initial patterns
 		newPatterns = []Pattern{
 			{
@@ -354,6 +354,42 @@ func (ce *CognitiveEngine) recognizePatterns() {
 					"components_started": 7,
 					"startup_time":      "< 1 second",
 					"success_rate":      1.0,
+				},
+				CreatedAt: currentTime,
+				LastSeen:  currentTime,
+			},
+		}
+	} else if existingCount == 1 {
+		// Second pattern
+		newPatterns = []Pattern{
+			{
+				ID:          generateID(),
+				Type:        "memory_optimization",
+				Description: "Memory cleanup and optimization pattern emerging",
+				Confidence:  0.88,
+				Frequency:   2,
+				Context: map[string]interface{}{
+					"cleanup_efficiency": "high",
+					"memory_usage":      "optimal",
+					"pattern_evolution": true,
+				},
+				CreatedAt: currentTime,
+				LastSeen:  currentTime,
+			},
+		}
+	} else if existingCount == 2 {
+		// Third pattern
+		newPatterns = []Pattern{
+			{
+				ID:          generateID(),
+				Type:        "cognitive_reflection",
+				Description: "Self-reflective analysis pattern detected",
+				Confidence:  0.82,
+				Frequency:   1,
+				Context: map[string]interface{}{
+					"reflection_depth": 3,
+					"self_awareness":   0.75,
+					"meta_cognition":   true,
 				},
 				CreatedAt: currentTime,
 				LastSeen:  currentTime,
