@@ -165,13 +165,8 @@ func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 		return
 	}
 	
-	// Add input manager to MCP (this would need to be implemented in the MCP)
-	// For now, we'll start it independently
-	go func() {
-		if err := inputManager.Start(mcp.GetContext()); err != nil {
-			log.Printf("Failed to start input manager: %v", err)
-		}
-	}()
+	// Set input manager in MCP
+	mcp.SetInputManager(inputManager)
 	
 	fmt.Println("✅ Input processors configured (Discord + ESMTP)")
 }
