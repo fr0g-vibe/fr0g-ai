@@ -16,7 +16,6 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/config"
-	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
 )
 
 func main() {
@@ -100,8 +99,8 @@ func main() {
 			}
 
 			grpcServer := grpc.NewServer()
-			bridgeServer := api.NewGRPCServer(openWebUIClient)
-			// TODO: Register gRPC service when protobuf service is properly defined
+			// TODO: Create and register gRPC service when protobuf service is properly defined
+			// bridgeServer := api.NewGRPCServer(openWebUIClient)
 			// pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
 
 			// Start server in goroutine
