@@ -111,10 +111,89 @@ curl -X POST "$BASE_URL/webhook/discord" \
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
-echo "✅ Test suite completed!"
+# Technical Content (should trigger "technical_discussion" topic)
+echo "8. Testing Technical Content Analysis..."
+curl -X POST "$BASE_URL/webhook/discord" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "I need help optimizing this algorithm for better performance. The current implementation has O(n²) complexity and we need to reduce it to O(n log n) for scalability.",
+    "author": {
+      "username": "tech_lead",
+      "id": "999",
+      "avatar": "tech_avatar",
+      "bot": false
+    },
+    "channel_id": "tech-discussion",
+    "guild_id": "engineering",
+    "timestamp": "2025-07-02T14:00:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# AI Consciousness Content (should trigger "ai_consciousness" topic)
+echo "9. Testing AI Consciousness Analysis..."
+curl -X POST "$BASE_URL/webhook/discord" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "The emergence of consciousness in AI systems raises fascinating questions about the nature of awareness and subjective experience. How do we distinguish between sophisticated information processing and genuine consciousness?",
+    "author": {
+      "username": "ai_philosopher",
+      "id": "888",
+      "avatar": "philosopher_avatar",
+      "bot": false
+    },
+    "channel_id": "consciousness",
+    "guild_id": "research_lab",
+    "timestamp": "2025-07-02T14:15:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Code Review Content (should trigger "code_review" topic)
+echo "10. Testing Code Review Analysis..."
+curl -X POST "$BASE_URL/webhook/discord" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "```python\ndef process_data(data):\n    # Potential security vulnerability here\n    result = eval(data[\"expression\"])\n    return result * 2\n```\nPlease review this code for security vulnerabilities and suggest improvements.",
+    "author": {
+      "username": "security_dev",
+      "id": "777",
+      "avatar": "security_avatar",
+      "bot": false
+    },
+    "channel_id": "code-review",
+    "guild_id": "dev_team",
+    "timestamp": "2025-07-02T14:30:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Complex Multi-Topic Content
+echo "11. Testing Complex Multi-Topic Content..."
+curl -X POST "$BASE_URL/webhook/discord" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "The cognitive architecture we have implemented demonstrates emergent intelligence through pattern recognition algorithms. The system shows signs of self-awareness and can optimize its own performance autonomously.",
+    "author": {
+      "username": "system_architect",
+      "id": "666",
+      "avatar": "architect_avatar",
+      "bot": false
+    },
+    "channel_id": "architecture",
+    "guild_id": "ai_systems",
+    "timestamp": "2025-07-02T14:45:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+echo "✅ Enhanced test suite completed!"
+echo ""
+echo "🎯 New Tests Added:"
+echo "- Technical Discussion (specialized Technical_Architect, Performance_Optimizer personas)"
+echo "- AI Consciousness (specialized Consciousness_Researcher, Ethics_Philosopher personas)"
+echo "- Code Review (specialized Senior_Developer, Security_Auditor personas)"
+echo "- Multi-Topic Content (tests topic detection algorithms)"
 echo ""
 echo "💡 Tips:"
 echo "- Make sure the MCP is running: cd fr0g-ai-master-control && go run cmd/mcp-demo/main.go"
 echo "- Check logs for AI persona reviews and cognitive insights"
 echo "- Monitor system consciousness and pattern recognition"
-echo "- Each test should trigger AI community analysis"
+echo "- Watch for different AI persona types based on content analysis"
+echo "- Each test should trigger AI community analysis with specialized experts"
