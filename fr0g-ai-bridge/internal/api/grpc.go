@@ -7,47 +7,12 @@ import (
 
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/models"
+	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
 )
-
-// Temporary placeholder types until protobuf generation is working
-type HealthCheckRequest struct{}
-type HealthCheckResponse struct {
-	Status  string
-	Version string
-}
-type ChatCompletionRequest struct {
-	Model         string
-	Messages      []*ChatMessage
-	PersonaPrompt *string
-	Temperature   *float32
-	MaxTokens     *int32
-	Stream        *bool
-}
-type ChatMessage struct {
-	Role    string
-	Content string
-}
-type ChatCompletionResponse struct {
-	Id      string
-	Object  string
-	Created int64
-	Model   string
-	Choices []*Choice
-	Usage   *Usage
-}
-type Choice struct {
-	Index        int32
-	Message      *ChatMessage
-	FinishReason string
-}
-type Usage struct {
-	PromptTokens     int32
-	CompletionTokens int32
-	TotalTokens      int32
-}
 
 // GRPCServer implements the Fr0gAiBridge gRPC service
 type GRPCServer struct {
+	pb.UnimplementedFr0gAiBridgeServiceServer
 	client *client.OpenWebUIClient
 }
 
@@ -59,11 +24,11 @@ func NewGRPCServer(openWebUIClient *client.OpenWebUIClient) *GRPCServer {
 }
 
 // HealthCheck implements the health check endpoint
-func (s *GRPCServer) HealthCheck(ctx context.Context, req *HealthCheckRequest) (*HealthCheckResponse, error) {
+func (s *GRPCServer) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
 	// Check OpenWebUI health
 	err := s.client.HealthCheck(ctx)
 	
-	response := &HealthCheckResponse{
+	response := &pb.HealthCheckResponse{
 		Version: "1.0.0",
 	}
 
@@ -78,7 +43,7 @@ func (s *GRPCServer) HealthCheck(ctx context.Context, req *HealthCheckRequest) (
 }
 
 // ChatCompletion implements the chat completion endpoint
-func (s *GRPCServer) ChatCompletion(ctx context.Context, req *ChatCompletionRequest) (*ChatCompletionResponse, error) {
+func (s *GRPCServer) ChatCompletion(ctx context.Context, req *pb.ChatCompletionRequest) (*pb.ChatCompletionResponse, error) {
 	// Validate request
 	if err := s.validateChatCompletionRequest(req); err != nil {
 		return nil, fmt.Errorf("invalid request: %w", err)
@@ -100,7 +65,7 @@ func (s *GRPCServer) ChatCompletion(ctx context.Context, req *ChatCompletionRequ
 }
 
 // validateChatCompletionRequest validates the gRPC chat completion request
-func (s *GRPCServer) validateChatCompletionRequest(req *ChatCompletionRequest) error {
+func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest) error {
 	if req.Model == "" {
 		return fmt.Errorf("model is required")
 	}
@@ -119,7 +84,7 @@ func (s *GRPCServer) validateChatCompletionRequest(req *ChatCompletionRequest) e
 }
 
 // protoToModel converts protobuf request to internal model
-func (s *GRPCServer) protoToModel(req *ChatCompletionRequest) *models.ChatCompletionRequest {
+func (s *GRPCServer) protoToModel(req *pb.ChatCompletionRequest) *models.ChatCompletionRequest {
 	modelReq := &models.ChatCompletionRequest{
 		Model: req.Model,
 	}
@@ -157,13 +122,13 @@ func (s *GRPCServer) protoToModel(req *ChatCompletionRequest) *models.ChatComple
 }
 
 // modelToProto converts internal model response to protobuf
-func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *ChatCompletionResponse {
-	protoResp := &ChatCompletionResponse{
+func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *pb.ChatCompletionResponse {
+	protoResp := &pb.ChatCompletionResponse{
 		Id:      resp.ID,
 		Object:  resp.Object,
 		Created: resp.Created,
 		Model:   resp.Model,
-		Usage: &Usage{
+		Usage: &pb.Usage{
 			PromptTokens:     int32(resp.Usage.PromptTokens),
 			CompletionTokens: int32(resp.Usage.CompletionTokens),
 			TotalTokens:      int32(resp.Usage.TotalTokens),
@@ -172,9 +137,9 @@ func (s *GRPCServer) modelToProto(resp *models.ChatCompletionResponse) *ChatComp
 
 	// Convert choices
 	for _, choice := range resp.Choices {
-		protoResp.Choices = append(protoResp.Choices, &Choice{
+		protoResp.Choices = append(protoResp.Choices, &pb.Choice{
 			Index: int32(choice.Index),
-			Message: &ChatMessage{
+			Message: &pb.ChatMessage{
 				Role:    choice.Message.Role,
 				Content: choice.Message.Content,
 			},
