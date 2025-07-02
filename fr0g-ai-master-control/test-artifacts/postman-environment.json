@@ -1,0 +1,37 @@
+{
+  "id": "mcp-test-environment",
+  "name": "fr0g.ai MCP Test Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "webhook_timeout",
+      "value": "30000",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_user_id",
+      "value": "test_user_12345",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "test_guild_id",
+      "value": "test_guild_67890",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "current_timestamp",
+      "value": "{{$timestamp}}",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

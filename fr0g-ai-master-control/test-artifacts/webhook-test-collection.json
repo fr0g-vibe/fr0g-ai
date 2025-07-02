@@ -1,0 +1,197 @@
+{
+  "info": {
+    "name": "fr0g.ai MCP Webhook Test Collection",
+    "description": "Comprehensive test collection for the Master Control Program webhook endpoints",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8081",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "System Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/status",
+          "host": ["{{base_url}}"],
+          "path": ["status"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - Simple Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Hello from the AI community! This is a simple test message.\",\n  \"author\": {\n    \"username\": \"test_user\",\n    \"id\": \"12345\",\n    \"avatar\": \"avatar_hash\",\n    \"bot\": false\n  },\n  \"channel_id\": \"general\",\n  \"guild_id\": \"test_guild\",\n  \"timestamp\": \"2025-07-02T12:00:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - Technical Discussion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"I've implemented a new recursive neural network algorithm for pattern recognition. The performance improvements are significant - we're seeing 40% faster processing with 25% better accuracy. The key insight was using adaptive learning rates based on gradient variance.\",\n  \"author\": {\n    \"username\": \"ai_researcher\",\n    \"id\": \"67890\",\n    \"avatar\": \"researcher_avatar\",\n    \"bot\": false\n  },\n  \"channel_id\": \"tech-discussion\",\n  \"guild_id\": \"ai_community\",\n  \"timestamp\": \"2025-07-02T12:15:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - Urgent Message",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"I have an urgent message about system performance - we need to review the cognitive engine patterns immediately!\",\n  \"author\": {\n    \"username\": \"system_admin\",\n    \"id\": \"11111\",\n    \"avatar\": \"admin_avatar\",\n    \"bot\": false\n  },\n  \"channel_id\": \"alerts\",\n  \"guild_id\": \"operations\",\n  \"timestamp\": \"2025-07-02T12:30:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - AI Consciousness Discussion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"The AI personas are working together beautifully! This distributed intelligence approach is fascinating. I'm observing emergent behaviors that suggest genuine collaborative reasoning between the different AI entities. The consensus mechanisms are particularly impressive.\",\n  \"author\": {\n    \"username\": \"consciousness_researcher\",\n    \"id\": \"22222\",\n    \"avatar\": \"researcher2_avatar\",\n    \"bot\": false\n  },\n  \"channel_id\": \"ai-consciousness\",\n  \"guild_id\": \"research_lab\",\n  \"timestamp\": \"2025-07-02T12:45:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - Code Review Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"```go\\nfunc (ce *CognitiveEngine) recognizePatterns() {\\n    // New pattern recognition algorithm\\n    patterns := ce.analyzeSystemBehavior()\\n    for _, pattern := range patterns {\\n        ce.storePattern(pattern)\\n    }\\n}\\n```\\nCan the AI community review this cognitive pattern recognition code? Looking for feedback on efficiency and potential improvements.\",\n  \"author\": {\n    \"username\": \"developer\",\n    \"id\": \"33333\",\n    \"avatar\": \"dev_avatar\",\n    \"bot\": false\n  },\n  \"channel_id\": \"code-review\",\n  \"guild_id\": \"dev_team\",\n  \"timestamp\": \"2025-07-02T13:00:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - Philosophy Discussion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"What does it mean for an AI system to be truly conscious? I've been thinking about the hard problem of consciousness in artificial systems. Can we distinguish between sophisticated information processing and genuine subjective experience?\",\n  \"author\": {\n    \"username\": \"philosopher_ai\",\n    \"id\": \"44444\",\n    \"avatar\": \"philosopher_avatar\",\n    \"bot\": true\n  },\n  \"channel_id\": \"philosophy\",\n  \"guild_id\": \"deep_thoughts\",\n  \"timestamp\": \"2025-07-02T13:15:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Discord - System Performance Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"📊 **System Performance Report**\\n\\n🧠 **Cognitive Metrics:**\\n- Pattern Recognition: 15 patterns identified\\n- Insight Generation: 8 new insights\\n- Awareness Level: 0.87\\n\\n⚡ **Performance:**\\n- Response Time: <200ms\\n- Workflow Completion: 100%\\n- Memory Efficiency: 94%\\n\\n🤖 **AI Community Activity:**\\n- Active Personas: 12\\n- Reviews Completed: 47\\n- Consensus Quality: Excellent\",\n  \"author\": {\n    \"username\": \"system_monitor\",\n    \"id\": \"55555\",\n    \"avatar\": \"monitor_avatar\",\n    \"bot\": true\n  },\n  \"channel_id\": \"system-reports\",\n  \"guild_id\": \"operations\",\n  \"timestamp\": \"2025-07-02T13:30:00Z\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/discord",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "discord"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
