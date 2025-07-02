@@ -68,9 +68,16 @@ func NewWorkflowEngine(config *WorkflowConfig) *WorkflowEngine {
 func (we *WorkflowEngine) Start() error {
 	log.Println("Workflow Engine: Starting workflow processes...")
 	
-	if we.config.AutoStartWorkflows {
-		go we.workflowManagementLoop()
+	// Set default values if not configured
+	if we.config.WorkflowInterval == 0 {
+		we.config.WorkflowInterval = 2 * time.Minute
 	}
+	if we.config.MaxConcurrentWorkflows == 0 {
+		we.config.MaxConcurrentWorkflows = 3
+	}
+	
+	// Always start workflows for demo
+	go we.workflowManagementLoop()
 	
 	return nil
 }
