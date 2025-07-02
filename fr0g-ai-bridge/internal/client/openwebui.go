@@ -138,3 +138,156 @@ func (c *OpenWebUIClient) HealthCheck(ctx context.Context) error {
 
 	return nil
 }
+package client
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"time"
+)
+
+// OpenWebUIClient handles communication with OpenWebUI API
+type OpenWebUIClient struct {
+	baseURL    string
+	apiKey     string
+	httpClient *http.Client
+}
+
+// NewOpenWebUIClient creates a new OpenWebUI client
+func NewOpenWebUIClient(baseURL, apiKey string, timeout time.Duration) *OpenWebUIClient {
+	return &OpenWebUIClient{
+		baseURL: baseURL,
+		apiKey:  apiKey,
+		httpClient: &http.Client{
+			Timeout: timeout,
+		},
+	}
+}
+
+// ChatMessage represents a chat message for OpenWebUI
+type ChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// ChatRequest represents a chat request to OpenWebUI
+type ChatRequest struct {
+	Model    string        `json:"model"`
+	Messages []ChatMessage `json:"messages"`
+	Stream   bool          `json:"stream"`
+}
+
+// ChatResponse represents a response from OpenWebUI
+type ChatResponse struct {
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Created int64  `json:"created"`
+	Model   string `json:"model"`
+	Choices []struct {
+		Index   int `json:"index"`
+		Message struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"message"`
+		FinishReason string `json:"finish_reason"`
+	} `json:"choices"`
+}
+
+// Model represents an AI model
+type Model struct {
+	ID      string `json:"id"`
+	Object  string `json:"object"`
+	Created int64  `json:"created"`
+	OwnedBy string `json:"owned_by"`
+}
+
+// ModelsResponse represents the response from the models endpoint
+type ModelsResponse struct {
+	Object string  `json:"object"`
+	Data   []Model `json:"data"`
+}
+
+// SendMessage sends a message to OpenWebUI and returns the response
+func (c *OpenWebUIClient) SendMessage(message, model string) (string, error) {
+	if model == "" {
+		model = "gpt-3.5-turbo" // Default model
+	}
+
+	chatReq := ChatRequest{
+		Model: model,
+		Messages: []ChatMessage{
+			{
+				Role:    "user",
+				Content: message,
+			},
+		},
+		Stream: false,
+	}
+
+	reqBody, err := json.Marshal(chatReq)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", c.baseURL+"/api/chat/completions", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if c.apiKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API request failed with status %d", resp.StatusCode)
+	}
+
+	var chatResp ChatResponse
+	if err := json.NewDecoder(resp.Body).Decode(&chatResp); err != nil {
+		return "", fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(chatResp.Choices) == 0 {
+		return "", fmt.Errorf("no response choices returned")
+	}
+
+	return chatResp.Choices[0].Message.Content, nil
+}
+
+// GetModels retrieves available models from OpenWebUI
+func (c *OpenWebUIClient) GetModels() ([]Model, error) {
+	req, err := http.NewRequest("GET", c.baseURL+"/api/models", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	if c.apiKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API request failed with status %d", resp.StatusCode)
+	}
+
+	var modelsResp ModelsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&modelsResp); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return modelsResp.Data, nil
+}
