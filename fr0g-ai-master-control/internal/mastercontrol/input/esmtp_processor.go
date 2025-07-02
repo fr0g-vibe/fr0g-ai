@@ -18,14 +18,145 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// WebhookProcessor interface for modular input processing
+type WebhookProcessor interface {
+	ProcessWebhook(ctx context.Context, request *WebhookRequest) (*WebhookResponse, error)
+	GetTag() string
+	GetDescription() string
+}
+
+// WebhookRequest represents an incoming webhook request
+type WebhookRequest struct {
+	ID        string                 `json:"id"`
+	Headers   map[string]string      `json:"headers"`
+	Body      interface{}            `json:"body"`
+	Timestamp time.Time              `json:"timestamp"`
+	Source    string                 `json:"source"`
+}
+
+// WebhookResponse represents a webhook response
+type WebhookResponse struct {
+	Success   bool                   `json:"success"`
+	Message   string                 `json:"message"`
+	RequestID string                 `json:"request_id"`
+	Data      map[string]interface{} `json:"data,omitempty"`
+	Timestamp time.Time              `json:"timestamp"`
+}
+
+// AIPersonaCommunityClient interface for AI community interactions
+type AIPersonaCommunityClient interface {
+	CreateCommunity(ctx context.Context, topic string, personaCount int) (*Community, error)
+	SubmitForReview(ctx context.Context, communityID string, content string) (*CommunityReview, error)
+	GetReviewStatus(ctx context.Context, reviewID string) (*CommunityReview, error)
+}
+
+// Community represents an AI persona community
+type Community struct {
+	ID          string    `json:"id"`
+	Topic       string    `json:"topic"`
+	PersonaCount int      `json:"persona_count"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+// CommunityReview represents a community review result
+type CommunityReview struct {
+	ReviewID    string                 `json:"review_id"`
+	CommunityID string                 `json:"community_id"`
+	Content     string                 `json:"content"`
+	Consensus   float64                `json:"consensus"`
+	Results     map[string]interface{} `json:"results"`
+	Status      string                 `json:"status"`
+	CreatedAt   time.Time              `json:"created_at"`
+	CompletedAt *time.Time             `json:"completed_at,omitempty"`
+}
+
+// MockAIPersonaCommunityClient for testing
+type MockAIPersonaCommunityClient struct{}
+
+func (m *MockAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topic string, personaCount int) (*Community, error) {
+	return &Community{
+		ID:          fmt.Sprintf("community_%d", time.Now().UnixNano()),
+		Topic:       topic,
+		PersonaCount: personaCount,
+		CreatedAt:   time.Now(),
+	}, nil
+}
+
+func (m *MockAIPersonaCommunityClient) SubmitForReview(ctx context.Context, communityID string, content string) (*CommunityReview, error) {
+	reviewJSON, _ := json.MarshalIndent(map[string]interface{}{
+		"content": content,
+		"community_id": communityID,
+	}, "", "  ")
+	log.Printf("🧠 AI COMMUNITY REVIEW SUBMITTED:\n%s", string(reviewJSON))
+	
+	return &CommunityReview{
+		ReviewID:    fmt.Sprintf("review_%d", time.Now().UnixNano()),
+		CommunityID: communityID,
+		Content:     content,
+		Consensus:   0.85, // Mock consensus
+		Results:     map[string]interface{}{"threat_level": "low", "confidence": 0.85},
+		Status:      "completed",
+		CreatedAt:   time.Now(),
+		CompletedAt: &[]time.Time{time.Now()}[0],
+	}, nil
+}
+
+func (m *MockAIPersonaCommunityClient) GetReviewStatus(ctx context.Context, reviewID string) (*CommunityReview, error) {
+	return &CommunityReview{
+		ReviewID: reviewID,
+		Status:   "completed",
+	}, nil
+}
+
+// WebhookConfig represents webhook manager configuration
+type WebhookConfig struct {
+	Port           int           `yaml:"port"`
+	Host           string        `yaml:"host"`
+	ReadTimeout    time.Duration `yaml:"read_timeout"`
+	WriteTimeout   time.Duration `yaml:"write_timeout"`
+	MaxRequestSize int64         `yaml:"max_request_size"`
+	EnableLogging  bool          `yaml:"enable_logging"`
+	AllowedOrigins []string      `yaml:"allowed_origins"`
+}
+
+// WebhookManager manages webhook processors
+type WebhookManager struct {
+	config     *WebhookConfig
+	processors map[string]WebhookProcessor
+}
+
+func NewWebhookManager(config *WebhookConfig) (*WebhookManager, error) {
+	return &WebhookManager{
+		config:     config,
+		processors: make(map[string]WebhookProcessor),
+	}, nil
+}
+
+func (wm *WebhookManager) RegisterProcessor(processor WebhookProcessor) error {
+	wm.processors[processor.GetTag()] = processor
+	log.Printf("📝 Registered webhook processor: %s - %s", processor.GetTag(), processor.GetDescription())
+	return nil
+}
+
+func (wm *WebhookManager) Start(ctx context.Context) error {
+	log.Printf("🌐 Webhook Manager starting on %s:%d", wm.config.Host, wm.config.Port)
+	// Mock implementation - would start HTTP server
+	return nil
+}
+
+func (wm *WebhookManager) Stop() error {
+	log.Printf("🛑 Webhook Manager stopping")
+	return nil
+}
+
 // ESMTPProcessor handles incoming ESMTP connections and processes emails
 // Acting as the "intelligent front desk" for email threat vector analysis
 type ESMTPProcessor struct {
-	config     *ESMTPConfig
-	mcpClient  MasterControlClient
-	listener   net.Listener
-	tlsConfig  *tls.Config
-	shutdown   chan struct{}
+	config            *ESMTPConfig
+	aiCommunityClient AIPersonaCommunityClient
+	listener          net.Listener
+	tlsConfig         *tls.Config
+	shutdown          chan struct{}
 }
 
 type ESMTPConfig struct {
@@ -35,10 +166,15 @@ type ESMTPConfig struct {
 	Hostname       string        `yaml:"hostname"`
 	MaxMessageSize int64         `yaml:"max_message_size"`
 	Timeout        time.Duration `yaml:"timeout"`
-	MCPAddress     string        `yaml:"mcp_address"`
 	EnableTLS      bool          `yaml:"enable_tls"`
 	CertFile       string        `yaml:"cert_file"`
 	KeyFile        string        `yaml:"key_file"`
+	
+	// Community settings
+	CommunityTopic    string        `yaml:"community_topic"`
+	PersonaCount      int           `yaml:"persona_count"`
+	ReviewTimeout     time.Duration `yaml:"review_timeout"`
+	RequiredConsensus float64       `yaml:"required_consensus"`
 }
 
 // EmailThreatVector represents an intercepted email for analysis
@@ -62,31 +198,14 @@ type AttachmentInfo struct {
 	Hash        string `json:"hash"`
 }
 
-// MasterControlClient interface for communicating with MCP
-type MasterControlClient interface {
-	ProcessThreatVector(ctx context.Context, vector *EmailThreatVector) error
-	HealthCheck(ctx context.Context) error
-}
-
-// grpcMasterControlClient implements MasterControlClient using gRPC
-type grpcMasterControlClient struct {
-	conn   *grpc.ClientConn
-	client interface{} // Will be the actual gRPC client when proto is defined
-}
 
 // NewESMTPProcessor creates a new ESMTP processor instance
-func NewESMTPProcessor(config *ESMTPConfig) (*ESMTPProcessor, error) {
+func NewESMTPProcessor(config *ESMTPConfig, aiClient AIPersonaCommunityClient) (*ESMTPProcessor, error) {
 	processor := &ESMTPProcessor{
-		config:   config,
-		shutdown: make(chan struct{}),
+		config:            config,
+		aiCommunityClient: aiClient,
+		shutdown:          make(chan struct{}),
 	}
-
-	// Initialize MCP client
-	mcpClient, err := newMCPClient(config.MCPAddress)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create MCP client: %w", err)
-	}
-	processor.mcpClient = mcpClient
 
 	// Setup TLS if enabled
 	if config.EnableTLS {
@@ -332,12 +451,13 @@ func (s *ESMTPSession) processEmailThreatVector(ctx context.Context) error {
 		Headers:     headers,
 		Attachments: []AttachmentInfo{}, // TODO: Parse attachments
 		Timestamp:   time.Now(),
-		ThreatLevel: "unknown", // Will be analyzed by MCP
+		ThreatLevel: "unknown", // Will be analyzed by community
 		Source:      "esmtp",
 	}
 
-	// Send to Master Control for processing
-	return s.processor.mcpClient.ProcessThreatVector(ctx, vector)
+	// Submit to AI community for review
+	_, err = s.processor.submitForCommunityReview(ctx, vector)
+	return err
 }
 
 func (s *ESMTPSession) reset() {
@@ -346,33 +466,103 @@ func (s *ESMTPSession) reset() {
 	s.data = nil
 }
 
-// newMCPClient creates a new Master Control Protocol client
-func newMCPClient(address string) (MasterControlClient, error) {
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to MCP: %w", err)
+// WebhookProcessor interface implementation
+func (p *ESMTPProcessor) ProcessWebhook(ctx context.Context, request *WebhookRequest) (*WebhookResponse, error) {
+	// Convert webhook request to email threat vector
+	emailData, ok := request.Body.(map[string]interface{})
+	if !ok {
+		return &WebhookResponse{
+			Success:   false,
+			Message:   "Invalid email data format",
+			RequestID: request.ID,
+			Timestamp: time.Now(),
+		}, nil
 	}
 
-	return &grpcMasterControlClient{
-		conn: conn,
-		// client: will be initialized with actual gRPC client
+	// Extract email fields
+	from, _ := emailData["from"].(string)
+	to, _ := emailData["to"].([]string)
+	subject, _ := emailData["subject"].(string)
+	body, _ := emailData["body"].(string)
+
+	// Create threat vector for community review
+	vector := &EmailThreatVector{
+		ID:          generateThreatVectorID(),
+		From:        from,
+		To:          to,
+		Subject:     subject,
+		Body:        body,
+		Headers:     make(map[string]string),
+		Attachments: []AttachmentInfo{},
+		Timestamp:   time.Now(),
+		ThreatLevel: "unknown",
+		Source:      "esmtp",
+	}
+
+	// Submit to AI community for review
+	review, err := p.submitForCommunityReview(ctx, vector)
+	if err != nil {
+		return &WebhookResponse{
+			Success:   false,
+			Message:   fmt.Sprintf("Community review failed: %v", err),
+			RequestID: request.ID,
+			Timestamp: time.Now(),
+		}, nil
+	}
+
+	return &WebhookResponse{
+		Success:   true,
+		Message:   "Email threat vector submitted for community review",
+		RequestID: request.ID,
+		Data: map[string]interface{}{
+			"review_id":    review.ReviewID,
+			"threat_level": vector.ThreatLevel,
+			"consensus":    review.Consensus,
+		},
+		Timestamp: time.Now(),
 	}, nil
 }
 
-func (c *grpcMasterControlClient) ProcessThreatVector(ctx context.Context, vector *EmailThreatVector) error {
-	// TODO: Implement actual gRPC call to MCP
-	// For now, log the threat vector
-	vectorJSON, _ := json.MarshalIndent(vector, "", "  ")
-	log.Printf("🚨 THREAT VECTOR INTERCEPTED:\n%s", string(vectorJSON))
-	
-	// Simulate processing
-	log.Printf("📡 Forwarding to Master Control Protocol for cognitive analysis...")
-	return nil
+func (p *ESMTPProcessor) GetTag() string {
+	return "esmtp"
 }
 
-func (c *grpcMasterControlClient) HealthCheck(ctx context.Context) error {
-	// TODO: Implement actual health check
-	return nil
+func (p *ESMTPProcessor) GetDescription() string {
+	return fmt.Sprintf("ESMTP Threat Vector Interceptor on %s:%d - Email intelligence gathering for AI community review on topic: %s", 
+		p.config.Host, p.config.Port, p.config.CommunityTopic)
+}
+
+// submitForCommunityReview submits email threat vector to AI community
+func (p *ESMTPProcessor) submitForCommunityReview(ctx context.Context, vector *EmailThreatVector) (*CommunityReview, error) {
+	// Create or get community for email threat analysis
+	community, err := p.aiCommunityClient.CreateCommunity(ctx, p.config.CommunityTopic, p.config.PersonaCount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create community: %w", err)
+	}
+
+	// Format content for review
+	content := fmt.Sprintf(`Email Threat Vector Analysis Request:
+
+From: %s
+To: %s
+Subject: %s
+
+Body:
+%s
+
+Headers: %v
+Attachments: %d
+
+Please analyze this email for potential threats, social engineering attempts, phishing indicators, and overall risk assessment.`,
+		vector.From,
+		strings.Join(vector.To, ", "),
+		vector.Subject,
+		vector.Body,
+		vector.Headers,
+		len(vector.Attachments))
+
+	// Submit for community review
+	return p.aiCommunityClient.SubmitForReview(ctx, community.ID, content)
 }
 
 // generateThreatVectorID creates a unique ID for threat vectors

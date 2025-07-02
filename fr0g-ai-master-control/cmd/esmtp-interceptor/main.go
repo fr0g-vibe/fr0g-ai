@@ -15,6 +15,7 @@ import (
 
 func main() {
 	var configPath = flag.String("config", "configs/esmtp.yaml", "Path to configuration file")
+	var webhookMode = flag.Bool("webhook", false, "Run as webhook processor instead of SMTP server")
 	flag.Parse()
 
 	// Load configuration
@@ -23,8 +24,77 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	if *webhookMode {
+		runWebhookMode(config)
+	} else {
+		runSMTPMode(config)
+	}
+}
+
+func runWebhookMode(config *input.ESMTPConfig) {
+	// Create AI community client
+	aiClient := &input.MockAIPersonaCommunityClient{} // Use mock for now
+
+	// Create ESMTP processor as webhook processor
+	processor, err := input.NewESMTPProcessor(config, aiClient)
+	if err != nil {
+		log.Fatalf("Failed to create ESMTP processor: %v", err)
+	}
+
+	// Create webhook manager
+	webhookConfig := &input.WebhookConfig{
+		Port:           8090,
+		Host:           "0.0.0.0",
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   30 * time.Second,
+		MaxRequestSize: 10 * 1024 * 1024,
+		EnableLogging:  true,
+		AllowedOrigins: []string{"*"},
+	}
+
+	manager, err := input.NewWebhookManager(webhookConfig)
+	if err != nil {
+		log.Fatalf("Failed to create webhook manager: %v", err)
+	}
+
+	// Register ESMTP processor
+	if err := manager.RegisterProcessor(processor); err != nil {
+		log.Fatalf("Failed to register ESMTP processor: %v", err)
+	}
+
+	// Setup context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Start webhook manager
+	if err := manager.Start(ctx); err != nil {
+		log.Fatalf("Failed to start webhook manager: %v", err)
+	}
+
+	printBanner("Webhook Mode")
+
+	// Wait for shutdown signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	<-sigChan
+	log.Println("🛑 Shutdown signal received, stopping ESMTP Webhook Processor...")
+
+	// Graceful shutdown
+	cancel()
+	if err := manager.Stop(); err != nil {
+		log.Printf("Error during shutdown: %v", err)
+	}
+
+	log.Println("✅ fr0g.ai ESMTP Webhook Processor stopped")
+}
+
+func runSMTPMode(config *input.ESMTPConfig) {
+	// Create AI community client
+	aiClient := &input.MockAIPersonaCommunityClient{} // Use mock for now
+
 	// Create ESMTP processor
-	processor, err := input.NewESMTPProcessor(config)
+	processor, err := input.NewESMTPProcessor(config, aiClient)
 	if err != nil {
 		log.Fatalf("Failed to create ESMTP processor: %v", err)
 	}
@@ -38,8 +108,7 @@ func main() {
 		log.Fatalf("Failed to start ESMTP processor: %v", err)
 	}
 
-	// ASCII art banner
-	printBanner()
+	printBanner("SMTP Server Mode")
 
 	// Wait for shutdown signal
 	sigChan := make(chan os.Signal, 1)
@@ -60,16 +129,19 @@ func main() {
 func loadConfig(path string) (*input.ESMTPConfig, error) {
 	// Default configuration
 	config := &input.ESMTPConfig{
-		Host:           "0.0.0.0",
-		Port:           2525,
-		TLSPort:        2465,
-		Hostname:       "fr0g-ai-interceptor.local",
-		MaxMessageSize: 10 * 1024 * 1024, // 10MB
-		Timeout:        5 * time.Minute,
-		MCPAddress:     "localhost:9092", // Master Control Protocol address
-		EnableTLS:      false,
-		CertFile:       "",
-		KeyFile:        "",
+		Host:              "0.0.0.0",
+		Port:              2525,
+		TLSPort:           2465,
+		Hostname:          "fr0g-ai-interceptor.local",
+		MaxMessageSize:    10 * 1024 * 1024, // 10MB
+		Timeout:           5 * time.Minute,
+		EnableTLS:         false,
+		CertFile:          "",
+		KeyFile:           "",
+		CommunityTopic:    "email-threat-analysis",
+		PersonaCount:      5,
+		ReviewTimeout:     2 * time.Minute,
+		RequiredConsensus: 0.7,
 	}
 
 	// Try to load from file
@@ -87,7 +159,7 @@ func loadConfig(path string) (*input.ESMTPConfig, error) {
 	return config, nil
 }
 
-func printBanner() {
+func printBanner(mode string) {
 	banner := `
 	╔═══════════════════════════════════════════════════════════════╗
 	║                                                               ║
@@ -97,9 +169,10 @@ func printBanner() {
 	║                                                               ║
 	║    📧 Email Intelligence Gathering: ACTIVE                   ║
 	║    🛡️  Threat Analysis Engine: ONLINE                        ║
-	║    🧠 Master Control Protocol: CONNECTED                     ║
+	║    🧠 AI Community Review: CONNECTED                         ║
+	║    🔧 Mode: %-50s║
 	║                                                               ║
 	╚═══════════════════════════════════════════════════════════════╝
 	`
-	log.Println(banner)
+	log.Printf(banner, mode)
 }
