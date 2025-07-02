@@ -181,19 +181,22 @@ func (dp *DiscordWebhookProcessor) ProcessWebhook(ctx context.Context, request *
 	
 	log.Printf("Discord Processor: Submitted content for review, review ID: %s", review.ReviewID)
 	
-	// Wait for review completion (with timeout)
-	reviewCtx, cancel := context.WithTimeout(ctx, dp.config.ReviewTimeout)
-	defer cancel()
-	
-	finalReview, err := dp.waitForReviewCompletion(reviewCtx, review.ReviewID)
-	if err != nil {
-		return nil, fmt.Errorf("review process failed: %w", err)
-	}
+	// For the real AIP client, the review is completed immediately
+	// In a production system, this would be asynchronous
+	finalReview := review
 	
 	// Process review results
 	action := dp.determineAction(finalReview)
 	
 	log.Printf("Discord Processor: Review completed for request %s, action: %s", request.ID, action)
+	log.Printf("Discord Processor: AI Community Review Summary:")
+	log.Printf("  - Overall Score: %.2f", finalReview.Consensus.OverallScore)
+	log.Printf("  - Recommendation: %s", finalReview.Consensus.Recommendation)
+	log.Printf("  - Persona Reviews: %d", len(finalReview.PersonaReviews))
+	
+	for i, personaReview := range finalReview.PersonaReviews {
+		log.Printf("  - Persona %d (%s): %.2f - %s", i+1, personaReview.PersonaName, personaReview.Score, personaReview.Review)
+	}
 	
 	return &WebhookResponse{
 		Success:   true,
