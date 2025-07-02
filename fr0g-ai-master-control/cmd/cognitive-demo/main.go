@@ -57,7 +57,7 @@ func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
 	
 	// Get system awareness
 	fmt.Println("🌐 System Awareness:")
-	awareness := ce.GetAwareness()
+	awareness := ce.GetSystemAwareness()
 	fmt.Printf("   - Awareness Level: %.3f\n", awareness.AwarenessLevel)
 	fmt.Printf("   - Last Update: %s\n", awareness.LastUpdate.Format("15:04:05"))
 	fmt.Printf("   - State History Length: %d\n", len(awareness.StateHistory))
@@ -101,7 +101,7 @@ func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
 	
 	// Get patterns
 	fmt.Println("🔍 Recognized Patterns:")
-	patterns := ce.GetPatterns()
+	patterns := ce.GetPatternsMap()
 	if len(patterns) == 0 {
 		fmt.Println("   No patterns recognized yet (pattern recognition is ongoing)")
 	} else {
@@ -137,7 +137,7 @@ func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
 	
 	// Check updated awareness
 	fmt.Println("🔄 Updated System Awareness:")
-	awareness = ce.GetAwareness()
+	awareness = ce.GetSystemAwareness()
 	fmt.Printf("   - Awareness Level: %.3f\n", awareness.AwarenessLevel)
 	fmt.Printf("   - Last Update: %s\n", awareness.LastUpdate.Format("15:04:05"))
 	fmt.Printf("   - State History Length: %d\n", len(awareness.StateHistory))

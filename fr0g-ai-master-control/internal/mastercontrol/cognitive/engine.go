@@ -223,8 +223,8 @@ func (ce *CognitiveEngine) Reflect(systemState interface{}) {
 	log.Printf("Cognitive Engine: Generated reflection - %s", reflection.Content)
 }
 
-// GetAwareness returns current system awareness
-func (ce *CognitiveEngine) GetAwareness() *SystemAwareness {
+// GetAwareness returns current system awareness as interface{}
+func (ce *CognitiveEngine) GetAwareness() interface{} {
 	ce.mu.RLock()
 	defer ce.mu.RUnlock()
 	
@@ -233,8 +233,33 @@ func (ce *CognitiveEngine) GetAwareness() *SystemAwareness {
 	return &awareness
 }
 
-// GetPatterns returns recognized patterns
-func (ce *CognitiveEngine) GetPatterns() map[string]*Pattern {
+// GetSystemAwareness returns current system awareness with proper type
+func (ce *CognitiveEngine) GetSystemAwareness() *SystemAwareness {
+	ce.mu.RLock()
+	defer ce.mu.RUnlock()
+	
+	// Return a copy
+	awareness := *ce.awareness
+	return &awareness
+}
+
+// GetPatterns returns recognized patterns as interface{}
+func (ce *CognitiveEngine) GetPatterns() interface{} {
+	ce.mu.RLock()
+	defer ce.mu.RUnlock()
+	
+	// Return a copy
+	patterns := make(map[string]*Pattern)
+	for k, v := range ce.patterns {
+		pattern := *v
+		patterns[k] = &pattern
+	}
+	
+	return patterns
+}
+
+// GetPatternsMap returns recognized patterns with proper type
+func (ce *CognitiveEngine) GetPatternsMap() map[string]*Pattern {
 	ce.mu.RLock()
 	defer ce.mu.RUnlock()
 	
