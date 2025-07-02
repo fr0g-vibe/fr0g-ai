@@ -329,7 +329,12 @@ func (mcp *MasterControlProgram) GetContext() context.Context {
 // Helper methods (to be implemented)
 func (mcp *MasterControlProgram) updateSystemState() {
 	mcp.systemState.LastUpdate = time.Now()
-	// Implementation will be added as components are built
+	if mcp.workflow != nil {
+		mcp.systemState.ActiveWorkflows = mcp.workflow.GetActiveWorkflowCount()
+	}
+	if mcp.monitor != nil {
+		mcp.systemState.SystemLoad = mcp.monitor.GetSystemLoad()
+	}
 }
 
 func (mcp *MasterControlProgram) performHealthChecks() {
