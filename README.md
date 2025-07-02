@@ -24,6 +24,8 @@ Eliminate human-computer interaction vulnerabilities through AI-driven automated
 ### Components
 - **fr0g-ai-aip**: Core AI processing engine with file-based storage
 - **fr0g-ai-bridge**: Integration bridge connecting to external systems (OpenWebUI)
+- **fr0g-ai-master-control**: Orchestration and cognitive processing engine
+- **ESMTP Threat Vector Interceptor**: Email intelligence gathering and threat analysis
 - **Communication**: High-performance gRPC inter-service communication
 - **Storage**: Configurable storage backends (file system, future: database)
 
@@ -35,10 +37,11 @@ Eliminate human-computer interaction vulnerabilities through AI-driven automated
 
 ### Threat Vectors Addressed
 Human-computer interactions create vulnerabilities:
-- **Email**: Unknown senders, malicious content, phishing attempts
+- **Email**: Unknown senders, malicious content, phishing attempts *(INTERCEPTED by ESMTP Processor)*
 - **Phone**: Social engineering, voice spoofing, unauthorized access
 - **Websites**: Drive-by downloads, malicious scripts, data harvesting
 - **Software**: Flawed programs deployed by flawed humans creating systemic risks
+- **Discord/Chat**: Social engineering through messaging platforms *(INTERCEPTED by Discord Processor)*
 
 ### Design Metaphor
 *"A person walks into a tall building. They stop at the front desk and say 'I have a piece of mail that needs to get to a person.'"*
