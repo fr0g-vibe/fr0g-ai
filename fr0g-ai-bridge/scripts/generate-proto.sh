@@ -8,24 +8,30 @@ echo "Generating protobuf files..."
 # Create the pb directory if it doesn't exist
 mkdir -p internal/pb
 
-# Generate Go code from protobuf with correct output paths
-protoc \
-    --go_out=. \
-    --go_opt=paths=source_relative \
-    --go-grpc_out=. \
-    --go-grpc_opt=paths=source_relative \
-    --go_opt=Mproto/bridge.proto=github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb \
-    --go-grpc_opt=Mproto/bridge.proto=github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb \
-    proto/bridge.proto
+# Clean any existing generated files
+rm -f internal/pb/*.pb.go
 
-# Move generated files to correct location if they're in the wrong place
-if [ -f proto/bridge.pb.go ]; then
-    mv proto/bridge.pb.go internal/pb/
-fi
-if [ -f proto/bridge_grpc.pb.go ]; then
-    mv proto/bridge_grpc.pb.go internal/pb/
-fi
+# Generate Go code from protobuf
+protoc \
+    --go_out=internal/pb \
+    --go_opt=paths=source_relative \
+    --go-grpc_out=internal/pb \
+    --go-grpc_opt=paths=source_relative \
+    proto/bridge.proto
 
 echo "Protobuf generation complete!"
 echo "Generated files:"
 ls -la internal/pb/
+
+# Verify the files were created
+if [ ! -f internal/pb/bridge.pb.go ]; then
+    echo "ERROR: bridge.pb.go was not generated"
+    exit 1
+fi
+
+if [ ! -f internal/pb/bridge_grpc.pb.go ]; then
+    echo "ERROR: bridge_grpc.pb.go was not generated"
+    exit 1
+fi
+
+echo "✅ Protobuf generation successful"
