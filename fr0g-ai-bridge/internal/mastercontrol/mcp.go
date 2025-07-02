@@ -6,17 +6,24 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	"fr0g-ai-bridge/internal/mastercontrol/cognitive"
+	"fr0g-ai-bridge/internal/mastercontrol/learning"
+	"fr0g-ai-bridge/internal/mastercontrol/memory"
+	"fr0g-ai-bridge/internal/mastercontrol/monitor"
+	"fr0g-ai-bridge/internal/mastercontrol/orchestrator"
+	"fr0g-ai-bridge/internal/mastercontrol/workflow"
 )
 
 // MasterControlProgram is the central intelligence of the fr0g.ai system
 type MasterControlProgram struct {
 	// Core components
-	cognitive    *CognitiveEngine
-	orchestrator *StrategyOrchestrator
-	memory       *MemoryManager
-	learning     *LearningEngine
-	monitor      *SystemMonitor
-	workflow     *WorkflowEngine
+	cognitive    *cognitive.CognitiveEngine
+	orchestrator *orchestrator.StrategyOrchestrator
+	memory       *memory.MemoryManager
+	learning     *learning.LearningEngine
+	monitor      *monitor.SystemMonitor
+	workflow     *workflow.WorkflowEngine
 
 	// System state
 	systemState  *SystemState
