@@ -3,7 +3,6 @@ package monitor
 import (
 	"log"
 	"math/rand"
-	"time"
 )
 
 // SystemMonitor handles system monitoring for the MCP

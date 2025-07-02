@@ -133,12 +133,15 @@ func (mcp *MasterControlProgram) initializeComponents() {
 	log.Println("MCP: Initializing cognitive architecture...")
 	
 	// Initialize components in dependency order
-	mcp.memory = NewMemoryManager(mcp.config)
-	mcp.learning = NewLearningEngine(mcp.config, mcp.memory)
-	mcp.cognitive = NewCognitiveEngine(mcp.config, mcp.memory, mcp.learning)
-	mcp.monitor = NewSystemMonitor(mcp.config)
-	mcp.workflow = NewWorkflowEngine(mcp.config)
-	mcp.orchestrator = NewStrategyOrchestrator(mcp.config, mcp.cognitive, mcp.workflow)
+	mcp.memory = memory.NewMemoryManager()
+	mcp.learning = learning.NewLearningEngine(mcp.memory)
+	mcp.cognitive = cognitive.NewCognitiveEngine(mcp.memory, mcp.learning)
+	mcp.monitor = monitor.NewSystemMonitor()
+	mcp.workflow = workflow.NewWorkflowEngine()
+	mcp.orchestrator = orchestrator.NewStrategyOrchestrator(&orchestrator.OrchestratorConfig{
+		ResourceOptimization: mcp.config.ResourceOptimization,
+		PredictiveManagement: mcp.config.PredictiveManagement,
+	}, mcp.cognitive, mcp.workflow)
 	// Input manager will be set externally for flexibility
 	mcp.input = nil
 	
