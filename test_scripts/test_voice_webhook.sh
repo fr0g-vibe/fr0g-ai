@@ -58,7 +58,7 @@ curl -X POST "$VOICE_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 2: IRS impersonation scam
@@ -109,7 +109,7 @@ curl -X POST "$VOICE_ENDPOINT" \
         "spoofed_caller_id": "true"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 3: Robocall with voice deepfake
@@ -161,7 +161,7 @@ curl -X POST "$VOICE_ENDPOINT" \
         "ai_generated": "suspected"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 4: Trusted number call (should have lower threat threshold)
@@ -212,7 +212,7 @@ curl -X POST "$VOICE_ENDPOINT" \
         "verified_caller": "true"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 5: Cryptocurrency investment scam
@@ -264,7 +264,7 @@ curl -X POST "$VOICE_ENDPOINT" \
         "high_pressure_sales": "detected"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 echo "=== Voice Webhook Tests Complete ==="

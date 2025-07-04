@@ -48,7 +48,7 @@ curl -X POST "$ESMTP_ENDPOINT" \
         "dmarc_result": "fail"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 2: Business Email Compromise (BEC) attack
@@ -87,7 +87,7 @@ curl -X POST "$ESMTP_ENDPOINT" \
         "dmarc_result": "fail"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 3: Malware attachment email
@@ -141,7 +141,7 @@ curl -X POST "$ESMTP_ENDPOINT" \
         "virus_scan": "suspicious"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 4: Trusted domain email (should have lower threat threshold)
@@ -180,7 +180,7 @@ curl -X POST "$ESMTP_ENDPOINT" \
         "trusted_sender": "true"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 5: Cryptocurrency scam email
@@ -220,7 +220,7 @@ curl -X POST "$ESMTP_ENDPOINT" \
         "reputation_score": "0.1"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 6: Ransomware email
@@ -267,7 +267,7 @@ curl -X POST "$ESMTP_ENDPOINT" \
         "malware_detected": "true"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 echo "=== ESMTP Webhook Tests Complete ==="

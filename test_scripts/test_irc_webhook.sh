@@ -45,7 +45,7 @@ curl -X POST "$IRC_ENDPOINT" \
         "version": "2.16.1"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 2: Private message with phishing attempt
@@ -80,7 +80,7 @@ curl -X POST "$IRC_ENDPOINT" \
         "idle_time": 0
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 3: Trusted user message (should have lower threat threshold)
@@ -115,7 +115,7 @@ curl -X POST "$IRC_ENDPOINT" \
         "idle_time": 60
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 4: Bot spam message
@@ -150,7 +150,7 @@ curl -X POST "$IRC_ENDPOINT" \
         "idle_time": 0
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 5: Malware distribution attempt
@@ -185,7 +185,7 @@ curl -X POST "$IRC_ENDPOINT" \
         "idle_time": 1200
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 echo "=== IRC Webhook Tests Complete ==="

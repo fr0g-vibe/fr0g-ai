@@ -12,7 +12,13 @@ echo
 echo "Checking if webhook server is running..."
 if ! curl -s "http://localhost:8080/health" > /dev/null 2>&1; then
     echo "❌ Webhook server is not running on localhost:8080"
-    echo "Please start the server first and try again."
+    echo ""
+    echo "To start the webhook server:"
+    echo "1. cd fr0g-ai-master-control"
+    echo "2. go mod tidy"
+    echo "3. go run cmd/webhook-server/main.go"
+    echo ""
+    echo "Then run this test script again."
     exit 1
 fi
 echo "✅ Webhook server is running"

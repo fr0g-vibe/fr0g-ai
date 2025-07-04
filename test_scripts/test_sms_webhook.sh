@@ -38,7 +38,7 @@ curl -X POST "$SMS_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 2: MMS with suspicious media
@@ -75,7 +75,7 @@ curl -X POST "$SMS_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 3: Cryptocurrency scam
@@ -107,7 +107,7 @@ curl -X POST "$SMS_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 4: Trusted number message (should have lower threat threshold)
@@ -140,7 +140,7 @@ curl -X POST "$SMS_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 5: Romance scam
@@ -172,7 +172,7 @@ curl -X POST "$SMS_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 # Test 6: 2FA bypass attempt
@@ -204,7 +204,7 @@ curl -X POST "$SMS_ENDPOINT" \
         "price_unit": "USD"
       }
     }
-  }' | jq '.'
+  }' | python3 -m json.tool 2>/dev/null || cat
 echo -e "\n"
 
 echo "=== SMS Webhook Tests Complete ==="
