@@ -164,15 +164,15 @@ func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 	// SMS processor configuration
 	smsConfig := &input.SMSConfig{
 		Provider:          "google_voice",
-		APIKey:            "demo-api-key",
-		APISecret:         "demo-api-secret",
+		AccountSID:        "demo-account-sid",
+		AuthToken:         "demo-auth-token",
 		WebhookURL:        "https://fr0g-ai.local/webhook/sms",
 		PhoneNumber:       "+1-555-FR0G-AI",
 		CommunityTopic:    "sms-threat-analysis",
 		PersonaCount:      4,
 		ReviewTimeout:     time.Minute * 2,
 		RequiredConsensus: 0.75,
-		EnableSpamFilter:  true,
+		TrustedNumbers:    []string{},
 		BlockedNumbers:    []string{"spam", "telemarketer"},
 	}
 	
@@ -182,18 +182,18 @@ func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 		APIKey:                "demo-api-key",
 		APISecret:             "demo-api-secret",
 		WebhookURL:            "https://fr0g-ai.local/webhook/voice",
-		PhoneNumber:           "+1-555-FR0G-AI",
-		SpeechToTextEnabled:   true,
-		GoogleCloudProjectID:  "fr0g-ai-project",
-		GoogleCloudKeyFile:    "/path/to/service-account.json",
 		CommunityTopic:        "voice-threat-analysis",
 		PersonaCount:          5,
 		ReviewTimeout:         time.Minute * 3,
 		RequiredConsensus:     0.8,
-		AutoRecording:         true,
-		MaxCallDuration:       time.Minute * 10,
+		TrustedNumbers:        []string{},
 		BlockedNumbers:        []string{"robocaller", "spam"},
-		SuspiciousKeywords:    []string{"IRS", "warranty", "credit card", "social security"},
+		MaxRecordingDuration:  time.Minute * 10,
+		SupportedFormats:      []string{"wav", "mp3"},
+		TranscriptionEnabled:  true,
+		SentimentAnalysis:     true,
+		VoiceprintAnalysis:    false,
+		AudioStoragePath:      "/tmp/audio",
 	}
 	
 	// IRC processor configuration
