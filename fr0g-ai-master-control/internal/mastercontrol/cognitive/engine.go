@@ -235,8 +235,18 @@ func (ce *CognitiveEngine) GetAwareness() interface{} {
 	return &awareness
 }
 
-// GetSystemAwareness returns current system awareness with proper type
-func (ce *CognitiveEngine) GetSystemAwareness() *SystemAwareness {
+// GetSystemAwareness returns current system awareness as interface{}
+func (ce *CognitiveEngine) GetSystemAwareness() interface{} {
+	ce.mu.RLock()
+	defer ce.mu.RUnlock()
+	
+	// Return a copy
+	awareness := *ce.awareness
+	return &awareness
+}
+
+// GetSystemAwarenessTyped returns current system awareness with proper type
+func (ce *CognitiveEngine) GetSystemAwarenessTyped() *SystemAwareness {
 	ce.mu.RLock()
 	defer ce.mu.RUnlock()
 	
