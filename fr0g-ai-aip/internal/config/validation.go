@@ -119,54 +119,33 @@ func (c *Config) validateGRPCConfig() []ValidationError {
 	var errors []ValidationError
 	
 	// Validate port
-	if c.GRPC.Port == "" {
-		errors = append(errors, ValidationError{
-			Field:   "grpc.port",
-			Message: "port is required",
-		})
-	} else if !isValidPort(c.GRPC.Port) {
-		errors = append(errors, ValidationError{
-			Field:   "grpc.port",
-			Message: "invalid port number",
-		})
+	if err := sharedconfig.ValidateRequired(c.GRPC.Port, "grpc.port"); err != nil {
+		errors = append(errors, *err)
+	} else if err := sharedconfig.ValidatePort(c.GRPC.Port, "grpc.port"); err != nil {
+		errors = append(errors, *err)
 	}
 	
 	// Validate message sizes
-	if c.GRPC.MaxRecvMsgSize <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "grpc.max_recv_msg_size",
-			Message: "max receive message size must be positive",
-		})
+	if err := sharedconfig.ValidatePositive(c.GRPC.MaxRecvMsgSize, "grpc.max_recv_msg_size"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	if c.GRPC.MaxSendMsgSize <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "grpc.max_send_msg_size",
-			Message: "max send message size must be positive",
-		})
+	if err := sharedconfig.ValidatePositive(c.GRPC.MaxSendMsgSize, "grpc.max_send_msg_size"); err != nil {
+		errors = append(errors, *err)
 	}
 	
 	// Validate connection timeout
-	if c.GRPC.ConnectionTimeout <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "grpc.connection_timeout",
-			Message: "connection timeout must be positive",
-		})
+	if err := sharedconfig.ValidateTimeout(c.GRPC.ConnectionTimeout, "grpc.connection_timeout"); err != nil {
+		errors = append(errors, *err)
 	}
 	
 	// Validate TLS config
 	if c.GRPC.EnableTLS {
-		if c.GRPC.CertFile == "" {
-			errors = append(errors, ValidationError{
-				Field:   "grpc.cert_file",
-				Message: "cert file is required when TLS is enabled",
-			})
+		if err := sharedconfig.ValidateRequired(c.GRPC.CertFile, "grpc.cert_file"); err != nil {
+			errors = append(errors, *err)
 		}
-		if c.GRPC.KeyFile == "" {
-			errors = append(errors, ValidationError{
-				Field:   "grpc.key_file",
-				Message: "key file is required when TLS is enabled",
-			})
+		if err := sharedconfig.ValidateRequired(c.GRPC.KeyFile, "grpc.key_file"); err != nil {
+			errors = append(errors, *err)
 		}
 	}
 	
@@ -178,19 +157,18 @@ func (c *Config) validateStorageConfig() []ValidationError {
 	
 	// Validate storage type
 	validTypes := []string{"memory", "file"}
-	if !contains(validTypes, c.Storage.Type) {
+	if !sharedconfig.Contains(validTypes, c.Storage.Type) {
 		errors = append(errors, ValidationError{
 			Field:   "storage.type",
-			Message: "invalid storage type",
+			Message: fmt.Sprintf("invalid storage type, must be one of: %s", strings.Join(validTypes, ", ")),
 		})
 	}
 	
 	// Validate file storage specific config
-	if c.Storage.Type == "file" && c.Storage.DataDir == "" {
-		errors = append(errors, ValidationError{
-			Field:   "storage.data_dir",
-			Message: "data directory is required for file storage",
-		})
+	if c.Storage.Type == "file" {
+		if err := sharedconfig.ValidateRequired(c.Storage.DataDir, "storage.data_dir"); err != nil {
+			errors = append(errors, *err)
+		}
 	}
 	
 	return errors
@@ -201,7 +179,7 @@ func (c *Config) validateClientConfig() []ValidationError {
 	
 	// Validate client type
 	validTypes := []string{"local", "rest", "grpc"}
-	if c.Client.Type != "" && !contains(validTypes, c.Client.Type) {
+	if c.Client.Type != "" && !sharedconfig.Contains(validTypes, c.Client.Type) {
 		errors = append(errors, ValidationError{
 			Field:   "client.type",
 			Message: fmt.Sprintf("invalid client type, must be one of: %s", strings.Join(validTypes, ", ")),
@@ -209,11 +187,8 @@ func (c *Config) validateClientConfig() []ValidationError {
 	}
 	
 	// Validate timeout
-	if c.Client.Timeout <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "client.timeout",
-			Message: "client timeout must be positive",
-		})
+	if err := sharedconfig.ValidateTimeout(c.Client.Timeout, "client.timeout"); err != nil {
+		errors = append(errors, *err)
 	}
 	
 	return errors
@@ -223,19 +198,17 @@ func (c *Config) validateSecurityConfig() []ValidationError {
 	var errors []ValidationError
 	
 	// Validate API key if auth is enabled
-	if c.Security.EnableAuth && c.Security.APIKey == "" {
-		errors = append(errors, ValidationError{
-			Field:   "security.api_key",
-			Message: "API key is required when authentication is enabled",
-		})
+	if c.Security.EnableAuth {
+		if err := sharedconfig.ValidateRequired(c.Security.APIKey, "security.api_key"); err != nil {
+			errors = append(errors, *err)
+		}
 	}
 	
 	// Validate API key strength
-	if c.Security.APIKey != "" && len(c.Security.APIKey) < 16 {
-		errors = append(errors, ValidationError{
-			Field:   "security.api_key",
-			Message: "API key must be at least 16 characters long",
-		})
+	if c.Security.APIKey != "" {
+		if err := sharedconfig.ValidateAPIKey(c.Security.APIKey, "security.api_key"); err != nil {
+			errors = append(errors, *err)
+		}
 	}
 	
 	return errors
@@ -255,42 +228,10 @@ func (c *Config) validateCrossConfig() []ValidationError {
 	return errors
 }
 
-// Helper functions
-func isValidPort(port string) bool {
-	return sharedconfig.ValidatePort(port, "port") == nil
-}
-
-func contains(slice []string, item string) bool {
-	return sharedconfig.Contains(slice, item)
-}
-
-// ValidateNetworkAddress validates a network address
+// ValidateNetworkAddress validates a network address using shared validation
 func ValidateNetworkAddress(address string) error {
-	host, port, err := net.SplitHostPort(address)
-	if err != nil {
-		return fmt.Errorf("invalid address format: %v", err)
-	}
-	
-	// Validate host
-	if host == "" {
-		return fmt.Errorf("host cannot be empty")
-	}
-	
-	// Validate port
-	if !isValidPort(port) {
-		return fmt.Errorf("invalid port: %s", port)
-	}
-	
-	return nil
-}
-
-// ValidateTimeout validates a timeout duration
-func ValidateTimeout(timeout time.Duration, name string) error {
-	if timeout <= 0 {
-		return fmt.Errorf("%s timeout must be positive", name)
-	}
-	if timeout > 24*time.Hour {
-		return fmt.Errorf("%s timeout cannot exceed 24 hours", name)
+	if err := sharedconfig.ValidateNetworkAddress(address, "address"); err != nil {
+		return fmt.Errorf(err.Message)
 	}
 	return nil
 }

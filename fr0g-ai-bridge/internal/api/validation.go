@@ -2,10 +2,9 @@ package api
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
-	"pkg/config"
+	sharedconfig "pkg/config"
 )
 
 
@@ -87,7 +86,7 @@ func ValidateMessage(role, content string) error {
 	if len(content) > 32000 { // Increased limit for modern models
 		return fmt.Errorf("content too long (max 32000 characters)")
 	}
-	if err := config.ValidateRole(role); err != nil {
+	if err := sharedconfig.ValidateRole(role); err != nil {
 		return fmt.Errorf(err.Message)
 	}
 	
@@ -101,7 +100,7 @@ func ValidateMessage(role, content string) error {
 
 // ValidateModel checks if the model name is valid
 func ValidateModel(model string) error {
-	if err := config.ValidateModel(model); err != nil {
+	if err := sharedconfig.ValidateModel(model); err != nil {
 		return fmt.Errorf(err.Message)
 	}
 	

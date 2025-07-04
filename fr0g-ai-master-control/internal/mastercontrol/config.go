@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v2"
+	sharedconfig "pkg/config"
 )
 
 // MCPConfig holds the Master Control Program configuration
@@ -47,6 +48,33 @@ func DefaultMCPConfig() *MCPConfig {
 	}
 }
 
+// Validate validates the MCP configuration
+func (c *MCPConfig) Validate() sharedconfig.ValidationErrors {
+	var errors []sharedconfig.ValidationError
+	
+	if err := sharedconfig.ValidatePositive(c.MaxConcurrentWorkflows, "max_concurrent_workflows"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if err := sharedconfig.ValidateRange(c.AdaptationThreshold, 0, 1, "adaptation_threshold"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if err := sharedconfig.ValidateTimeout(c.MemoryRetention, "memory_retention"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if err := sharedconfig.ValidateTimeout(c.HealthCheckInterval, "health_check_interval"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if err := sharedconfig.ValidateTimeout(c.MetricsInterval, "metrics_interval"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	return sharedconfig.ValidationErrors(errors)
+}
+
 // LoadMCPConfig loads MCP configuration from various sources
 func LoadMCPConfig(configPath string) (*MCPConfig, error) {
 	config := DefaultMCPConfig()
@@ -62,6 +90,11 @@ func LoadMCPConfig(configPath string) (*MCPConfig, error) {
 				return nil, err
 			}
 		}
+	}
+	
+	// Validate the loaded configuration
+	if errors := config.Validate(); errors.HasErrors() {
+		return nil, errors
 	}
 	
 	return config, nil
