@@ -107,6 +107,16 @@
 
 ## Known Issues 🐛
 
+### 🔧 CENTRALIZED CONFIGURATION POLICY - PROJECT-WIDE
+- **USE SHARED CONFIG**: Always use `pkg/config/` for configuration and validation
+- **NO DUPLICATE CONFIG**: Never create component-specific config/validation libraries
+- **EXTEND SHARED TYPES**: Embed shared config types, add project-specific fields as needed
+- **CONTRIBUTE IMPROVEMENTS**: Add new validation functions to `pkg/config/` when needed
+- **IMPORT PATTERN**: Always use `import sharedconfig "pkg/config"` for consistency
+- **VALIDATION STANDARD**: Use `sharedconfig.ValidationErrors` for all validation responses
+- **LOADER USAGE**: Use `sharedconfig.NewLoader()` for configuration loading
+- **NO LOCAL VALIDATION**: Never implement validation functions that duplicate shared ones
+
 ### Configuration Validation
 - ✅ **FULLY IMPLEMENTED**: All validation functions working correctly
 - ✅ Config.Validate() method successfully integrated with existing codebase
