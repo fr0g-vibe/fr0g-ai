@@ -52,6 +52,16 @@
 - **REAL VALIDATION**: Implement comprehensive data validation, not placeholder checks
 - **PRODUCTION READY**: All AIP functionality must handle real-world data and scale
 
+### 🔧 CENTRALIZED CONFIGURATION RULES - AIP COMPONENT
+- **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
+- **NO LOCAL CONFIG**: Never create `internal/config/validation.go` or similar files
+- **EXTEND SHARED**: Embed `sharedconfig.ServerConfig`, `sharedconfig.SecurityConfig` etc.
+- **VALIDATION PATTERN**: Use `sharedconfig.ValidationErrors` for all validation
+- **IMPORT STANDARD**: Always `import sharedconfig "pkg/config"`
+- **CONTRIBUTE BACK**: Add AIP-specific validation functions to `pkg/config/` if needed
+- **NO DUPLICATION**: Never implement port, timeout, or other validation already in shared config
+- **LOADER USAGE**: Use `sharedconfig.NewLoader()` for YAML and environment loading
+
 ### 🧠 AIP SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Core AI processing engine for personas and identities
 - **Data Model**: Rich attributes system with comprehensive persona modeling

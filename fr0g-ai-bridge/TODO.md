@@ -49,6 +49,16 @@
 - **REAL RATE LIMITING**: Implement actual rate limiting with real storage backends
 - **PRODUCTION READY**: All bridge functionality must be production-ready for real traffic
 
+### 🔧 CENTRALIZED CONFIGURATION RULES - BRIDGE COMPONENT
+- **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
+- **NO LOCAL CONFIG**: Never create bridge-specific config/validation libraries
+- **EMBED SHARED**: Use `sharedconfig.SecurityConfig`, `sharedconfig.MonitoringConfig` etc.
+- **VALIDATION STANDARD**: Use `sharedconfig.ValidationErrors` for all validation responses
+- **IMPORT PATTERN**: Always `import sharedconfig "pkg/config"`
+- **EXTEND WHEN NEEDED**: Add bridge-specific validation to `pkg/config/` if required
+- **NO DUPLICATION**: Never reimplement role, model, or other validation in shared config
+- **LOADER STANDARD**: Use `sharedconfig.NewLoader()` for configuration loading
+
 ### 🌉 BRIDGE SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Integration bridge between OpenWebUI and fr0g-ai-aip
 - **Communication**: REST API inbound, gRPC outbound to AIP service
@@ -173,7 +183,7 @@
 - [ ] Refactor main.go - extract server setup logic
 - [ ] Implement proper dependency injection
 - [ ] Add comprehensive error types
-- [ ] Improve configuration management
+- [x] **COMPLETED**: ✅ Migrated to centralized configuration system (`pkg/config/`)
 
 ### Testing
 - [ ] Add unit tests for all handlers

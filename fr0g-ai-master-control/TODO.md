@@ -47,6 +47,16 @@
 - **REAL NETWORK CALLS**: Make actual HTTP/gRPC calls to external services
 - **PRODUCTION READY**: All implementations must be production-ready, not demo code
 
+### 🔧 CENTRALIZED CONFIGURATION RULES - MASTER CONTROL COMPONENT
+- **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
+- **NO LOCAL CONFIG**: Never create master-control-specific config/validation libraries
+- **EXTEND SHARED**: Embed shared config types, add MCP-specific fields as needed
+- **VALIDATION STANDARD**: Use `sharedconfig.ValidationErrors` for all validation
+- **IMPORT PATTERN**: Always `import sharedconfig "pkg/config"`
+- **CONTRIBUTE SPECIALIZED**: Add threat-processing validation to `pkg/config/` when needed
+- **NO DUPLICATION**: Never reimplement port, timeout, range validation already in shared config
+- **LOADER USAGE**: Use `sharedconfig.NewLoader()` for configuration loading
+
 ### 🐹 GOLANG DEVELOPMENT STANDARDS
 - **Go Version**: Use Go 1.21+ features and syntax
 - **Module Structure**: Each service is a separate Go module with its own `go.mod`
@@ -328,9 +338,10 @@
 
 ### Configuration Cleanup
 - [x] **COMPLETED**: ✅ Validate all environment variables are used (MCP demo shows all configs active)
-- [ ] **LOW**: Remove unused configuration options
-- [ ] **MEDIUM**: Add configuration validation
-- [ ] **LOW**: Implement configuration hot-reloading
+- [x] **COMPLETED**: ✅ Migrated to centralized configuration system (`pkg/config/`)
+- [ ] **LOW**: Remove unused configuration options (use shared config types)
+- [ ] **MEDIUM**: Add configuration validation (use `sharedconfig.ValidationErrors`)
+- [ ] **LOW**: Implement configuration hot-reloading (extend shared loader)
 
 ## 📊 SYSTEM PERFORMANCE METRICS (INTELLIGENCE BREAKTHROUGH):
 ```
