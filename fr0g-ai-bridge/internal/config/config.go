@@ -182,7 +182,7 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	if apiKey := os.Getenv("OPENWEBUI_API_KEY"); apiKey != "" {
 		config.OpenWebUI.APIKey = apiKey
-		fmt.Printf("OpenWebUI API Key loaded: %s...\n", apiKey[:min(8, len(apiKey))])
+		fmt.Printf("OpenWebUI API Key loaded: %s\n", apiKey)
 	} else {
 		fmt.Println("WARNING: No OPENWEBUI_API_KEY found in environment")
 	}

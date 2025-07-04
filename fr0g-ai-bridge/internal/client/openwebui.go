@@ -51,7 +51,7 @@ func (c *OpenWebUIClient) ChatCompletion(ctx context.Context, req *models.ChatCo
 	httpReq.Header.Set("Content-Type", "application/json")
 	if c.apiKey != "" {
 		httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
-		fmt.Printf("DEBUG: Using API key for OpenWebUI: %s...\n", c.apiKey[:min(10, len(c.apiKey))])
+		fmt.Printf("DEBUG: Using API key for OpenWebUI: %s\n", c.apiKey)
 	} else {
 		fmt.Println("DEBUG: No API key configured for OpenWebUI")
 	}
@@ -128,7 +128,7 @@ func (c *OpenWebUIClient) HealthCheck(ctx context.Context) error {
 
 	if c.apiKey != "" {
 		httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
-		fmt.Printf("DEBUG: HealthCheck using API key: %s...\n", c.apiKey[:min(10, len(c.apiKey))])
+		fmt.Printf("DEBUG: HealthCheck using API key: %s\n", c.apiKey)
 	} else {
 		fmt.Println("DEBUG: HealthCheck - No API key configured")
 	}
@@ -190,7 +190,7 @@ func (c *OpenWebUIClient) GetModels() ([]Model, error) {
 
 	if c.apiKey != "" {
 		req.Header.Set("Authorization", "Bearer "+c.apiKey)
-		fmt.Printf("DEBUG: GetModels using API key: %s...\n", c.apiKey[:min(10, len(c.apiKey))])
+		fmt.Printf("DEBUG: GetModels using API key: %s\n", c.apiKey)
 	} else {
 		fmt.Println("DEBUG: GetModels - No API key configured")
 	}

@@ -133,12 +133,7 @@ func (s *RESTServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 		response.Details = map[string]interface{}{
 			"openwebui_url": s.config.OpenWebUI.BaseURL,
 			"has_api_key":   s.config.OpenWebUI.APIKey != "",
-			"api_key_prefix": func() string {
-				if s.config.OpenWebUI.APIKey != "" && len(s.config.OpenWebUI.APIKey) > 8 {
-					return s.config.OpenWebUI.APIKey[:8] + "..."
-				}
-				return "none"
-			}(),
+			"api_key_value": s.config.OpenWebUI.APIKey,
 			"timeout_seconds": s.config.OpenWebUI.Timeout,
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
