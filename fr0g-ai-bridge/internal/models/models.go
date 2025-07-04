@@ -44,9 +44,11 @@ type ChatCompletionResponse struct {
 
 // HealthResponse represents a health check response
 type HealthResponse struct {
-	Status  string    `json:"status"`
-	Time    time.Time `json:"time"`
-	Version string    `json:"version"`
+	Status  string                 `json:"status"`
+	Time    time.Time              `json:"time"`
+	Version string                 `json:"version"`
+	Error   string                 `json:"error,omitempty"`
+	Details map[string]interface{} `json:"details,omitempty"`
 }
 
 // ErrorResponse represents an error response
