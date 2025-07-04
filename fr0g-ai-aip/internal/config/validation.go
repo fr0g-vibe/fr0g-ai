@@ -80,53 +80,35 @@ func (c *Config) Validate() ValidationErrors {
 }
 
 func (c *Config) validateHTTPConfig() []ValidationError {
-	var errors []sharedconfig.ValidationError
+	var errors []ValidationError
 	
 	// Validate port
-	if c.HTTP.Port == "" {
-		errors = append(errors, sharedconfig.ValidationError{
-			Field:   "http.port",
-			Message: "port is required",
-		})
+	if err := sharedconfig.ValidateRequired(c.HTTP.Port, "http.port"); err != nil {
+		errors = append(errors, *err)
 	} else if err := sharedconfig.ValidatePort(c.HTTP.Port, "http.port"); err != nil {
 		errors = append(errors, *err)
 	}
 	
-	// Validate timeouts
-	if c.HTTP.ReadTimeout <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "http.read_timeout",
-			Message: "read timeout must be positive",
-		})
+	// Validate timeouts using shared validation
+	if err := sharedconfig.ValidateTimeout(c.HTTP.ReadTimeout, "http.read_timeout"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	if c.HTTP.WriteTimeout <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "http.write_timeout",
-			Message: "write timeout must be positive",
-		})
+	if err := sharedconfig.ValidateTimeout(c.HTTP.WriteTimeout, "http.write_timeout"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	if c.HTTP.ShutdownTimeout <= 0 {
-		errors = append(errors, ValidationError{
-			Field:   "http.shutdown_timeout",
-			Message: "shutdown timeout must be positive",
-		})
+	if err := sharedconfig.ValidateTimeout(c.HTTP.ShutdownTimeout, "http.shutdown_timeout"); err != nil {
+		errors = append(errors, *err)
 	}
 	
 	// Validate TLS config
 	if c.HTTP.EnableTLS {
-		if c.HTTP.CertFile == "" {
-			errors = append(errors, ValidationError{
-				Field:   "http.cert_file",
-				Message: "cert file is required when TLS is enabled",
-			})
+		if err := sharedconfig.ValidateRequired(c.HTTP.CertFile, "http.cert_file"); err != nil {
+			errors = append(errors, *err)
 		}
-		if c.HTTP.KeyFile == "" {
-			errors = append(errors, ValidationError{
-				Field:   "http.key_file",
-				Message: "key file is required when TLS is enabled",
-			})
+		if err := sharedconfig.ValidateRequired(c.HTTP.KeyFile, "http.key_file"); err != nil {
+			errors = append(errors, *err)
 		}
 	}
 	
