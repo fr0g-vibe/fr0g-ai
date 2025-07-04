@@ -15,6 +15,11 @@ bin/
 *.so
 *.dylib
 
+# Specific binary files that may have been accidentally committed
+fr0g-ai-aip/bin/fr0g-ai-aip
+fr0g-ai-bridge/bin/fr0g-ai-bridge
+fr0g-ai-master-control/bin/fr0g-ai-master-control
+
 # Go build artifacts
 *.test
 *.out
