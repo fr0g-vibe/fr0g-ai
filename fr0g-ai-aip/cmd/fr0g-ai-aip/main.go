@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai-aip/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai-aip/internal/cli"
