@@ -29,6 +29,25 @@ func (ves ValidationErrors) Error() string {
 	return strings.Join(messages, "; ")
 }
 
+// Validate validates the entire configuration
+func (c *Config) Validate() error {
+	var allErrors []ValidationError
+	
+	// Collect all validation errors
+	allErrors = append(allErrors, c.validateHTTPConfig()...)
+	allErrors = append(allErrors, c.validateGRPCConfig()...)
+	allErrors = append(allErrors, c.validateStorageConfig()...)
+	allErrors = append(allErrors, c.validateClientConfig()...)
+	allErrors = append(allErrors, c.validateSecurityConfig()...)
+	allErrors = append(allErrors, c.validateCrossConfig()...)
+	
+	if len(allErrors) > 0 {
+		return ValidationErrors(allErrors)
+	}
+	
+	return nil
+}
+
 func (c *Config) validateHTTPConfig() []ValidationError {
 	var errors []ValidationError
 	
