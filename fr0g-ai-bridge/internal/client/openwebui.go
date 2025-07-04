@@ -51,6 +51,9 @@ func (c *OpenWebUIClient) ChatCompletion(ctx context.Context, req *models.ChatCo
 	httpReq.Header.Set("Content-Type", "application/json")
 	if c.apiKey != "" {
 		httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
+		fmt.Printf("DEBUG: Using API key for OpenWebUI: %s...\n", c.apiKey[:min(10, len(c.apiKey))])
+	} else {
+		fmt.Println("DEBUG: No API key configured for OpenWebUI")
 	}
 
 	// Send request
@@ -68,6 +71,7 @@ func (c *OpenWebUIClient) ChatCompletion(ctx context.Context, req *models.ChatCo
 
 	// Check for HTTP errors
 	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("DEBUG: OpenWebUI API error - Status: %d, Response: %s\n", resp.StatusCode, string(respBody))
 		return nil, fmt.Errorf("OpenWebUI API returned status %d: %s", resp.StatusCode, string(respBody))
 	}
 
@@ -124,6 +128,9 @@ func (c *OpenWebUIClient) HealthCheck(ctx context.Context) error {
 
 	if c.apiKey != "" {
 		httpReq.Header.Set("Authorization", "Bearer "+c.apiKey)
+		fmt.Printf("DEBUG: HealthCheck using API key: %s...\n", c.apiKey[:min(10, len(c.apiKey))])
+	} else {
+		fmt.Println("DEBUG: HealthCheck - No API key configured")
 	}
 
 	resp, err := c.httpClient.Do(httpReq)
@@ -133,6 +140,8 @@ func (c *OpenWebUIClient) HealthCheck(ctx context.Context) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("DEBUG: HealthCheck failed - Status: %d, Response: %s\n", resp.StatusCode, string(body))
 		return fmt.Errorf("health check returned status %d", resp.StatusCode)
 	}
 
@@ -181,6 +190,9 @@ func (c *OpenWebUIClient) GetModels() ([]Model, error) {
 
 	if c.apiKey != "" {
 		req.Header.Set("Authorization", "Bearer "+c.apiKey)
+		fmt.Printf("DEBUG: GetModels using API key: %s...\n", c.apiKey[:min(10, len(c.apiKey))])
+	} else {
+		fmt.Println("DEBUG: GetModels - No API key configured")
 	}
 
 	resp, err := c.httpClient.Do(req)
@@ -190,6 +202,8 @@ func (c *OpenWebUIClient) GetModels() ([]Model, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("DEBUG: GetModels failed - Status: %d, Response: %s\n", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("API request failed with status %d", resp.StatusCode)
 	}
 
