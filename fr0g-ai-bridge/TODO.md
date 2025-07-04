@@ -1,5 +1,60 @@
 # fr0g-ai-bridge TODO
 
+## 🤖 AI CODE GENERATION GUIDELINES - BRIDGE COMPONENT
+
+### 📋 ESSENTIAL CONTEXT FILES FOR THIS COMPONENT
+**ALWAYS ADD THESE FILES TO AI CHAT CONTEXT:**
+- `README.md` (project overview and component boundaries)
+- `docker-compose.yml` (service configuration)
+- `Makefile` (build commands)
+- `.env.example` (configuration template)
+- `fr0g-ai-bridge/TODO.md` (THIS FILE - current status)
+- `fr0g-ai-bridge/internal/api/validation.go` (current implementation)
+
+### 🚨 COMPONENT BOUNDARY RULES
+- **FOCUS AREA**: Only work on `fr0g-ai-bridge/` directory and files
+- **SERVICE ROLE**: Integration bridge between OpenWebUI and fr0g-ai-aip
+- **PORTS**: HTTP :8082, gRPC :9091 (configured in docker-compose)
+- **DEPENDENCIES**: Calls fr0g-ai-aip via gRPC, integrates with OpenWebUI
+
+### ⚠️ CROSS-COMPONENT INTERACTION RULES
+- **DO NOT** edit files in `fr0g-ai-aip/` or `fr0g-ai-master-control/` directories
+- **DO NOT** modify other components' TODO.md files
+- **ASK FIRST** if you need fr0g-ai-aip protobuf definitions or gRPC interfaces
+- **ASK FIRST** if you need to modify shared files (docker-compose.yml, Makefile, etc.)
+- **BE AWARE** that you consume fr0g-ai-aip services but don't implement them
+
+### 🏗️ PROJECT STRUCTURE RULES
+- **Repository URL**: Always use `https://github.com/fr0g-vibe/fr0g-ai`
+- **Working Directory**: AI agents start in `/fr0g-ai` root directory
+- **Module Navigation**: MUST `cd fr0g-ai-bridge` before running Go commands
+- **Service Ports**: HTTP :8082, gRPC :9091 (configured in docker-compose)
+
+### 🌉 BRIDGE SERVICE SPECIFIC GUIDELINES
+- **Primary Role**: Integration bridge between OpenWebUI and fr0g-ai-aip
+- **Communication**: REST API inbound, gRPC outbound to AIP service
+- **Validation**: Comprehensive request/response validation required
+- **Error Handling**: Graceful degradation when AIP service unavailable
+
+### 🔌 INTEGRATION PATTERNS
+- **OpenWebUI Client**: Implement HTTP client with retry logic
+- **AIP gRPC Client**: Use connection pooling and health checking
+- **Service Discovery**: Register with service registry on startup
+- **Configuration**: Environment-based configuration with validation
+
+### 📡 API DESIGN STANDARDS
+- **REST Endpoints**: Follow OpenAPI 3.0 specification
+- **gRPC Services**: Use protobuf definitions from AIP service
+- **Request Validation**: Validate all inputs before processing
+- **Response Format**: Consistent JSON response structure
+- **Error Codes**: Use appropriate HTTP status codes
+
+### 🛡️ SECURITY IMPLEMENTATION
+- **API Authentication**: Implement API key validation
+- **Request Sanitization**: Clean all user inputs
+- **Rate Limiting**: Implement per-client rate limiting
+- **CORS**: Configure CORS for web client access
+
 ## High Priority - Core Functionality
 
 ### Validation System

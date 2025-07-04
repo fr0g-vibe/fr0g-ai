@@ -1,5 +1,61 @@
 # fr0g-ai-master-control TODO
 
+## 🤖 AI CODE GENERATION GUIDELINES - MASTER CONTROL COMPONENT
+
+### 📋 ESSENTIAL CONTEXT FILES FOR THIS COMPONENT
+**ALWAYS ADD THESE FILES TO AI CHAT CONTEXT:**
+- `README.md` (project overview and component boundaries)
+- `docker-compose.yml` (service configuration)
+- `Makefile` (build commands)
+- `.env.example` (configuration template)
+- `fr0g-ai-master-control/TODO.md` (THIS FILE - current status)
+
+### 🚨 COMPONENT BOUNDARY RULES
+- **FOCUS AREA**: Only work on `fr0g-ai-master-control/` directory and files
+- **SERVICE ROLE**: Orchestration, cognitive processing, threat vector processing
+- **PORTS**: HTTP :8081 (configured in docker-compose)
+- **DEPENDENCIES**: Can call fr0g-ai-aip via gRPC, service registry integration
+
+### ⚠️ CROSS-COMPONENT INTERACTION RULES
+- **DO NOT** edit files in `fr0g-ai-aip/` or `fr0g-ai-bridge/` directories
+- **DO NOT** modify other components' TODO.md files
+- **ASK FIRST** if you need information about other components' APIs or interfaces
+- **ASK FIRST** if you need to modify shared files (docker-compose.yml, Makefile, etc.)
+- **BE AWARE** of other components but don't implement their functionality
+
+### 🏗️ PROJECT STRUCTURE RULES
+- **Repository URL**: Always use `https://github.com/fr0g-vibe/fr0g-ai`
+- **Working Directory**: AI agents start in `/fr0g-ai` root directory
+- **Module Navigation**: MUST `cd fr0g-ai-master-control` before running Go commands
+- **Service Ports**: HTTP :8081 (configured in docker-compose)
+
+### 🐹 GOLANG DEVELOPMENT STANDARDS
+- **Go Version**: Use Go 1.21+ features and syntax
+- **Module Structure**: Each service is a separate Go module with its own `go.mod`
+- **Package Naming**: Use lowercase, no underscores (e.g., `mastercontrol`, not `master_control`)
+- **Error Handling**: Always handle errors explicitly, never ignore with `_`
+- **Context Usage**: Pass `context.Context` as first parameter in functions that need it
+- **Logging**: Use structured logging with consistent fields
+
+### 🏛️ ARCHITECTURE PATTERNS
+- **Interface Design**: Define interfaces in the package that uses them
+- **Dependency Injection**: Use constructor functions that accept dependencies
+- **Configuration**: Use struct-based configuration with YAML tags
+- **Service Communication**: Use gRPC for inter-service communication
+- **Error Types**: Create custom error types for domain-specific errors
+
+### 🧪 TESTING STANDARDS
+- **Test Files**: Use `_test.go` suffix
+- **Test Structure**: Follow Table-Driven Tests pattern
+- **Mocking**: Use interfaces for mocking dependencies
+- **Integration Tests**: Place in `tests/` directory
+
+### 🔒 SECURITY REQUIREMENTS
+- **Input Validation**: Validate all external inputs
+- **Error Messages**: Don't leak sensitive information in errors
+- **Logging**: Don't log sensitive data (passwords, tokens, etc.)
+- **Dependencies**: Keep dependencies up to date
+
 ## STATUS UPDATE - 2025-07-04
 **BREAKTHROUGH ACHIEVEMENT**: MCP now demonstrates ACTUAL ARTIFICIAL INTELLIGENCE! 🧠✨
 

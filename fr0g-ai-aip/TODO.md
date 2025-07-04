@@ -1,5 +1,62 @@
 # fr0g-ai-aip TODO
 
+## 🤖 AI CODE GENERATION GUIDELINES - AIP COMPONENT
+
+### 📋 ESSENTIAL CONTEXT FILES FOR THIS COMPONENT
+**ALWAYS ADD THESE FILES TO AI CHAT CONTEXT:**
+- `README.md` (project overview and component boundaries)
+- `docker-compose.yml` (service configuration)
+- `Makefile` (build commands)
+- `.env.example` (configuration template)
+- `fr0g-ai-aip/TODO.md` (THIS FILE - current status)
+- `fr0g-ai-aip/internal/types/identity.go` (core data structures)
+- `fr0g-ai-aip/internal/grpc/pb/persona.pb.go` (protobuf definitions)
+- `fr0g-ai-aip/internal/config/validation.go` (validation framework)
+- `fr0g-ai-aip/internal/attributes/demographics/processor.go` (processing patterns)
+
+### 🚨 COMPONENT BOUNDARY RULES
+- **FOCUS AREA**: Only work on `fr0g-ai-aip/` directory and files
+- **SERVICE ROLE**: Core AI processing engine for personas and identities
+- **PORTS**: HTTP :8080, gRPC :9090 (configured in docker-compose)
+- **DEPENDENCIES**: Provides services to fr0g-ai-bridge and fr0g-ai-master-control
+
+### ⚠️ CROSS-COMPONENT INTERACTION RULES
+- **DO NOT** edit files in `fr0g-ai-bridge/` or `fr0g-ai-master-control/` directories
+- **DO NOT** modify other components' TODO.md files
+- **ASK FIRST** if changes affect gRPC interfaces that other services consume
+- **ASK FIRST** if you need to modify shared files (docker-compose.yml, Makefile, etc.)
+- **BE AWARE** that other services depend on your gRPC interfaces
+
+### 🏗️ PROJECT STRUCTURE RULES
+- **Repository URL**: Always use `https://github.com/fr0g-vibe/fr0g-ai`
+- **Working Directory**: AI agents start in `/fr0g-ai` root directory
+- **Module Navigation**: MUST `cd fr0g-ai-aip` before running Go commands
+- **Service Ports**: HTTP :8080, gRPC :9090 (configured in docker-compose)
+
+### 🧠 AIP SERVICE SPECIFIC GUIDELINES
+- **Primary Role**: Core AI processing engine for personas and identities
+- **Data Model**: Rich attributes system with comprehensive persona modeling
+- **Storage**: File-based storage with future database migration support
+- **Processing**: Real-time attribute validation and processing
+
+### 🎭 PERSONA AND IDENTITY MODELING
+- **Rich Attributes**: Demographics, Psychographics, LifeHistory, Cultural, Political, Health, Preferences, Behavioral
+- **Validation**: Comprehensive validation for all attribute types
+- **Processing**: Real-time processing and analysis of persona data
+- **Relationships**: Identity-persona relationships and mappings
+
+### 📊 DATA PROCESSING PATTERNS
+- **Attribute Processors**: Separate processors for each attribute category
+- **Validation Pipeline**: Multi-stage validation with detailed error reporting
+- **Storage Abstraction**: Interface-based storage for multiple backends
+- **Caching**: Implement caching for frequently accessed data
+
+### 🗄️ STORAGE AND PERSISTENCE
+- **File Storage**: JSON-based file storage for development
+- **Database Migration**: Prepare for PostgreSQL/MongoDB migration
+- **Backup/Restore**: Implement data backup and restore functionality
+- **Data Integrity**: Validation and integrity checks for all data
+
 ## High Priority - Core Functionality
 
 ### Rich Attributes Implementation
