@@ -133,6 +133,9 @@ func TestExampleConfigValidation(t *testing.T) {
 					HTTPPort: 8080,
 					GRPCPort: 9090,
 				},
+				Storage: sharedconfig.StorageConfig{
+					Type: "memory",
+				},
 				ProjectName: "test-project",
 				MaxWorkers:  5,
 				Features:    []string{"feature1"},
@@ -145,6 +148,9 @@ func TestExampleConfigValidation(t *testing.T) {
 				Server: sharedconfig.ServerConfig{
 					HTTPPort: -1,
 					GRPCPort: 9090,
+				},
+				Storage: sharedconfig.StorageConfig{
+					Type: "memory",
 				},
 				ProjectName: "test-project",
 				MaxWorkers:  5,
@@ -160,6 +166,9 @@ func TestExampleConfigValidation(t *testing.T) {
 					HTTPPort: 8080,
 					GRPCPort: 9090,
 				},
+				Storage: sharedconfig.StorageConfig{
+					Type: "memory",
+				},
 				MaxWorkers: 5,
 				Features:   []string{"feature1"},
 			},
@@ -172,6 +181,9 @@ func TestExampleConfigValidation(t *testing.T) {
 				Server: sharedconfig.ServerConfig{
 					HTTPPort: 8080,
 					GRPCPort: 9090,
+				},
+				Storage: sharedconfig.StorageConfig{
+					Type: "memory",
 				},
 				ProjectName: "test-project",
 				MaxWorkers:  -1,
@@ -186,6 +198,9 @@ func TestExampleConfigValidation(t *testing.T) {
 				Server: sharedconfig.ServerConfig{
 					HTTPPort: 8080,
 					GRPCPort: 9090,
+				},
+				Storage: sharedconfig.StorageConfig{
+					Type: "memory",
 				},
 				ProjectName: "test-project",
 				MaxWorkers:  5,
