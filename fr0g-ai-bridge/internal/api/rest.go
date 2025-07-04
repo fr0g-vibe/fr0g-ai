@@ -129,10 +129,26 @@ func (s *RESTServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		response.Status = "unhealthy"
+		response.Error = err.Error()
+		response.Details = map[string]interface{}{
+			"openwebui_url": s.config.OpenWebUI.BaseURL,
+			"has_api_key":   s.config.OpenWebUI.APIKey != "",
+			"api_key_prefix": func() string {
+				if s.config.OpenWebUI.APIKey != "" && len(s.config.OpenWebUI.APIKey) > 8 {
+					return s.config.OpenWebUI.APIKey[:8] + "..."
+				}
+				return "none"
+			}(),
+			"timeout_seconds": s.config.OpenWebUI.Timeout,
+		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 		log.Printf("Health check failed: %v", err)
 	} else {
 		response.Status = "healthy"
+		response.Details = map[string]interface{}{
+			"openwebui_url": s.config.OpenWebUI.BaseURL,
+			"authenticated": true,
+		}
 		w.WriteHeader(http.StatusOK)
 	}
 
