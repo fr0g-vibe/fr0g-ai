@@ -6,16 +6,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 // WebhookManager handles incoming webhook requests and routes them for processing
 type WebhookManager struct {
 	server     *http.Server
-	router     *mux.Router
+	mux        *http.ServeMux
 	processors map[string]WebhookProcessor
 	config     *WebhookConfig
 	mu         sync.RWMutex
@@ -29,7 +28,7 @@ func NewWebhookManager(config *WebhookConfig) *WebhookManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	wm := &WebhookManager{
-		router:     mux.NewRouter(),
+		mux:        http.NewServeMux(),
 		processors: make(map[string]WebhookProcessor),
 		config:     config,
 		ctx:        ctx,
@@ -114,25 +113,23 @@ func (wm *WebhookManager) GetRegisteredProcessors() map[string]string {
 // setupRoutes configures the HTTP routes
 func (wm *WebhookManager) setupRoutes() {
 	// Generic webhook endpoint with tag parameter
-	wm.router.HandleFunc("/webhook/{tag}", wm.handleWebhook).Methods("POST")
+	wm.mux.HandleFunc("/webhook/", wm.handleWebhook)
 	
 	// Health check endpoint
-	wm.router.HandleFunc("/health", wm.handleHealth).Methods("GET")
+	wm.mux.HandleFunc("/health", wm.handleHealth)
 	
 	// Status endpoint
-	wm.router.HandleFunc("/status", wm.handleStatus).Methods("GET")
-	
-	// Apply middleware
-	wm.router.Use(wm.loggingMiddleware)
-	wm.router.Use(wm.corsMiddleware)
-	wm.router.Use(wm.requestSizeMiddleware)
+	wm.mux.HandleFunc("/status", wm.handleStatus)
 }
 
 // setupServer configures the HTTP server
 func (wm *WebhookManager) setupServer() {
+	// Wrap mux with middleware
+	handler := wm.requestSizeMiddleware(wm.corsMiddleware(wm.loggingMiddleware(wm.mux)))
+	
 	wm.server = &http.Server{
 		Addr:         fmt.Sprintf("%s:%d", wm.config.Host, wm.config.Port),
-		Handler:      wm.router,
+		Handler:      handler,
 		ReadTimeout:  wm.config.ReadTimeout,
 		WriteTimeout: wm.config.WriteTimeout,
 	}
@@ -140,8 +137,24 @@ func (wm *WebhookManager) setupServer() {
 
 // handleWebhook processes incoming webhook requests
 func (wm *WebhookManager) handleWebhook(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tag := vars["tag"]
+	// Extract tag from URL path
+	path := r.URL.Path
+	if len(path) < 10 || !strings.HasPrefix(path, "/webhook/") {
+		wm.writeErrorResponse(w, http.StatusBadRequest, "Invalid webhook path", "")
+		return
+	}
+	
+	tag := path[9:] // Remove "/webhook/" prefix
+	if tag == "" {
+		wm.writeErrorResponse(w, http.StatusBadRequest, "Missing webhook tag", "")
+		return
+	}
+	
+	// Only allow POST requests
+	if r.Method != "POST" {
+		wm.writeErrorResponse(w, http.StatusMethodNotAllowed, "Only POST method allowed", "")
+		return
+	}
 	
 	// Create webhook request
 	webhookReq := &WebhookRequest{
@@ -194,6 +207,11 @@ func (wm *WebhookManager) handleWebhook(w http.ResponseWriter, r *http.Request) 
 
 // handleHealth provides health check endpoint
 func (wm *WebhookManager) handleHealth(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		wm.writeErrorResponse(w, http.StatusMethodNotAllowed, "Only GET method allowed", "")
+		return
+	}
+	
 	health := map[string]interface{}{
 		"status":     "healthy",
 		"timestamp":  time.Now(),
@@ -207,6 +225,11 @@ func (wm *WebhookManager) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 // handleStatus provides status information
 func (wm *WebhookManager) handleStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		wm.writeErrorResponse(w, http.StatusMethodNotAllowed, "Only GET method allowed", "")
+		return
+	}
+	
 	processors := wm.GetRegisteredProcessors()
 	
 	status := map[string]interface{}{
