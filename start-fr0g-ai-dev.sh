@@ -24,12 +24,14 @@ if [[ ! -f "docker-compose.yml" ]] || [[ ! -f "Makefile" ]] || [[ ! -f ".env.exa
     exit 1
 fi
 
-# Check if .env exists, if not suggest copying from .env.example
+# Check if .env exists, if not copy from .env.example
 if [[ ! -f ".env" ]]; then
     echo "⚠️  No .env file found. Creating from .env.example..."
     cp .env.example .env
     echo "✅ Created .env file from .env.example"
     echo "📝 Please edit .env file with your specific configuration"
+else
+    echo "✅ Existing .env file found - preserving your configuration"
 fi
 
 # Kill existing session if it exists
