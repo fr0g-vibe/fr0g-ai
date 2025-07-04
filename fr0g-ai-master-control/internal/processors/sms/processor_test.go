@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/config"
+	"../../../config"
 )
 
 func TestNewProcessor(t *testing.T) {
