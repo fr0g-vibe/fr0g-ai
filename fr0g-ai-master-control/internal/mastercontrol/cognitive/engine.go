@@ -7,9 +7,6 @@ import (
 	"math"
 	"sync"
 	"time"
-	
-	"github.com/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/cognitive/learning"
-	"github.com/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/cognitive/patterns"
 )
 
 // CognitiveEngine is the core intelligence component of the MCP
@@ -24,8 +21,9 @@ type CognitiveEngine struct {
 	reflections  []Reflection
 	
 	// Intelligence systems
-	adaptiveLearning    *learning.AdaptiveLearning
-	patternRecognition  *patterns.PatternRecognition
+	adaptiveLearning    *AdaptiveLearning
+	patternRecognition  *PatternRecognition
+	metrics            *IntelligenceMetrics
 	
 	// Control
 	ctx    context.Context
@@ -96,6 +94,68 @@ type CognitiveConfig struct {
 	MaxPatterns               int           `yaml:"max_patterns"`
 	MaxInsights               int           `yaml:"max_insights"`
 	MaxReflections            int           `yaml:"max_reflections"`
+}
+
+// Intelligence system types
+type AdaptiveLearning struct {
+	learningRate     float64
+	adaptationFactor float64
+	experiences      []Experience
+	mu               sync.RWMutex
+}
+
+type Experience struct {
+	ID          string                 `json:"id"`
+	Type        string                 `json:"type"`
+	Input       map[string]interface{} `json:"input"`
+	Output      map[string]interface{} `json:"output"`
+	Feedback    float64                `json:"feedback"`
+	Timestamp   time.Time              `json:"timestamp"`
+	Context     map[string]interface{} `json:"context"`
+	Importance  float64                `json:"importance"`
+}
+
+type PatternRecognition struct {
+	patterns    map[string]*RecognizedPattern
+	dataStreams map[string]*DataStream
+	mu          sync.RWMutex
+}
+
+type RecognizedPattern struct {
+	ID          string                 `json:"id"`
+	Type        string                 `json:"type"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Confidence  float64                `json:"confidence"`
+	Frequency   int                    `json:"frequency"`
+	LastSeen    time.Time              `json:"last_seen"`
+	FirstSeen   time.Time              `json:"first_seen"`
+	Triggers    []string               `json:"triggers"`
+	Indicators  map[string]interface{} `json:"indicators"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	Strength    float64                `json:"strength"`
+}
+
+type DataStream struct {
+	ID         string      `json:"id"`
+	Type       string      `json:"type"`
+	Data       []DataPoint `json:"data"`
+	LastUpdate time.Time   `json:"last_update"`
+}
+
+type DataPoint struct {
+	Timestamp time.Time              `json:"timestamp"`
+	Value     interface{}            `json:"value"`
+	Metadata  map[string]interface{} `json:"metadata"`
+}
+
+type IntelligenceMetrics struct {
+	LearningRate         float64   `json:"learning_rate"`
+	PatternCount         int       `json:"pattern_count"`
+	AdaptationScore      float64   `json:"adaptation_score"`
+	EfficiencyIndex      float64   `json:"efficiency_index"`
+	EmergentCapabilities int       `json:"emergent_capabilities"`
+	LastUpdate           time.Time `json:"last_update"`
 }
 
 // Interfaces for dependency injection
@@ -644,10 +704,27 @@ func randomString(length int) string {
 // initializeIntelligenceSystems initializes learning and pattern recognition
 func (ce *CognitiveEngine) initializeIntelligenceSystems() {
 	// Initialize adaptive learning
-	ce.adaptiveLearning = learning.NewAdaptiveLearning()
+	ce.adaptiveLearning = &AdaptiveLearning{
+		learningRate:     0.1,
+		adaptationFactor: 0.05,
+		experiences:      make([]Experience, 0),
+	}
 	
 	// Initialize pattern recognition
-	ce.patternRecognition = patterns.NewPatternRecognition()
+	ce.patternRecognition = &PatternRecognition{
+		patterns:    make(map[string]*RecognizedPattern),
+		dataStreams: make(map[string]*DataStream),
+	}
+	
+	// Initialize metrics
+	ce.metrics = &IntelligenceMetrics{
+		LearningRate:         0.1,
+		PatternCount:         0,
+		AdaptationScore:      0.0,
+		EfficiencyIndex:      0.0,
+		EmergentCapabilities: 0,
+		LastUpdate:           time.Now(),
+	}
 	
 	// Create some initial learning experiences to bootstrap the system
 	ce.createBootstrapExperiences()
@@ -660,7 +737,7 @@ func (ce *CognitiveEngine) initializeIntelligenceSystems() {
 
 // createBootstrapExperiences creates initial learning experiences
 func (ce *CognitiveEngine) createBootstrapExperiences() {
-	experiences := []learning.Experience{
+	experiences := []Experience{
 		{
 			ID:   "bootstrap_001",
 			Type: "system_startup",
@@ -709,7 +786,7 @@ func (ce *CognitiveEngine) createBootstrapExperiences() {
 	}
 	
 	for _, exp := range experiences {
-		ce.adaptiveLearning.AddExperience(exp)
+		ce.addExperience(exp)
 	}
 	
 	log.Printf("Cognitive Engine: Added %d bootstrap learning experiences", len(experiences))
@@ -719,7 +796,7 @@ func (ce *CognitiveEngine) createBootstrapExperiences() {
 func (ce *CognitiveEngine) createInitialDataStreams() {
 	// System metrics stream
 	for i := 0; i < 10; i++ {
-		ce.patternRecognition.AddDataPoint(
+		ce.addDataPoint(
 			"system_metrics",
 			"metrics",
 			0.1+float64(i)*0.05, // Gradually increasing values
@@ -730,7 +807,7 @@ func (ce *CognitiveEngine) createInitialDataStreams() {
 	// Workflow execution stream
 	workflowTypes := []string{"optimization", "analysis", "monitoring", "optimization", "analysis"}
 	for i, wfType := range workflowTypes {
-		ce.patternRecognition.AddDataPoint(
+		ce.addDataPoint(
 			"workflow_executions",
 			"workflow",
 			wfType,
@@ -777,12 +854,12 @@ func (ce *CognitiveEngine) processLearningCycle() {
 	defer ce.mu.Unlock()
 	
 	// Create learning experiences from current system state
-	experience := learning.Experience{
+	experience := Experience{
 		ID:   fmt.Sprintf("cycle_%d", time.Now().UnixNano()),
 		Type: "cognitive_cycle",
 		Input: map[string]interface{}{
-			"pattern_count": ce.patternRecognition.GetPatternCount(),
-			"learning_rate": ce.adaptiveLearning.GetLearningRate(),
+			"pattern_count": ce.getPatternCount(),
+			"learning_rate": ce.getLearningRate(),
 		},
 		Output: map[string]interface{}{
 			"insights_generated": len(ce.insights),
@@ -793,26 +870,26 @@ func (ce *CognitiveEngine) processLearningCycle() {
 		Importance: 0.6,
 	}
 	
-	ce.adaptiveLearning.AddExperience(experience)
+	ce.addExperience(experience)
 	
 	// Add current metrics to pattern recognition
-	ce.patternRecognition.AddDataPoint(
+	ce.addDataPoint(
 		"cognitive_metrics",
 		"intelligence",
-		ce.adaptiveLearning.GetLearningRate(),
+		ce.getLearningRate(),
 		map[string]interface{}{"metric_type": "learning_rate"},
 	)
 	
 	log.Printf("Cognitive Engine: Processed learning cycle - Learning Rate: %.3f, Patterns: %d",
-		ce.adaptiveLearning.GetLearningRate(),
-		ce.patternRecognition.GetPatternCount())
+		ce.getLearningRate(),
+		ce.getPatternCount())
 }
 
 // calculateCycleFeedback calculates feedback for the current cognitive cycle
 func (ce *CognitiveEngine) calculateCycleFeedback() float64 {
 	// Positive feedback for pattern recognition and learning
-	patternScore := math.Min(float64(ce.patternRecognition.GetPatternCount())/10.0, 1.0)
-	learningScore := ce.adaptiveLearning.GetLearningRate() * 2.0 // Scale learning rate
+	patternScore := math.Min(float64(ce.getPatternCount())/10.0, 1.0)
+	learningScore := ce.getLearningRate() * 2.0 // Scale learning rate
 	
 	if learningScore > 1.0 {
 		learningScore = 1.0
@@ -827,12 +904,191 @@ func (ce *CognitiveEngine) calculateCycleFeedback() float64 {
 
 // updateIntelligenceMetrics updates intelligence metrics
 func (ce *CognitiveEngine) updateIntelligenceMetrics() {
-	// This method would need access to metrics, but the current engine doesn't have them
-	// This is a placeholder for when metrics are properly integrated
-	log.Printf("Cognitive Engine: Intelligence Metrics - Learning: %.3f, Patterns: %d, Adaptation: %.3f",
-		ce.adaptiveLearning.GetLearningRate(),
-		ce.patternRecognition.GetPatternCount(),
-		ce.adaptiveLearning.GetAdaptationScore())
+	ce.mu.Lock()
+	defer ce.mu.Unlock()
+	
+	// Update metrics from intelligence systems
+	ce.metrics.LearningRate = ce.getLearningRate()
+	ce.metrics.PatternCount = ce.getPatternCount()
+	ce.metrics.AdaptationScore = ce.getAdaptationScore()
+	ce.metrics.EfficiencyIndex = ce.calculateEfficiencyIndex()
+	ce.metrics.EmergentCapabilities = ce.detectEmergentCapabilities()
+	ce.metrics.LastUpdate = time.Now()
+	
+	log.Printf("Cognitive Engine: Intelligence Metrics - Learning: %.3f, Patterns: %d, Adaptation: %.3f, Efficiency: %.3f, Capabilities: %d",
+		ce.metrics.LearningRate,
+		ce.metrics.PatternCount,
+		ce.metrics.AdaptationScore,
+		ce.metrics.EfficiencyIndex,
+		ce.metrics.EmergentCapabilities)
+}
+
+// calculateEfficiencyIndex calculates system efficiency
+func (ce *CognitiveEngine) calculateEfficiencyIndex() float64 {
+	learningEfficiency := ce.getLearningRate()
+	patternEfficiency := math.Min(float64(ce.getPatternCount())/20.0, 1.0)
+	adaptationEfficiency := ce.getAdaptationScore()
+	
+	efficiency := 0.4*learningEfficiency + 0.3*patternEfficiency + 0.3*adaptationEfficiency
+	return efficiency
+}
+
+// detectEmergentCapabilities detects emergent system capabilities
+func (ce *CognitiveEngine) detectEmergentCapabilities() int {
+	capabilities := 0
+	
+	if ce.getPatternCount() >= 3 {
+		capabilities++
+	}
+	
+	if ce.getLearningRate() >= 0.1 {
+		capabilities++
+	}
+	
+	if ce.getAdaptationScore() > 0.5 {
+		capabilities++
+	}
+	
+	return capabilities
+}
+
+// Intelligence system methods
+func (ce *CognitiveEngine) addExperience(exp Experience) {
+	ce.adaptiveLearning.mu.Lock()
+	defer ce.adaptiveLearning.mu.Unlock()
+	
+	exp.Timestamp = time.Now()
+	ce.adaptiveLearning.experiences = append(ce.adaptiveLearning.experiences, exp)
+	
+	// Update learning rate based on feedback
+	adjustment := exp.Feedback * ce.adaptiveLearning.adaptationFactor
+	newRate := ce.adaptiveLearning.learningRate + adjustment
+	
+	if newRate > 0.5 {
+		newRate = 0.5
+	}
+	if newRate < 0.01 {
+		newRate = 0.01
+	}
+	
+	ce.adaptiveLearning.learningRate = newRate
+	
+	// Maintain experience buffer size
+	if len(ce.adaptiveLearning.experiences) > 1000 {
+		ce.adaptiveLearning.experiences = ce.adaptiveLearning.experiences[100:]
+	}
+}
+
+func (ce *CognitiveEngine) getLearningRate() float64 {
+	ce.adaptiveLearning.mu.RLock()
+	defer ce.adaptiveLearning.mu.RUnlock()
+	return ce.adaptiveLearning.learningRate
+}
+
+func (ce *CognitiveEngine) getAdaptationScore() float64 {
+	ce.adaptiveLearning.mu.RLock()
+	defer ce.adaptiveLearning.mu.RUnlock()
+	
+	if len(ce.adaptiveLearning.experiences) == 0 {
+		return 0.0
+	}
+	
+	// Calculate adaptation based on recent feedback
+	recentCount := 10
+	if len(ce.adaptiveLearning.experiences) < recentCount {
+		recentCount = len(ce.adaptiveLearning.experiences)
+	}
+	
+	totalFeedback := 0.0
+	start := len(ce.adaptiveLearning.experiences) - recentCount
+	
+	for i := start; i < len(ce.adaptiveLearning.experiences); i++ {
+		totalFeedback += ce.adaptiveLearning.experiences[i].Feedback
+	}
+	
+	avgFeedback := totalFeedback / float64(recentCount)
+	adaptationScore := (avgFeedback + 1.0) / 2.0 // Convert from [-1,1] to [0,1]
+	
+	return adaptationScore
+}
+
+func (ce *CognitiveEngine) addDataPoint(streamID, streamType string, value interface{}, metadata map[string]interface{}) {
+	ce.patternRecognition.mu.Lock()
+	defer ce.patternRecognition.mu.Unlock()
+	
+	stream, exists := ce.patternRecognition.dataStreams[streamID]
+	if !exists {
+		stream = &DataStream{
+			ID:   streamID,
+			Type: streamType,
+			Data: make([]DataPoint, 0),
+		}
+		ce.patternRecognition.dataStreams[streamID] = stream
+	}
+	
+	dataPoint := DataPoint{
+		Timestamp: time.Now(),
+		Value:     value,
+		Metadata:  metadata,
+	}
+	
+	stream.Data = append(stream.Data, dataPoint)
+	stream.LastUpdate = time.Now()
+	
+	// Simple pattern recognition
+	ce.analyzeStream(stream)
+}
+
+func (ce *CognitiveEngine) analyzeStream(stream *DataStream) {
+	if len(stream.Data) < 3 {
+		return
+	}
+	
+	// Simple frequency-based pattern detection
+	valueFreq := make(map[string]int)
+	for _, point := range stream.Data {
+		key := fmt.Sprintf("%v", point.Value)
+		valueFreq[key]++
+	}
+	
+	// Create patterns for frequent values
+	for value, freq := range valueFreq {
+		if freq >= 2 {
+			patternID := fmt.Sprintf("freq_%s_%s", stream.ID, value)
+			
+			if _, exists := ce.patternRecognition.patterns[patternID]; !exists {
+				pattern := &RecognizedPattern{
+					ID:          patternID,
+					Type:        "frequency",
+					Name:        fmt.Sprintf("Frequent Value: %s", value),
+					Description: fmt.Sprintf("Value '%s' appears frequently in stream %s", value, stream.ID),
+					Confidence:  float64(freq) / float64(len(stream.Data)),
+					Frequency:   freq,
+					FirstSeen:   time.Now(),
+					LastSeen:    time.Now(),
+					Triggers:    []string{value},
+					Indicators: map[string]interface{}{
+						"frequency":    freq,
+						"total_points": len(stream.Data),
+						"value":        value,
+					},
+					Metadata: map[string]interface{}{
+						"recognizer": "frequency",
+						"stream_id":  stream.ID,
+					},
+					Strength: float64(freq) / float64(len(stream.Data)),
+				}
+				
+				ce.patternRecognition.patterns[patternID] = pattern
+			}
+		}
+	}
+}
+
+func (ce *CognitiveEngine) getPatternCount() int {
+	ce.patternRecognition.mu.RLock()
+	defer ce.patternRecognition.mu.RUnlock()
+	return len(ce.patternRecognition.patterns)
 }
 
 func min(a, b int) int {
