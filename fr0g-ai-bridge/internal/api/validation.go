@@ -4,39 +4,10 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"pkg/config"
 )
 
-// isValidRole checks if the role is one of the allowed values
-func isValidRole(role string) bool {
-	validRoles := []string{"system", "user", "assistant", "function"}
-	for _, validRole := range validRoles {
-		if role == validRole {
-			return true
-		}
-	}
-	return false
-}
-
-// ValidationError represents a validation error
-type ValidationError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
-}
-
-func (ve ValidationError) Error() string {
-	return fmt.Sprintf("%s: %s", ve.Field, ve.Message)
-}
-
-// ValidationErrors represents multiple validation errors
-type ValidationErrors []ValidationError
-
-func (ves ValidationErrors) Error() string {
-	var messages []string
-	for _, ve := range ves {
-		messages = append(messages, ve.Error())
-	}
-	return strings.Join(messages, "; ")
-}
 
 // ChatCompletionRequest represents a chat completion request for validation
 type ChatCompletionRequest struct {
@@ -116,8 +87,8 @@ func ValidateMessage(role, content string) error {
 	if len(content) > 32000 { // Increased limit for modern models
 		return fmt.Errorf("content too long (max 32000 characters)")
 	}
-	if !isValidRole(role) {
-		return fmt.Errorf("invalid role: %s", role)
+	if err := config.ValidateRole(role); err != nil {
+		return fmt.Errorf(err.Message)
 	}
 	
 	// Additional content validation
@@ -130,14 +101,8 @@ func ValidateMessage(role, content string) error {
 
 // ValidateModel checks if the model name is valid
 func ValidateModel(model string) error {
-	if model == "" {
-		return fmt.Errorf("model cannot be empty")
-	}
-	
-	// Allow more flexible model naming with regex pattern
-	validModelPattern := regexp.MustCompile(`^[a-zA-Z0-9\-_.]+$`)
-	if !validModelPattern.MatchString(model) {
-		return fmt.Errorf("invalid model name format: %s", model)
+	if err := config.ValidateModel(model); err != nil {
+		return fmt.Errorf(err.Message)
 	}
 	
 	// Check against known supported models

@@ -6,45 +6,24 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	sharedconfig "pkg/config"
 )
 
-// ValidationError represents a configuration validation error
-type ValidationError struct {
-	Field   string
-	Message string
-}
-
-func (ve ValidationError) Error() string {
-	return fmt.Sprintf("%s: %s", ve.Field, ve.Message)
-}
-
-// ValidationErrors represents multiple validation errors
-type ValidationErrors []ValidationError
-
-func (ves ValidationErrors) Error() string {
-	var messages []string
-	for _, ve := range ves {
-		messages = append(messages, ve.Error())
-	}
-	return strings.Join(messages, "; ")
-}
 
 
 
-func (c *Config) validateHTTPConfig() []ValidationError {
-	var errors []ValidationError
+func (c *Config) validateHTTPConfig() []sharedconfig.ValidationError {
+	var errors []sharedconfig.ValidationError
 	
 	// Validate port
 	if c.HTTP.Port == "" {
-		errors = append(errors, ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "http.port",
 			Message: "port is required",
 		})
-	} else if !isValidPort(c.HTTP.Port) {
-		errors = append(errors, ValidationError{
-			Field:   "http.port",
-			Message: "invalid port number",
-		})
+	} else if err := sharedconfig.ValidatePort(c.HTTP.Port, "http.port"); err != nil {
+		errors = append(errors, *err)
 	}
 	
 	// Validate timeouts
@@ -230,20 +209,11 @@ func (c *Config) validateCrossConfig() []ValidationError {
 
 // Helper functions
 func isValidPort(port string) bool {
-	portNum, err := strconv.Atoi(port)
-	if err != nil {
-		return false
-	}
-	return portNum > 0 && portNum <= 65535
+	return sharedconfig.ValidatePort(port, "port") == nil
 }
 
 func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
+	return sharedconfig.Contains(slice, item)
 }
 
 // ValidateNetworkAddress validates a network address

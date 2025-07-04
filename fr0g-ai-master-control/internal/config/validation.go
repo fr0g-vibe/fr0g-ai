@@ -1,13 +1,14 @@
 package config
 
+import (
+	sharedconfig "pkg/config"
+)
+
 // ValidationError represents a validation error
-type ValidationError struct {
-	Field   string
-	Message string
-}
+type ValidationError = sharedconfig.ValidationError
 
 // ValidationErrors represents a collection of validation errors
-type ValidationErrors []ValidationError
+type ValidationErrors = sharedconfig.ValidationErrors
 
 // SMSConfig holds SMS processor configuration
 type SMSConfig struct {

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
+	sharedconfig "pkg/config"
 )
 
 // Config holds the application configuration
@@ -40,78 +41,31 @@ type LoggingConfig struct {
 
 // SecurityConfig holds security-related configuration
 type SecurityConfig struct {
-	EnableCORS           bool     `yaml:"enable_cors"`
-	AllowedOrigins       []string `yaml:"allowed_origins"`
-	RateLimitRPM         int      `yaml:"rate_limit_requests_per_minute"`
-	RequireAPIKey        bool     `yaml:"require_api_key"`
-	AllowedAPIKeys       []string `yaml:"allowed_api_keys"`
-	EnableReflection     bool     `yaml:"enable_reflection"`
+	sharedconfig.SecurityConfig `yaml:",inline"`
+	EnableReflection            bool `yaml:"enable_reflection"`
 }
 
 // MonitoringConfig holds monitoring configuration
 type MonitoringConfig struct {
-	EnableMetrics         bool `yaml:"enable_metrics"`
-	MetricsPort          int  `yaml:"metrics_port"`
-	HealthCheckInterval  int  `yaml:"health_check_interval"`
-	EnableTracing        bool `yaml:"enable_tracing"`
-}
-
-// loadEnvFile loads environment variables from a .env file
-func loadEnvFile(filename string) error {
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		return nil // File doesn't exist, skip silently
-	}
-
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-		
-		// Remove quotes if present
-		if (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) ||
-		   (strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
-			value = value[1 : len(value)-1]
-		}
-
-		// Always set from .env file (override existing environment)
-		os.Setenv(key, value)
-	}
-
-	return nil
+	sharedconfig.MonitoringConfig `yaml:",inline"`
 }
 
 // LoadConfig loads configuration from file and environment variables
 func LoadConfig(configPath string) (*Config, error) {
-	// Try to load .env file from current directory and parent directory
-	envPaths := []string{
-		".env",
-		"../.env",
-		"../../.env", // For when running from fr0g-ai-bridge subdirectory
-	}
+	// Create loader with standard options
+	loader := sharedconfig.NewLoader(sharedconfig.LoaderOptions{
+		ConfigPath: configPath,
+		EnvPrefix:  "",
+		EnvFilePaths: []string{
+			".env",
+			"../.env",
+			"../../.env", // For when running from fr0g-ai-bridge subdirectory
+		},
+	})
 	
-	for _, envPath := range envPaths {
-		if err := loadEnvFile(envPath); err != nil {
-			fmt.Printf("Warning: failed to load %s: %v\n", envPath, err)
-		} else {
-			if _, err := os.Stat(envPath); err == nil {
-				fmt.Printf("Successfully loaded environment from: %s\n", envPath)
-			}
-		}
+	// Load environment files
+	if err := loader.LoadEnvFiles(); err != nil {
+		fmt.Printf("Warning: failed to load env files: %v\n", err)
 	}
 
 	config := &Config{
@@ -143,18 +97,9 @@ func LoadConfig(configPath string) (*Config, error) {
 		},
 	}
 
-	// Load from file if it exists
-	if configPath != "" {
-		if _, err := os.Stat(configPath); err == nil {
-			data, err := os.ReadFile(configPath)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read config file: %w", err)
-			}
-
-			if err := yaml.Unmarshal(data, config); err != nil {
-				return nil, fmt.Errorf("failed to parse config file: %w", err)
-			}
-		}
+	// Load from file using standardized loader
+	if err := loader.LoadFromFile(config); err != nil {
+		return nil, err
 	}
 
 	// Override with environment variables
