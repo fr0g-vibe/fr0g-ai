@@ -148,15 +148,10 @@ func DefaultInputManagerConfig() *InputManagerConfig {
 			FilterKeywords:    []string{"spam", "inappropriate"},
 		},
 		ESMTP: &ESMTPConfig{
-			Host:              "0.0.0.0",
+			Server:            "0.0.0.0",
 			Port:              2525,
-			TLSPort:           2465,
-			Hostname:          "fr0g-ai-interceptor.local",
-			MaxMessageSize:    10 * 1024 * 1024, // 10MB
-			Timeout:           5 * time.Minute,
-			EnableTLS:         false,
-			CertFile:          "",
-			KeyFile:           "",
+			UseSSL:            false,
+			Domain:            "fr0g-ai-interceptor.local",
 			CommunityTopic:    "email-threat-analysis",
 			PersonaCount:      5,
 			ReviewTimeout:     2 * time.Minute,

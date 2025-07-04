@@ -554,9 +554,9 @@ func (s *SDCardProcessor) countSuspiciousFiles(files []SDCardFile) int {
 	return count
 }
 
-func (s *SDCardProcessor) truncateString(s string, maxLen int) string {
-	if len(s) <= maxLen {
-		return s
+func (s *SDCardProcessor) truncateString(str string, maxLen int) string {
+	if len(str) <= maxLen {
+		return str
 	}
-	return s[:maxLen] + "..."
+	return str[:maxLen] + "..."
 }

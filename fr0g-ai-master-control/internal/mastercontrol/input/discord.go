@@ -164,17 +164,3 @@ func (d *DiscordWebhookProcessor) parseDiscordMessage(body interface{}) (*Discor
 	return message, nil
 }
 
-// Helper functions
-func getStringFromMap(m map[string]interface{}, key string) string {
-	if val, ok := m[key].(string); ok {
-		return val
-	}
-	return ""
-}
-
-func getBoolFromMap(m map[string]interface{}, key string) bool {
-	if val, ok := m[key].(bool); ok {
-		return val
-	}
-	return false
-}
