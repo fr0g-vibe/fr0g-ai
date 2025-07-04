@@ -42,6 +42,15 @@
 3. **Ask before modifying shared files** (docker-compose.yml, Makefile, etc.)
 4. **Request information about other components rather than assuming**
 
+### 🚫 NO MOCKING POLICY - CRITICAL RULE
+1. **NEVER CREATE MOCK IMPLEMENTATIONS**: Always implement real, working functionality
+2. **REPLACE EXISTING MOCKS**: If you encounter mock code, replace it with real implementations
+3. **REAL API INTEGRATIONS**: Always implement actual HTTP clients, gRPC clients, database connections
+4. **PRODUCTION-READY CODE**: All implementations must be production-ready, not placeholders
+5. **NO STUB METHODS**: Never create empty methods or functions that return fake data
+6. **REAL ERROR HANDLING**: Implement proper error handling for actual failure scenarios
+7. **ACTUAL EXTERNAL CALLS**: Make real calls to external services, databases, APIs
+
 ### Cross-Component Communication
 - Use gRPC for service-to-service communication
 - Respect defined interfaces and contracts
@@ -63,6 +72,14 @@
 - **Generated Files**: Treat all `.pb.go` files as generated artifacts, not source code
 - **Protobuf Sources**: Only edit `.proto` files, never the generated Go code
 - **Build First**: Run protobuf generation before building Go code that depends on it
+
+### Implementation Standards - NO MOCKING
+- **REAL IMPLEMENTATIONS ONLY**: Never create mock, stub, or placeholder implementations
+- **ACTUAL FUNCTIONALITY**: Every function must perform its intended real-world operation
+- **PRODUCTION QUALITY**: All code must be ready for production deployment
+- **REAL EXTERNAL INTEGRATIONS**: Implement actual API calls, not simulated responses
+- **PROPER ERROR HANDLING**: Handle real error conditions, not just return nil
+- **COMPLETE FEATURES**: Implement full functionality, not partial or demo versions
 
 ### Code Style
 - Use `gofmt` and `goimports`

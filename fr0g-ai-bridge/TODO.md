@@ -39,6 +39,16 @@
 - **Import Generated**: Import generated protobuf code, never attempt to create it manually
 - **AIP Protobuf**: Use existing protobuf definitions from fr0g-ai-aip, do not recreate them
 
+### 🚫 NO MOCKING POLICY - BRIDGE COMPONENT
+- **NEVER CREATE MOCKS**: Always implement real functionality, never mock implementations
+- **REAL OPENWEBUI INTEGRATION**: Implement actual HTTP calls to OpenWebUI, not fake responses
+- **REAL GRPC CLIENTS**: Implement actual gRPC connections to fr0g-ai-aip, not mock clients
+- **REAL VALIDATION**: Implement comprehensive input validation, not placeholder checks
+- **REAL ERROR HANDLING**: Handle actual network failures, timeouts, and service errors
+- **REAL AUTHENTICATION**: Implement actual API key validation, not bypass mechanisms
+- **REAL RATE LIMITING**: Implement actual rate limiting with real storage backends
+- **PRODUCTION READY**: All bridge functionality must be production-ready for real traffic
+
 ### 🌉 BRIDGE SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Integration bridge between OpenWebUI and fr0g-ai-aip
 - **Communication**: REST API inbound, gRPC outbound to AIP service

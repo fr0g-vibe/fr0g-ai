@@ -42,6 +42,16 @@
 - **Source of Truth**: This component defines the core protobuf schemas for the project
 - **Proto Files**: Only edit `.proto` source files, never the generated `.pb.go` files
 
+### 🚫 NO MOCKING POLICY - AIP COMPONENT
+- **NEVER CREATE MOCKS**: Always implement real functionality, never mock implementations
+- **REAL DATA STORAGE**: Implement actual file/database storage, not in-memory fakes
+- **REAL ATTRIBUTE PROCESSING**: Implement actual validation and processing algorithms
+- **REAL GRPC SERVICES**: Implement actual gRPC server methods, not stub responses
+- **REAL PERSONA MANAGEMENT**: Implement actual persona creation, storage, and retrieval
+- **REAL IDENTITY PROCESSING**: Implement actual identity management with real persistence
+- **REAL VALIDATION**: Implement comprehensive data validation, not placeholder checks
+- **PRODUCTION READY**: All AIP functionality must handle real-world data and scale
+
 ### 🧠 AIP SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Core AI processing engine for personas and identities
 - **Data Model**: Rich attributes system with comprehensive persona modeling

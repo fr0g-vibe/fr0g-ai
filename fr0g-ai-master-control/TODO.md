@@ -37,6 +37,16 @@
 - **Generated Files**: Treat all `.pb.go` files as build artifacts, not source code
 - **Import Generated**: Import generated protobuf code, never attempt to create it manually
 
+### 🚫 NO MOCKING POLICY - MASTER CONTROL COMPONENT
+- **NEVER CREATE MOCKS**: Always implement real functionality, never mock implementations
+- **REPLACE EXISTING MOCKS**: If you find mock code, replace with real working implementations
+- **REAL SYSTEM MONITORING**: Implement actual system metrics collection, not fake data
+- **REAL THREAT PROCESSING**: Implement actual threat detection algorithms, not simulated responses
+- **REAL AI INTEGRATIONS**: Implement actual AI model calls, not mock responses
+- **REAL DATABASE OPERATIONS**: Implement actual database queries, not in-memory fakes
+- **REAL NETWORK CALLS**: Make actual HTTP/gRPC calls to external services
+- **PRODUCTION READY**: All implementations must be production-ready, not demo code
+
 ### 🐹 GOLANG DEVELOPMENT STANDARDS
 - **Go Version**: Use Go 1.21+ features and syntax
 - **Module Structure**: Each service is a separate Go module with its own `go.mod`

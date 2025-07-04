@@ -139,6 +139,12 @@ When starting new AI coding sessions, always include these files:
 - **Module Navigation**: Must `cd` into component directory before Go commands
 - **Subprojects**: All components exist under `github.com/fr0g-vibe/fr0g-ai/` path
 
+### 🚫 NO MOCKING POLICY
+- **NEVER CREATE MOCKS**: Always implement real functionality, never create mock implementations
+- **REPLACE EXISTING MOCKS**: If you find mock implementations, replace them with real working code
+- **REAL INTEGRATIONS**: Always implement actual API calls, database connections, and service integrations
+- **PRODUCTION READY**: All code must be production-ready, not placeholder or demo code
+
 ## 🤝 Contributing
 
 1. Fork the repository
