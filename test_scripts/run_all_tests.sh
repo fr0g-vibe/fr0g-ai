@@ -47,6 +47,11 @@ echo "🔄 Running ESMTP webhook tests..."
 ./test_scripts/test_esmtp_webhook.sh
 echo
 
+# Run SD Card tests
+echo "🔄 Running SD Card webhook tests..."
+./test_scripts/test_sdcard_webhook.sh
+echo
+
 echo "=========================================="
 echo "All webhook processor tests completed!"
 echo "=========================================="
@@ -56,6 +61,7 @@ echo "- IRC Processor: Chat threat analysis"
 echo "- SMS Processor: SMS/MMS threat analysis"
 echo "- Voice Processor: Voice call threat analysis"
 echo "- ESMTP Processor: Email threat analysis"
+echo "- SD Card Processor: Physical media threat analysis"
 echo
 echo "Each processor tests various threat scenarios including:"
 echo "- Phishing attempts"
