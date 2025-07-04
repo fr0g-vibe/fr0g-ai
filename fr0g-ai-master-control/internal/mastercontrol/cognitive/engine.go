@@ -261,12 +261,12 @@ func (ce *CognitiveEngine) GetPatterns() interface{} {
 }
 
 // GetPatternsMap returns recognized patterns with proper type
-func (ce *CognitiveEngine) GetPatternsMap() map[string]*Pattern {
+func (ce *CognitiveEngine) GetPatternsMap() map[string]interface{} {
 	ce.mu.RLock()
 	defer ce.mu.RUnlock()
 	
-	// Return a copy
-	patterns := make(map[string]*Pattern)
+	// Return a copy as interface{}
+	patterns := make(map[string]interface{})
 	for k, v := range ce.patterns {
 		pattern := *v
 		patterns[k] = &pattern

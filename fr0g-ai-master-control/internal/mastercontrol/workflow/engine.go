@@ -104,7 +104,7 @@ func (we *WorkflowEngine) GetCompletedWorkflowCount() int {
 }
 
 // CreateSampleWorkflows creates demonstration workflows to show system capabilities
-func (we *WorkflowEngine) CreateSampleWorkflows() []*SampleWorkflow {
+func (we *WorkflowEngine) CreateSampleWorkflows() []interface{} {
 	workflows := []*SampleWorkflow{
 		{
 			ID:          fmt.Sprintf("workflow_cognitive_analysis_%d", time.Now().UnixNano()),
@@ -180,7 +180,13 @@ func (we *WorkflowEngine) CreateSampleWorkflows() []*SampleWorkflow {
 		},
 	}
 	
-	return workflows
+	// Convert to []interface{} for interface compatibility
+	result := make([]interface{}, len(workflows))
+	for i, workflow := range workflows {
+		result[i] = workflow
+	}
+	
+	return result
 }
 
 // ExecuteSampleWorkflow executes a sample workflow to demonstrate capabilities
