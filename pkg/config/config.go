@@ -2,19 +2,13 @@ package config
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
 	"time"
-
-	"gopkg.in/yaml.v3"
 )
 
 // BaseConfig provides common configuration functionality
 type BaseConfig interface {
-	Validate() error
-	LoadFromFile(path string) error
-	LoadFromEnv() error
+	Validate() ValidationErrors
 }
 
 // CommonConfig holds shared configuration fields
