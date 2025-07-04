@@ -14,10 +14,10 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/api"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/config"
-	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
+	"fr0g-ai-bridge/internal/api"
+	"fr0g-ai-bridge/internal/client"
+	"fr0g-ai-bridge/internal/config"
+	pb "fr0g-ai-bridge/internal/pb/proto"
 )
 
 func main() {
@@ -124,7 +124,7 @@ func main() {
 			grpcServer := grpc.NewServer()
 			
 			bridgeServer := api.NewGRPCServer(openWebUIClient)
-			pb.RegisterFr0gAiBridgeServiceServer(grpcServer, bridgeServer)
+			pb.RegisterFr0GAiBridgeServiceServer(grpcServer, bridgeServer)
 			log.Printf("gRPC bridge service registered successfully")
 			
 			// Enable gRPC reflection for debugging and tools like grpcurl (if enabled)

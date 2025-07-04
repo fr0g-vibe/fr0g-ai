@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/config"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/models"
+	"fr0g-ai-bridge/internal/client"
+	"fr0g-ai-bridge/internal/config"
+	"fr0g-ai-bridge/internal/models"
 )
 
 // RESTServer handles REST API requests

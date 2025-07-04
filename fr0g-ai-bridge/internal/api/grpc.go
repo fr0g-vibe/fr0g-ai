@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/client"
-	"github.com/fr0g-vibe/fr0g-ai-bridge/internal/models"
-	pb "github.com/fr0g-vibe/fr0g-ai-bridge/internal/pb"
+	"fr0g-ai-bridge/internal/client"
+	"fr0g-ai-bridge/internal/models"
+	pb "fr0g-ai-bridge/internal/pb/proto"
 )
 
 // GRPCServer implements the Fr0gAiBridge gRPC service
 type GRPCServer struct {
+	pb.UnimplementedFr0GAiBridgeServiceServer
 	client *client.OpenWebUIClient
 }
 
