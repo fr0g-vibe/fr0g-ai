@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"sync"
 	"time"
+	
+	"github.com/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/cognitive/learning"
+	"github.com/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/cognitive/patterns"
 )
 
 // CognitiveEngine is the core intelligence component of the MCP
@@ -18,6 +22,10 @@ type CognitiveEngine struct {
 	patterns     map[string]*Pattern
 	insights     []Insight
 	reflections  []Reflection
+	
+	// Intelligence systems
+	adaptiveLearning    *learning.AdaptiveLearning
+	patternRecognition  *patterns.PatternRecognition
 	
 	// Control
 	ctx    context.Context
@@ -129,6 +137,9 @@ func NewCognitiveEngine(config *CognitiveConfig, memory MemoryInterface, learnin
 func (ce *CognitiveEngine) Start() error {
 	log.Println("Cognitive Engine: Starting cognitive processes...")
 	
+	// Initialize intelligence systems
+	ce.initializeIntelligenceSystems()
+	
 	// Start awareness monitoring
 	go ce.awarenessLoop()
 	
@@ -141,6 +152,10 @@ func (ce *CognitiveEngine) Start() error {
 	if ce.config.InsightGenerationEnabled {
 		go ce.insightGenerationLoop()
 	}
+	
+	// Start new intelligence loops
+	go ce.learningLoop()
+	go ce.intelligenceMetricsLoop()
 	
 	log.Println("Cognitive Engine: All cognitive processes started")
 	return nil
@@ -624,6 +639,200 @@ func randomString(length int) string {
 		b[i] = charset[time.Now().UnixNano()%int64(len(charset))]
 	}
 	return string(b)
+}
+
+// initializeIntelligenceSystems initializes learning and pattern recognition
+func (ce *CognitiveEngine) initializeIntelligenceSystems() {
+	// Initialize adaptive learning
+	ce.adaptiveLearning = learning.NewAdaptiveLearning()
+	
+	// Initialize pattern recognition
+	ce.patternRecognition = patterns.NewPatternRecognition()
+	
+	// Create some initial learning experiences to bootstrap the system
+	ce.createBootstrapExperiences()
+	
+	// Add some initial data streams for pattern recognition
+	ce.createInitialDataStreams()
+	
+	log.Println("Cognitive Engine: Intelligence systems initialized")
+}
+
+// createBootstrapExperiences creates initial learning experiences
+func (ce *CognitiveEngine) createBootstrapExperiences() {
+	experiences := []learning.Experience{
+		{
+			ID:   "bootstrap_001",
+			Type: "system_startup",
+			Input: map[string]interface{}{
+				"system_load": 0.1,
+				"memory_usage": 0.2,
+			},
+			Output: map[string]interface{}{
+				"status": "healthy",
+				"action": "continue_monitoring",
+			},
+			Feedback:   0.8,
+			Context:    map[string]interface{}{"phase": "initialization"},
+			Importance: 0.7,
+		},
+		{
+			ID:   "bootstrap_002",
+			Type: "pattern_detection",
+			Input: map[string]interface{}{
+				"data_stream": "system_metrics",
+				"pattern_type": "frequency",
+			},
+			Output: map[string]interface{}{
+				"pattern_found": true,
+				"confidence": 0.6,
+			},
+			Feedback:   0.6,
+			Context:    map[string]interface{}{"recognizer": "frequency"},
+			Importance: 0.5,
+		},
+		{
+			ID:   "bootstrap_003",
+			Type: "workflow_execution",
+			Input: map[string]interface{}{
+				"workflow_type": "optimization",
+				"priority": "high",
+			},
+			Output: map[string]interface{}{
+				"execution_time": 1.5,
+				"success": true,
+			},
+			Feedback:   0.9,
+			Context:    map[string]interface{}{"component": "workflow_engine"},
+			Importance: 0.8,
+		},
+	}
+	
+	for _, exp := range experiences {
+		ce.adaptiveLearning.AddExperience(exp)
+	}
+	
+	log.Printf("Cognitive Engine: Added %d bootstrap learning experiences", len(experiences))
+}
+
+// createInitialDataStreams creates initial data streams for pattern recognition
+func (ce *CognitiveEngine) createInitialDataStreams() {
+	// System metrics stream
+	for i := 0; i < 10; i++ {
+		ce.patternRecognition.AddDataPoint(
+			"system_metrics",
+			"metrics",
+			0.1+float64(i)*0.05, // Gradually increasing values
+			map[string]interface{}{"source": "system_monitor"},
+		)
+	}
+	
+	// Workflow execution stream
+	workflowTypes := []string{"optimization", "analysis", "monitoring", "optimization", "analysis"}
+	for i, wfType := range workflowTypes {
+		ce.patternRecognition.AddDataPoint(
+			"workflow_executions",
+			"workflow",
+			wfType,
+			map[string]interface{}{"execution_order": i},
+		)
+	}
+	
+	log.Println("Cognitive Engine: Created initial data streams for pattern recognition")
+}
+
+// learningLoop continuously processes learning experiences
+func (ce *CognitiveEngine) learningLoop() {
+	ticker := time.NewTicker(time.Second * 15)
+	defer ticker.Stop()
+	
+	for {
+		select {
+		case <-ce.ctx.Done():
+			return
+		case <-ticker.C:
+			ce.processLearningCycle()
+		}
+	}
+}
+
+// intelligenceMetricsLoop updates intelligence metrics
+func (ce *CognitiveEngine) intelligenceMetricsLoop() {
+	ticker := time.NewTicker(time.Second * 20)
+	defer ticker.Stop()
+	
+	for {
+		select {
+		case <-ce.ctx.Done():
+			return
+		case <-ticker.C:
+			ce.updateIntelligenceMetrics()
+		}
+	}
+}
+
+// processLearningCycle processes a learning cycle
+func (ce *CognitiveEngine) processLearningCycle() {
+	ce.mu.Lock()
+	defer ce.mu.Unlock()
+	
+	// Create learning experiences from current system state
+	experience := learning.Experience{
+		ID:   fmt.Sprintf("cycle_%d", time.Now().UnixNano()),
+		Type: "cognitive_cycle",
+		Input: map[string]interface{}{
+			"pattern_count": ce.patternRecognition.GetPatternCount(),
+			"learning_rate": ce.adaptiveLearning.GetLearningRate(),
+		},
+		Output: map[string]interface{}{
+			"insights_generated": len(ce.insights),
+			"patterns_recognized": len(ce.patterns),
+		},
+		Feedback:   ce.calculateCycleFeedback(),
+		Context:    map[string]interface{}{"cycle_type": "automated"},
+		Importance: 0.6,
+	}
+	
+	ce.adaptiveLearning.AddExperience(experience)
+	
+	// Add current metrics to pattern recognition
+	ce.patternRecognition.AddDataPoint(
+		"cognitive_metrics",
+		"intelligence",
+		ce.adaptiveLearning.GetLearningRate(),
+		map[string]interface{}{"metric_type": "learning_rate"},
+	)
+	
+	log.Printf("Cognitive Engine: Processed learning cycle - Learning Rate: %.3f, Patterns: %d",
+		ce.adaptiveLearning.GetLearningRate(),
+		ce.patternRecognition.GetPatternCount())
+}
+
+// calculateCycleFeedback calculates feedback for the current cognitive cycle
+func (ce *CognitiveEngine) calculateCycleFeedback() float64 {
+	// Positive feedback for pattern recognition and learning
+	patternScore := math.Min(float64(ce.patternRecognition.GetPatternCount())/10.0, 1.0)
+	learningScore := ce.adaptiveLearning.GetLearningRate() * 2.0 // Scale learning rate
+	
+	if learningScore > 1.0 {
+		learningScore = 1.0
+	}
+	
+	// Combined feedback score
+	feedback := (patternScore + learningScore) / 2.0
+	
+	// Convert to [-1, 1] range
+	return (feedback * 2.0) - 1.0
+}
+
+// updateIntelligenceMetrics updates intelligence metrics
+func (ce *CognitiveEngine) updateIntelligenceMetrics() {
+	// This method would need access to metrics, but the current engine doesn't have them
+	// This is a placeholder for when metrics are properly integrated
+	log.Printf("Cognitive Engine: Intelligence Metrics - Learning: %.3f, Patterns: %d, Adaptation: %.3f",
+		ce.adaptiveLearning.GetLearningRate(),
+		ce.patternRecognition.GetPatternCount(),
+		ce.adaptiveLearning.GetAdaptationScore())
 }
 
 func min(a, b int) int {
