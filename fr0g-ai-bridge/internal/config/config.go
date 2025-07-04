@@ -3,7 +3,9 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -55,8 +57,62 @@ type MonitoringConfig struct {
 	EnableTracing        bool `yaml:"enable_tracing"`
 }
 
+// loadEnvFile loads environment variables from a .env file
+func loadEnvFile(filename string) error {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		return nil // File doesn't exist, skip silently
+	}
+
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		
+		// Remove quotes if present
+		if (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) ||
+		   (strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
+			value = value[1 : len(value)-1]
+		}
+
+		// Only set if not already set
+		if os.Getenv(key) == "" {
+			os.Setenv(key, value)
+		}
+	}
+
+	return nil
+}
+
 // LoadConfig loads configuration from file and environment variables
 func LoadConfig(configPath string) (*Config, error) {
+	// Try to load .env file from current directory and parent directory
+	envPaths := []string{
+		".env",
+		"../.env",
+		"../../.env", // For when running from fr0g-ai-bridge subdirectory
+	}
+	
+	for _, envPath := range envPaths {
+		if err := loadEnvFile(envPath); err != nil {
+			fmt.Printf("Warning: failed to load %s: %v\n", envPath, err)
+		}
+	}
+
 	config := &Config{
 		Server: ServerConfig{
 			HTTPPort: 8080,
