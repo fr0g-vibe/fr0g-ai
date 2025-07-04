@@ -2,6 +2,22 @@
 
 ## High Priority - Core Functionality
 
+### Rich Attributes Implementation
+- [ ] **CRITICAL**: Implement Demographics validation and processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement Psychographics validation and processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement LifeHistory validation and processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement Cultural attributes processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement Political attributes processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement Health attributes processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement Preferences attributes processing (referenced in types but not implemented)
+- [ ] **CRITICAL**: Implement Behavioral attributes processing (referenced in types but not implemented)
+- [ ] **HIGH**: Add rich attribute filtering in IdentityFilter (currently only basic filtering)
+
+### Service Integration Missing
+- [ ] **CRITICAL**: Service registry integration missing (REGISTRY_URL configured but not implemented)
+- [ ] **CRITICAL**: Health check endpoint missing (referenced in docker-compose)
+- [ ] **CRITICAL**: gRPC service implementation missing (GRPC_PORT configured but no gRPC server)
+
 ### Storage Layer
 - [ ] Implement database storage backend (currently only file/memory)
 - [ ] Add data migration system for storage backends

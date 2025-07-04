@@ -2,6 +2,23 @@
 
 ## High Priority - Core Functionality
 
+### Validation System
+- [ ] **CRITICAL**: Implement comprehensive request validation beyond role checking (only isValidRole() exists)
+- [ ] **CRITICAL**: Add persona context validation (referenced in docker-compose but missing)
+- [ ] **CRITICAL**: Implement message content validation and sanitization
+- [ ] **CRITICAL**: Add model parameter validation (temperature, max_tokens, etc.)
+
+### Missing Core Handlers
+- [ ] **CRITICAL**: Implement chat completion handlers (completely missing - no handlers directory exists)
+- [ ] **CRITICAL**: Implement gRPC service handlers (GRPC_PORT configured but no gRPC code)
+- [ ] **CRITICAL**: Create actual REST API handlers in internal/api/ (only validation.go exists)
+- [ ] **CRITICAL**: Implement OpenWebUI client integration (OPENWEBUI_BASE_URL configured but no client)
+
+### Service Integration Missing
+- [ ] **CRITICAL**: AIP_GRPC_ENDPOINT configured but no gRPC client implementation
+- [ ] **CRITICAL**: Service registry integration missing (REGISTRY_URL configured but not used)
+- [ ] **CRITICAL**: Health check endpoint missing (referenced in docker-compose)
+
 ### Chat Completion Service
 - [ ] Implement actual chat completion handlers (currently stubbed)
 - [ ] Add streaming response support
