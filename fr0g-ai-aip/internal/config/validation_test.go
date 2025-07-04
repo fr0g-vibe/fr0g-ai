@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -111,7 +112,7 @@ func TestConfig_Validate(t *testing.T) {
 				t.Errorf("Config.Validate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if tt.wantErr && err != nil && !contains([]string{err.Error()}, tt.errMsg) {
+			if tt.wantErr && err != nil && !strings.Contains(err.Error(), tt.errMsg) {
 				t.Errorf("Config.Validate() error = %v, want error containing %v", err, tt.errMsg)
 			}
 		})
