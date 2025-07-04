@@ -88,10 +88,8 @@ func loadEnvFile(filename string) error {
 			value = value[1 : len(value)-1]
 		}
 
-		// Only set if not already set
-		if os.Getenv(key) == "" {
-			os.Setenv(key, value)
-		}
+		// Always set from .env file (override existing environment)
+		os.Setenv(key, value)
 	}
 
 	return nil
