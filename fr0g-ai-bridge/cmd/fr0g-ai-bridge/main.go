@@ -59,6 +59,16 @@ func main() {
 		time.Duration(cfg.OpenWebUI.Timeout)*time.Second,
 	)
 
+	// TODO: Add service discovery client initialization here
+	// discoveryClient := discovery.NewClient(&discovery.ClientConfig{
+	//     RegistryURL:    "http://localhost:8500",
+	//     ServiceName:    "fr0g-ai-bridge",
+	//     ServiceID:      "bridge-001",
+	//     ServiceAddress: "localhost",
+	//     ServicePort:    cfg.Server.HTTPPort,
+	//     Tags:           []string{"bridge", "ai", "chat"},
+	// })
+
 	// Create context for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

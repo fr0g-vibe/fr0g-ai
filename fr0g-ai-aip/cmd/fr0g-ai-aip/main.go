@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai-aip/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai-aip/internal/cli"
@@ -76,6 +77,16 @@ func (app *App) RunCLI() error {
 func (app *App) RunServers(httpMode, grpcMode bool) error {
 	// Print startup banner
 	app.printStartupBanner()
+	
+	// TODO: Add service discovery client initialization here
+	// discoveryClient := discovery.NewClient(&discovery.ClientConfig{
+	//     RegistryURL:    "http://localhost:8500",
+	//     ServiceName:    "fr0g-ai-aip",
+	//     ServiceID:      "aip-001",
+	//     ServiceAddress: "localhost",
+	//     ServicePort:    app.config.HTTP.Port,
+	//     Tags:           []string{"aip", "personas", "ai"},
+	// })
 	
 	// Handle graceful shutdown
 	sigChan := make(chan os.Signal, 1)

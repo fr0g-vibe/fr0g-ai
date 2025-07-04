@@ -85,3 +85,100 @@ networks:
   fr0g-ai-network:
     driver: bridge
     name: fr0g-ai-network
+version: '3.8'
+
+services:
+  # Service Discovery Registry
+  service-registry:
+    build:
+      context: ./fr0g-ai-master-control
+      dockerfile: Dockerfile.registry
+    ports:
+      - "8500:8500"
+    environment:
+      - REGISTRY_PORT=8500
+      - REGISTRY_HOST=0.0.0.0
+    networks:
+      - fr0g-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Master Control Program
+  fr0g-ai-master-control:
+    build:
+      context: ./fr0g-ai-master-control
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - REGISTRY_URL=http://service-registry:8500
+      - SERVICE_NAME=fr0g-ai-master-control
+      - SERVICE_ID=mcp-001
+      - SERVICE_PORT=8081
+    depends_on:
+      - service-registry
+    networks:
+      - fr0g-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Identity & Persona Service
+  fr0g-ai-aip:
+    build:
+      context: ./fr0g-ai-aip
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - REGISTRY_URL=http://service-registry:8500
+      - SERVICE_NAME=fr0g-ai-aip
+      - SERVICE_ID=aip-001
+      - HTTP_PORT=8080
+      - GRPC_PORT=9090
+    depends_on:
+      - service-registry
+    networks:
+      - fr0g-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Bridge Service
+  fr0g-ai-bridge:
+    build:
+      context: ./fr0g-ai-bridge
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+      - "9091:9091"
+    environment:
+      - REGISTRY_URL=http://service-registry:8500
+      - SERVICE_NAME=fr0g-ai-bridge
+      - SERVICE_ID=bridge-001
+      - HTTP_PORT=8082
+      - GRPC_PORT=9091
+    depends_on:
+      - service-registry
+    networks:
+      - fr0g-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  fr0g-ai-network:
+    driver: bridge
+
+volumes:
+  registry-data:

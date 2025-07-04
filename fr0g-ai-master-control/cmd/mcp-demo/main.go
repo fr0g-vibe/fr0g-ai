@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"fr0g-ai-master-control/internal/discovery"
 	"fr0g-ai-master-control/internal/mastercontrol"
 	"fr0g-ai-master-control/internal/mastercontrol/input"
 )
@@ -15,6 +16,26 @@ import (
 func main() {
 	fmt.Println("🎛️  fr0g.ai Master Control Program Demo")
 	fmt.Println("=====================================")
+	
+	// Initialize service discovery client
+	discoveryClient := discovery.NewClient(&discovery.ClientConfig{
+		RegistryURL:    "http://localhost:8500", // Default registry URL
+		ServiceName:    "fr0g-ai-master-control",
+		ServiceID:      "mcp-001",
+		ServiceAddress: "localhost",
+		ServicePort:    8081,
+		HealthInterval: 30 * time.Second,
+		Tags:           []string{"mcp", "master-control", "ai"},
+		Metadata: map[string]string{
+			"version": "1.0.0",
+			"type":    "master-control",
+		},
+	})
+	
+	// Start service discovery
+	if err := discoveryClient.Start(); err != nil {
+		log.Printf("Warning: Failed to start service discovery: %v", err)
+	}
 	
 	// Load MCP configuration
 	config, err := mastercontrol.LoadMCPConfig("")
@@ -60,6 +81,11 @@ func main() {
 	<-c
 	
 	fmt.Println("\n🛑 Shutdown signal received...")
+	
+	// Stop service discovery
+	if err := discoveryClient.Stop(); err != nil {
+		log.Printf("Error stopping service discovery: %v", err)
+	}
 	
 	// Stop the MCP
 	if err := mcp.Stop(); err != nil {
