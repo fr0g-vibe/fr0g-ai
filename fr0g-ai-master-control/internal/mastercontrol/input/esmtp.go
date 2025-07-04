@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// ESMTPProcessor processes ESMTP emails for threat analysis
+// ESMTPProcessor processes ESMTP email messages for threat analysis
 type ESMTPProcessor struct {
 	aiClient AIPersonaCommunityClient
 	config   *ESMTPConfig
@@ -16,30 +16,50 @@ type ESMTPProcessor struct {
 
 // ESMTPConfig holds ESMTP processor configuration
 type ESMTPConfig struct {
-	Host              string        `yaml:"host"`
+	Server            string        `yaml:"server"`
 	Port              int           `yaml:"port"`
-	TLSPort           int           `yaml:"tls_port"`
-	Hostname          string        `yaml:"hostname"`
-	MaxMessageSize    int64         `yaml:"max_message_size"`
-	Timeout           time.Duration `yaml:"timeout"`
-	EnableTLS         bool          `yaml:"enable_tls"`
-	CertFile          string        `yaml:"cert_file"`
-	KeyFile           string        `yaml:"key_file"`
+	UseSSL            bool          `yaml:"use_ssl"`
+	Username          string        `yaml:"username"`
+	Password          string        `yaml:"password"`
+	Domain            string        `yaml:"domain"`
 	CommunityTopic    string        `yaml:"community_topic"`
 	PersonaCount      int           `yaml:"persona_count"`
 	ReviewTimeout     time.Duration `yaml:"review_timeout"`
 	RequiredConsensus float64       `yaml:"required_consensus"`
+	TrustedDomains    []string      `yaml:"trusted_domains"`
+	BlockedDomains    []string      `yaml:"blocked_domains"`
+	MaxAttachmentSize int64         `yaml:"max_attachment_size"`
+	ScanAttachments   bool          `yaml:"scan_attachments"`
+	QuarantinePath    string        `yaml:"quarantine_path"`
 }
 
-// EmailMessage represents an email message
-type EmailMessage struct {
+// ESMTPMessage represents an ESMTP email message
+type ESMTPMessage struct {
+	ID          string            `json:"id"`
 	From        string            `json:"from"`
 	To          []string          `json:"to"`
+	CC          []string          `json:"cc,omitempty"`
+	BCC         []string          `json:"bcc,omitempty"`
 	Subject     string            `json:"subject"`
 	Body        string            `json:"body"`
+	HTMLBody    string            `json:"html_body,omitempty"`
 	Headers     map[string]string `json:"headers"`
-	Attachments []string          `json:"attachments"`
+	Attachments []EmailAttachment `json:"attachments,omitempty"`
 	Timestamp   time.Time         `json:"timestamp"`
+	MessageID   string            `json:"message_id"`
+	InReplyTo   string            `json:"in_reply_to,omitempty"`
+	References  []string          `json:"references,omitempty"`
+	Priority    string            `json:"priority,omitempty"`
+	Metadata    map[string]string `json:"metadata"`
+}
+
+// EmailAttachment represents an email attachment
+type EmailAttachment struct {
+	Filename    string `json:"filename"`
+	ContentType string `json:"content_type"`
+	Size        int64  `json:"size"`
+	Hash        string `json:"hash,omitempty"`
+	Quarantined bool   `json:"quarantined"`
 }
 
 // NewESMTPProcessor creates a new ESMTP processor
@@ -57,22 +77,42 @@ func (e *ESMTPProcessor) GetTag() string {
 
 // GetDescription returns the processor description
 func (e *ESMTPProcessor) GetDescription() string {
-	return fmt.Sprintf("ESMTP Threat Vector Interceptor on %s:%d - Email intelligence gathering for AI community review on topic: %s", 
-		e.config.Host, e.config.Port, e.config.CommunityTopic)
+	return fmt.Sprintf("ESMTP Email Threat Vector Interceptor on %s:%d - Email intelligence gathering for AI community review on topic: %s", 
+		e.config.Server, e.config.Port, e.config.CommunityTopic)
 }
 
-// ProcessWebhook processes an ESMTP webhook (for webhook-based email analysis)
+// ProcessWebhook processes an ESMTP message webhook
 func (e *ESMTPProcessor) ProcessWebhook(ctx context.Context, request *WebhookRequest) (*WebhookResponse, error) {
 	log.Printf("ESMTP Processor: Processing email threat vector webhook")
 	
 	// Parse email message from request body
-	email, err := e.parseEmailMessage(request.Body)
+	emailMsg, err := e.parseESMTPMessage(request.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse email message: %w", err)
+		return nil, fmt.Errorf("failed to parse ESMTP message: %w", err)
 	}
 	
+	// Check if domain is blocked
+	if e.isDomainBlocked(emailMsg.From) {
+		log.Printf("ESMTP Processor: Blocked domain %s, quarantining email", emailMsg.From)
+		return &WebhookResponse{
+			Success:   true,
+			Message:   "Email from blocked domain quarantined",
+			RequestID: request.ID,
+			Data: map[string]interface{}{
+				"action":     "quarantined",
+				"reason":     "blocked_domain",
+				"from":       emailMsg.From,
+				"subject":    emailMsg.Subject,
+			},
+			Timestamp: time.Now(),
+		}, nil
+	}
+	
+	// Check if domain is trusted (lower threat threshold)
+	isTrusted := e.isDomainTrusted(emailMsg.From)
+	
 	// Analyze email for threats using AI community
-	threatLevel, consensus, err := e.analyzeEmailThreats(ctx, email)
+	threatLevel, consensus, err := e.analyzeEmailThreats(ctx, emailMsg, isTrusted)
 	if err != nil {
 		return nil, fmt.Errorf("failed to analyze email threats: %w", err)
 	}
@@ -83,37 +123,67 @@ func (e *ESMTPProcessor) ProcessWebhook(ctx context.Context, request *WebhookReq
 		Message:   "Email threat vector submitted for community review",
 		RequestID: request.ID,
 		Data: map[string]interface{}{
-			"threat_level": threatLevel,
-			"consensus":    consensus,
-			"review_id":    fmt.Sprintf("review_%d", time.Now().UnixNano()),
+			"threat_level":      threatLevel,
+			"consensus":         consensus,
+			"review_id":         fmt.Sprintf("email_review_%d", time.Now().UnixNano()),
+			"from":              emailMsg.From,
+			"subject":           emailMsg.Subject,
+			"attachment_count":  len(emailMsg.Attachments),
+			"is_trusted":        isTrusted,
 		},
 		Timestamp: time.Now(),
 	}
 	
-	log.Printf("ESMTP Processor: Email analyzed - Threat Level: %s, Consensus: %.2f", threatLevel, consensus)
+	log.Printf("ESMTP Processor: Email analyzed - From: %s, Subject: %s, Threat Level: %s, Consensus: %.2f", 
+		emailMsg.From, emailMsg.Subject, threatLevel, consensus)
 	
 	return response, nil
 }
 
 // analyzeEmailThreats analyzes email for threats using AI community
-func (e *ESMTPProcessor) analyzeEmailThreats(ctx context.Context, email *EmailMessage) (string, float64, error) {
+func (e *ESMTPProcessor) analyzeEmailThreats(ctx context.Context, emailMsg *ESMTPMessage, isTrusted bool) (string, float64, error) {
 	// Create threat analysis content
 	analysisContent := fmt.Sprintf(`
 Email Threat Analysis Request:
 From: %s
 To: %s
 Subject: %s
-Body: %s
-Headers: %v
-Attachments: %v
+Message ID: %s
+Is Trusted Domain: %v
+Timestamp: %s
+Attachment Count: %d
 
+Email Body:
+%s
+
+`, emailMsg.From, strings.Join(emailMsg.To, ", "), emailMsg.Subject, 
+	emailMsg.MessageID, isTrusted, emailMsg.Timestamp.Format(time.RFC3339), 
+	len(emailMsg.Attachments), emailMsg.Body)
+	
+	// Add attachment information
+	if len(emailMsg.Attachments) > 0 {
+		analysisContent += "\nAttachments:\n"
+		for _, attachment := range emailMsg.Attachments {
+			analysisContent += fmt.Sprintf("- %s (%s, %d bytes)\n", 
+				attachment.Filename, attachment.ContentType, attachment.Size)
+		}
+	}
+	
+	analysisContent += `
 Please analyze this email for potential threats including:
-- Phishing attempts
-- Malware delivery
-- Social engineering
-- Spam/unwanted content
-- Suspicious links or attachments
-`, email.From, strings.Join(email.To, ", "), email.Subject, email.Body, email.Headers, email.Attachments)
+- Phishing attempts and credential harvesting
+- Malware attachments and malicious links
+- Business Email Compromise (BEC) attacks
+- Social engineering and pretexting
+- Spam and unwanted commercial email
+- Email spoofing and domain impersonation
+- Ransomware delivery mechanisms
+- Data exfiltration attempts
+- CEO fraud and invoice scams
+- Cryptocurrency and financial scams
+- Identity theft and personal information harvesting
+- Suspicious file attachments and executables
+`
 	
 	// Create AI community for threat analysis
 	community, err := e.aiClient.CreateCommunity(ctx, e.config.CommunityTopic, e.config.PersonaCount)
@@ -134,11 +204,29 @@ Please analyze this email for potential threats including:
 	if review.Consensus != nil {
 		consensus = review.Consensus.OverallScore
 		
-		if consensus >= 0.8 {
+		// Adjust thresholds for trusted domains
+		thresholds := map[string]float64{
+			"critical": 0.9,
+			"high":     0.8,
+			"medium":   0.6,
+			"low":      0.4,
+		}
+		
+		if isTrusted {
+			// Higher thresholds for trusted domains
+			thresholds["critical"] = 0.95
+			thresholds["high"] = 0.85
+			thresholds["medium"] = 0.7
+			thresholds["low"] = 0.5
+		}
+		
+		if consensus >= thresholds["critical"] {
+			threatLevel = "critical"
+		} else if consensus >= thresholds["high"] {
 			threatLevel = "high"
-		} else if consensus >= 0.6 {
+		} else if consensus >= thresholds["medium"] {
 			threatLevel = "medium"
-		} else if consensus >= 0.4 {
+		} else if consensus >= thresholds["low"] {
 			threatLevel = "low"
 		} else {
 			threatLevel = "minimal"
@@ -148,48 +236,120 @@ Please analyze this email for potential threats including:
 	return threatLevel, consensus, nil
 }
 
-// parseEmailMessage parses an email message from the request body
-func (e *ESMTPProcessor) parseEmailMessage(body interface{}) (*EmailMessage, error) {
+// parseESMTPMessage parses an email message from the request body
+func (e *ESMTPProcessor) parseESMTPMessage(body interface{}) (*ESMTPMessage, error) {
 	bodyMap, ok := body.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("invalid body format")
 	}
 	
-	email := &EmailMessage{
-		From:        getStringFromMap(bodyMap, "from"),
-		Subject:     getStringFromMap(bodyMap, "subject"),
-		Body:        getStringFromMap(bodyMap, "body"),
-		Timestamp:   time.Now(),
-		Headers:     make(map[string]string),
-		Attachments: []string{},
+	emailMsg := &ESMTPMessage{
+		ID:        getStringFromMap(bodyMap, "id"),
+		From:      getStringFromMap(bodyMap, "from"),
+		Subject:   getStringFromMap(bodyMap, "subject"),
+		Body:      getStringFromMap(bodyMap, "body"),
+		HTMLBody:  getStringFromMap(bodyMap, "html_body"),
+		MessageID: getStringFromMap(bodyMap, "message_id"),
+		InReplyTo: getStringFromMap(bodyMap, "in_reply_to"),
+		Priority:  getStringFromMap(bodyMap, "priority"),
+		Timestamp: time.Now(),
+		Headers:   make(map[string]string),
+		Metadata:  make(map[string]string),
 	}
 	
-	// Parse To field
+	// Parse To, CC, BCC arrays
 	if toData, ok := bodyMap["to"].([]interface{}); ok {
 		for _, to := range toData {
 			if toStr, ok := to.(string); ok {
-				email.To = append(email.To, toStr)
+				emailMsg.To = append(emailMsg.To, toStr)
 			}
 		}
 	}
 	
-	// Parse Headers
+	if ccData, ok := bodyMap["cc"].([]interface{}); ok {
+		for _, cc := range ccData {
+			if ccStr, ok := cc.(string); ok {
+				emailMsg.CC = append(emailMsg.CC, ccStr)
+			}
+		}
+	}
+	
+	if bccData, ok := bodyMap["bcc"].([]interface{}); ok {
+		for _, bcc := range bccData {
+			if bccStr, ok := bcc.(string); ok {
+				emailMsg.BCC = append(emailMsg.BCC, bccStr)
+			}
+		}
+	}
+	
+	// Parse references array
+	if referencesData, ok := bodyMap["references"].([]interface{}); ok {
+		for _, ref := range referencesData {
+			if refStr, ok := ref.(string); ok {
+				emailMsg.References = append(emailMsg.References, refStr)
+			}
+		}
+	}
+	
+	// Parse headers
 	if headersData, ok := bodyMap["headers"].(map[string]interface{}); ok {
 		for key, value := range headersData {
 			if valueStr, ok := value.(string); ok {
-				email.Headers[key] = valueStr
+				emailMsg.Headers[key] = valueStr
 			}
 		}
 	}
 	
-	// Parse Attachments
+	// Parse attachments
 	if attachmentsData, ok := bodyMap["attachments"].([]interface{}); ok {
-		for _, attachment := range attachmentsData {
-			if attachmentStr, ok := attachment.(string); ok {
-				email.Attachments = append(email.Attachments, attachmentStr)
+		for _, attachmentData := range attachmentsData {
+			if attachmentMap, ok := attachmentData.(map[string]interface{}); ok {
+				attachment := EmailAttachment{
+					Filename:    getStringFromMap(attachmentMap, "filename"),
+					ContentType: getStringFromMap(attachmentMap, "content_type"),
+					Hash:        getStringFromMap(attachmentMap, "hash"),
+					Quarantined: getBoolFromMap(attachmentMap, "quarantined"),
+				}
+				
+				if size, ok := attachmentMap["size"].(float64); ok {
+					attachment.Size = int64(size)
+				}
+				
+				emailMsg.Attachments = append(emailMsg.Attachments, attachment)
 			}
 		}
 	}
 	
-	return email, nil
+	return emailMsg, nil
+}
+
+// isDomainBlocked checks if a domain is in the blocked list
+func (e *ESMTPProcessor) isDomainBlocked(email string) bool {
+	domain := e.extractDomain(email)
+	for _, blocked := range e.config.BlockedDomains {
+		if strings.EqualFold(domain, blocked) {
+			return true
+		}
+	}
+	return false
+}
+
+// isDomainTrusted checks if a domain is in the trusted list
+func (e *ESMTPProcessor) isDomainTrusted(email string) bool {
+	domain := e.extractDomain(email)
+	for _, trusted := range e.config.TrustedDomains {
+		if strings.EqualFold(domain, trusted) {
+			return true
+		}
+	}
+	return false
+}
+
+// extractDomain extracts domain from email address
+func (e *ESMTPProcessor) extractDomain(email string) string {
+	parts := strings.Split(email, "@")
+	if len(parts) == 2 {
+		return parts[1]
+	}
+	return ""
 }
