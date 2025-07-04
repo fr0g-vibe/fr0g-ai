@@ -245,7 +245,7 @@
 |-----------|-------------|-------------|------|------|------------|---------|-------------|---------|
 | **fr0g-ai-bridge** | ✅ | ✅ | ✅ | ✅ | ✅ | N/A | N/A | **OPERATIONAL** |
 | **fr0g-ai-master-control** | ⚠️ | ✅ | ⚠️ | ✅ | ✅ | ✅ | ✅ | **NEEDS TESTING** |
-| **fr0g-ai-aip** | ✅ | ⚠️ | ❌ | ⚠️ | ✅ | ✅ | ⚠️ | **CORE MISSING** |
+| **fr0g-ai-aip** | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | **SUPPORTING SERVICES MISSING** |
 | **Service Registry** | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | N/A | **MISSING** |
 | **Shared Config** | ✅ | N/A | N/A | N/A | ✅ | N/A | N/A | **OPERATIONAL** |
 
