@@ -112,7 +112,16 @@
 ## Immediate Actions Needed
 
 ### Missing Implementations
-- [ ] **CRITICAL**: Implement actual REST handlers in internal/api/
-- [ ] **CRITICAL**: Implement gRPC service handlers
-- [ ] **CRITICAL**: Create OpenWebUI client implementation
+- [ ] **CRITICAL**: Implement actual REST handlers in internal/handlers/
+- [ ] **CRITICAL**: Implement gRPC service handlers in internal/grpc/
+- [ ] **CRITICAL**: Create OpenWebUI client implementation in internal/clients/
 - [ ] **HIGH**: Add proper validation beyond role checking
+
+### New Framework Implementation Tasks
+- [x] **COMPLETED**: Create handlers framework directory
+- [x] **COMPLETED**: Create clients framework directory  
+- [x] **COMPLETED**: Create grpc framework directory
+- [ ] **URGENT**: Implement handlers/chat completion endpoints
+- [ ] **URGENT**: Implement clients/openwebui integration
+- [ ] **URGENT**: Implement grpc/bridge service methods
+- [ ] **HIGH**: Implement clients/aip gRPC client

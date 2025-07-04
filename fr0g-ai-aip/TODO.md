@@ -18,6 +18,21 @@
 - [ ] **CRITICAL**: Health check endpoint missing (referenced in docker-compose)
 - [ ] **CRITICAL**: gRPC service implementation missing (GRPC_PORT configured but no gRPC server)
 
+### New Framework Implementation Tasks
+- [x] **COMPLETED**: Create attributes framework directories
+- [x] **COMPLETED**: Create grpc framework directory
+- [x] **COMPLETED**: Create registry framework directory
+- [ ] **URGENT**: Implement attributes/demographics processing
+- [ ] **URGENT**: Implement attributes/psychographics processing
+- [ ] **URGENT**: Implement attributes/lifehistory processing
+- [ ] **URGENT**: Implement attributes/cultural processing
+- [ ] **URGENT**: Implement attributes/political processing
+- [ ] **URGENT**: Implement attributes/health processing
+- [ ] **URGENT**: Implement attributes/preferences processing
+- [ ] **URGENT**: Implement attributes/behavioral processing
+- [ ] **HIGH**: Implement grpc/persona service methods
+- [ ] **HIGH**: Implement registry/client integration
+
 ### Storage Layer
 - [ ] Implement database storage backend (currently only file/memory)
 - [ ] Add data migration system for storage backends
