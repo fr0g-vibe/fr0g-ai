@@ -26,9 +26,18 @@
 
 ### 🏗️ PROJECT STRUCTURE RULES
 - **Repository URL**: Always use `https://github.com/fr0g-vibe/fr0g-ai`
-- **Working Directory**: AI agents start in `/fr0g-ai` root directory
+- **Project Path**: All Go imports use `github.com/fr0g-vibe/fr0g-ai/` prefix
+- **Working Directory**: AI agents start in `/fr0g-ai` root directory (local clone)
 - **Module Navigation**: MUST `cd fr0g-ai-bridge` before running Go commands
 - **Service Ports**: HTTP :8082, gRPC :9091 (configured in docker-compose)
+- **Subproject Path**: This component exists at `github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge`
+
+### 🚫 PROTOBUF GENERATION RULES
+- **NEVER EDIT**: Do not manually edit any `.pb.go` files marked "DO NOT EDIT"
+- **Use Build Commands**: Always use `make proto` or `protoc` commands for protobuf generation
+- **Generated Files**: Treat all `.pb.go` files as build artifacts, not source code
+- **Import Generated**: Import generated protobuf code, never attempt to create it manually
+- **AIP Protobuf**: Use existing protobuf definitions from fr0g-ai-aip, do not recreate them
 
 ### 🌉 BRIDGE SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Integration bridge between OpenWebUI and fr0g-ai-aip

@@ -2,9 +2,11 @@
 
 ## 🎯 Project Overview
 - **Repository**: https://github.com/fr0g-vibe/fr0g-ai
+- **Project Path**: `github.com/fr0g-vibe/fr0g-ai`
 - **License**: GPL-3.0
 - **Architecture**: Microservices with gRPC communication
 - **Language**: Go 1.21+
+- **Subproject Structure**: All components exist under `github.com/fr0g-vibe/fr0g-ai/` path
 
 ## 🏗️ Component Architecture
 
@@ -48,11 +50,19 @@
 ## 🛠️ Development Standards
 
 ### Go Development Rules
-- **Working Directory**: Always start in `/fr0g-ai` root
+- **Working Directory**: Always start in `/fr0g-ai` root (local clone of github.com/fr0g-vibe/fr0g-ai)
+- **Project Path**: All Go imports use `github.com/fr0g-vibe/fr0g-ai/` prefix
 - **Module Navigation**: `cd` into component before Go commands
 - **Go Version**: Use Go 1.21+ features
 - **Error Handling**: Never ignore errors with `_`
 - **Context**: Pass `context.Context` as first parameter when needed
+
+### Protobuf Generation Rules
+- **NEVER EDIT**: Do not manually edit any `.pb.go` files that contain "DO NOT EDIT" comments
+- **Use Build Commands**: Always use `make proto` or component-specific protobuf build commands
+- **Generated Files**: Treat all `.pb.go` files as generated artifacts, not source code
+- **Protobuf Sources**: Only edit `.proto` files, never the generated Go code
+- **Build First**: Run protobuf generation before building Go code that depends on it
 
 ### Code Style
 - Use `gofmt` and `goimports`

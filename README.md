@@ -133,9 +133,11 @@ When starting new AI coding sessions, always include these files:
 
 ### Repository Information
 - **GitHub URL**: `https://github.com/fr0g-vibe/fr0g-ai`
+- **Project Path**: `github.com/fr0g-vibe/fr0g-ai`
 - **License**: GPL-3.0
-- **Working Directory**: AI agents start in `/fr0g-ai` root
+- **Working Directory**: AI agents start in `/fr0g-ai` root (local clone of github.com/fr0g-vibe/fr0g-ai)
 - **Module Navigation**: Must `cd` into component directory before Go commands
+- **Subprojects**: All components exist under `github.com/fr0g-vibe/fr0g-ai/` path
 
 ## 🤝 Contributing
 
