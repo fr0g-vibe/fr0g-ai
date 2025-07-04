@@ -136,8 +136,13 @@ func demonstrateMCPFunctionality(mcp *mastercontrol.MasterControlProgram) {
 func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 	fmt.Println("🔧 Setting up input processors...")
 	
-	// Create AI client (using mock for demo)
-	aiClient := input.NewMockAIPersonaCommunityClient()
+	// Create real AI client
+	aiClientConfig := &input.AIClientConfig{
+		AIPServiceURL:    "http://localhost:8080", // fr0g-ai-aip service
+		BridgeServiceURL: "http://localhost:8082", // fr0g-ai-bridge service
+		Timeout:          30 * time.Second,
+	}
+	aiClient := input.NewRealAIPersonaCommunityClient(aiClientConfig)
 	
 	// Discord processor configuration
 	discordConfig := &input.DiscordProcessorConfig{
