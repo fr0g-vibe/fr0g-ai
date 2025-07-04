@@ -1,4 +1,4 @@
-module github.com/fr0g-vibe/fr0g-ai-aip
+module github.com/fr0g-vibe/fr0g-ai
 
 go 1.24.0
 
