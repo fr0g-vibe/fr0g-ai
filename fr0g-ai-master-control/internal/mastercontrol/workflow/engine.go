@@ -264,7 +264,9 @@ func (we *WorkflowEngine) startSampleWorkflows() {
 	
 	for _, workflow := range workflows {
 		if len(we.activeWorkflows) < we.config.MaxConcurrentWorkflows {
-			we.startWorkflow(workflow)
+			if sampleWorkflow, ok := workflow.(*SampleWorkflow); ok {
+				we.startWorkflow(sampleWorkflow)
+			}
 		}
 	}
 }
@@ -301,8 +303,10 @@ func (we *WorkflowEngine) manageContinuousWorkflows() {
 		
 		for _, workflow := range workflows {
 			if len(we.activeWorkflows) < we.config.MaxConcurrentWorkflows {
-				we.startWorkflow(workflow)
-				break // Start one at a time
+				if sampleWorkflow, ok := workflow.(*SampleWorkflow); ok {
+					we.startWorkflow(sampleWorkflow)
+					break // Start one at a time
+				}
 			}
 		}
 	}
