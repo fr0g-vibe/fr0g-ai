@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/client"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/community"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/persona"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/storage"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/client"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/community"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 )
 
 // Config holds CLI configuration

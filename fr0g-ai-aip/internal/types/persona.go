@@ -2,7 +2,7 @@ package types
 
 import (
 	"time"
-	pb "github.com/fr0g-vibe/fr0g-ai-aip/internal/grpc/pb"
+	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
 )
 
 // Persona represents an AI persona with specific expertise

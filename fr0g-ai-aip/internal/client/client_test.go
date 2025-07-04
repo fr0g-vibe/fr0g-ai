@@ -3,8 +3,8 @@ package client
 import (
 	"testing"
 
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/storage"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 )
 
 // Test that all client implementations satisfy the Client interface

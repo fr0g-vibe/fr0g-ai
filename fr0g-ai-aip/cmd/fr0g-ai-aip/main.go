@@ -9,12 +9,12 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/api"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/cli"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/config"
-	grpcserver "github.com/fr0g-vibe/fr0g-ai-aip/internal/grpc"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/persona"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/storage"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/api"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/cli"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
+	grpcserver "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 )
 
 // App holds the application state

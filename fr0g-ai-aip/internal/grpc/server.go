@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/config"
-	pb "github.com/fr0g-vibe/fr0g-ai-aip/internal/grpc/pb"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/persona"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/storage"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
+	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 )
 
 // PersonaServer implements the gRPC PersonaService

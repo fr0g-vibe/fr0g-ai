@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/fr0g-vibe/fr0g-ai-aip/internal/grpc/pb"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 )
 
 // GRPCClient implements a real gRPC client using protobuf

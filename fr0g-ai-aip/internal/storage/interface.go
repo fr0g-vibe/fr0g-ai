@@ -1,6 +1,6 @@
 package storage
 
-import "github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+import "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 
 // Storage defines the interface for persona storage backends
 type Storage interface {

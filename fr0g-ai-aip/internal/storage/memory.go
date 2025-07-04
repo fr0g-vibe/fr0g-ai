@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 )
 
 // MemoryStorage implements in-memory storage for personas and identities

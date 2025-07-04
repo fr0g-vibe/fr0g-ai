@@ -1,8 +1,8 @@
 package client
 
 import (
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/storage"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 )
 
 // LocalClient implements local storage client for persona and identity service

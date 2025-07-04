@@ -13,9 +13,9 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 
-	pb "github.com/fr0g-vibe/fr0g-ai-aip/internal/grpc/pb"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/persona"
-	"github.com/fr0g-vibe/fr0g-ai-aip/internal/storage"
+	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 )
 
 const bufSize = 1024 * 1024

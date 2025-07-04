@@ -1,6 +1,6 @@
 package client
 
-import "github.com/fr0g-vibe/fr0g-ai-aip/internal/types"
+import "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 
 // Client defines the interface for persona service clients
 type Client interface {
