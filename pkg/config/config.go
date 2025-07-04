@@ -62,3 +62,136 @@ type MonitoringConfig struct {
 	HealthCheckInterval int  `yaml:"health_check_interval" json:"health_check_interval"`
 	EnableTracing       bool `yaml:"enable_tracing" json:"enable_tracing"`
 }
+
+// Validate validates the CommonConfig
+func (c *CommonConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+	
+	validLogLevels := []string{"debug", "info", "warn", "error", "fatal"}
+	if c.LogLevel != "" && !Contains(validLogLevels, c.LogLevel) {
+		errors = append(errors, ValidationError{
+			Field:   "log_level",
+			Message: fmt.Sprintf("invalid log level, must be one of: %s", strings.Join(validLogLevels, ", ")),
+		})
+	}
+	
+	if c.Timeout > 0 {
+		if err := ValidateTimeout(c.Timeout, "timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	return ValidationErrors(errors)
+}
+
+// Validate validates the ServerConfig
+func (c *ServerConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+	
+	if err := ValidatePort(c.HTTPPort, "http_port"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if err := ValidatePort(c.GRPCPort, "grpc_port"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if c.HTTPPort == c.GRPCPort {
+		errors = append(errors, ValidationError{
+			Field:   "ports",
+			Message: "HTTP and gRPC ports cannot be the same",
+		})
+	}
+	
+	if c.EnableTLS {
+		if err := ValidateRequired(c.CertFile, "cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := ValidateRequired(c.KeyFile, "key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	if c.ReadTimeout > 0 {
+		if err := ValidateTimeout(c.ReadTimeout, "read_timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	if c.WriteTimeout > 0 {
+		if err := ValidateTimeout(c.WriteTimeout, "write_timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	if c.ShutdownTimeout > 0 {
+		if err := ValidateTimeout(c.ShutdownTimeout, "shutdown_timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	return ValidationErrors(errors)
+}
+
+// Validate validates the SecurityConfig
+func (c *SecurityConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+	
+	if c.EnableAuth || c.RequireAPIKey {
+		if err := ValidateRequired(c.APIKey, "api_key"); err != nil {
+			errors = append(errors, *err)
+		} else if err := ValidateAPIKey(c.APIKey, "api_key"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	if c.RateLimitRPM < 0 {
+		errors = append(errors, ValidationError{
+			Field:   "rate_limit_rpm",
+			Message: "rate limit must be non-negative",
+		})
+	}
+	
+	return ValidationErrors(errors)
+}
+
+// Validate validates the StorageConfig
+func (c *StorageConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+	
+	validTypes := []string{"memory", "file", "redis", "postgres"}
+	if !Contains(validTypes, c.Type) {
+		errors = append(errors, ValidationError{
+			Field:   "storage.type",
+			Message: fmt.Sprintf("invalid storage type, must be one of: %s", strings.Join(validTypes, ", ")),
+		})
+	}
+	
+	if c.Type == "file" {
+		if err := ValidateRequired(c.DataDir, "data_dir"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	return ValidationErrors(errors)
+}
+
+// Validate validates the MonitoringConfig
+func (c *MonitoringConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+	
+	if c.EnableMetrics {
+		if err := ValidatePort(c.MetricsPort, "metrics_port"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	if c.HealthCheckInterval < 0 {
+		errors = append(errors, ValidationError{
+			Field:   "health_check_interval",
+			Message: "health check interval must be non-negative",
+		})
+	}
+	
+	return ValidationErrors(errors)
+}

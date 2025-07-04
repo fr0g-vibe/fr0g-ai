@@ -179,3 +179,56 @@ func Contains(slice []string, item string) bool {
 	}
 	return false
 }
+
+// ValidateURL validates a URL format
+func ValidateURL(url string, fieldName string) *ValidationError {
+	if url == "" {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "URL cannot be empty",
+		}
+	}
+	
+	// Basic URL validation - starts with http:// or https://
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "URL must start with http:// or https://",
+		}
+	}
+	
+	return nil
+}
+
+// ValidateRange validates that a numeric value is within a specified range
+func ValidateRange(value float64, min, max float64, fieldName string) *ValidationError {
+	if value < min || value > max {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: fmt.Sprintf("value must be between %.2f and %.2f", min, max),
+		}
+	}
+	return nil
+}
+
+// ValidatePositive validates that a numeric value is positive
+func ValidatePositive(value int, fieldName string) *ValidationError {
+	if value <= 0 {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "value must be positive",
+		}
+	}
+	return nil
+}
+
+// ValidateStringSliceNotEmpty validates that a string slice is not empty
+func ValidateStringSliceNotEmpty(slice []string, fieldName string) *ValidationError {
+	if len(slice) == 0 {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "at least one item is required",
+		}
+	}
+	return nil
+}

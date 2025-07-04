@@ -10,10 +10,76 @@ import (
 	sharedconfig "pkg/config"
 )
 
+// ValidationError represents a validation error (alias to shared type)
+type ValidationError = sharedconfig.ValidationError
 
+// ValidationErrors represents multiple validation errors (alias to shared type)
+type ValidationErrors = sharedconfig.ValidationErrors
 
+// Config represents the application configuration structure
+type Config struct {
+	HTTP     HTTPConfig     `yaml:"http" json:"http"`
+	GRPC     GRPCConfig     `yaml:"grpc" json:"grpc"`
+	Storage  StorageConfig  `yaml:"storage" json:"storage"`
+	Client   ClientConfig   `yaml:"client" json:"client"`
+	Security SecurityConfig `yaml:"security" json:"security"`
+}
 
-func (c *Config) validateHTTPConfig() []sharedconfig.ValidationError {
+// HTTPConfig holds HTTP server configuration
+type HTTPConfig struct {
+	Port            string        `yaml:"port" json:"port"`
+	ReadTimeout     time.Duration `yaml:"read_timeout" json:"read_timeout"`
+	WriteTimeout    time.Duration `yaml:"write_timeout" json:"write_timeout"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" json:"shutdown_timeout"`
+	EnableTLS       bool          `yaml:"enable_tls" json:"enable_tls"`
+	CertFile        string        `yaml:"cert_file" json:"cert_file"`
+	KeyFile         string        `yaml:"key_file" json:"key_file"`
+}
+
+// GRPCConfig holds gRPC server configuration
+type GRPCConfig struct {
+	Port              string        `yaml:"port" json:"port"`
+	MaxRecvMsgSize    int           `yaml:"max_recv_msg_size" json:"max_recv_msg_size"`
+	MaxSendMsgSize    int           `yaml:"max_send_msg_size" json:"max_send_msg_size"`
+	ConnectionTimeout time.Duration `yaml:"connection_timeout" json:"connection_timeout"`
+	EnableTLS         bool          `yaml:"enable_tls" json:"enable_tls"`
+	CertFile          string        `yaml:"cert_file" json:"cert_file"`
+	KeyFile           string        `yaml:"key_file" json:"key_file"`
+}
+
+// StorageConfig holds storage configuration
+type StorageConfig struct {
+	Type    string `yaml:"type" json:"type"`
+	DataDir string `yaml:"data_dir" json:"data_dir"`
+}
+
+// ClientConfig holds client configuration
+type ClientConfig struct {
+	Type    string        `yaml:"type" json:"type"`
+	Timeout time.Duration `yaml:"timeout" json:"timeout"`
+}
+
+// SecurityConfig holds security configuration
+type SecurityConfig struct {
+	EnableAuth bool   `yaml:"enable_auth" json:"enable_auth"`
+	APIKey     string `yaml:"api_key" json:"api_key"`
+}
+
+// Validate validates the entire configuration
+func (c *Config) Validate() ValidationErrors {
+	var errors []ValidationError
+	
+	errors = append(errors, c.validateHTTPConfig()...)
+	errors = append(errors, c.validateGRPCConfig()...)
+	errors = append(errors, c.validateStorageConfig()...)
+	errors = append(errors, c.validateClientConfig()...)
+	errors = append(errors, c.validateSecurityConfig()...)
+	errors = append(errors, c.validateCrossConfig()...)
+	
+	return ValidationErrors(errors)
+}
+
+func (c *Config) validateHTTPConfig() []ValidationError {
 	var errors []sharedconfig.ValidationError
 	
 	// Validate port

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -130,6 +131,19 @@ func (l *Loader) GetEnvBool(key string, defaultValue bool) bool {
 	}
 	if value := os.Getenv(key); value != "" {
 		return strings.ToLower(value) == "true"
+	}
+	return defaultValue
+}
+
+// GetEnvDuration gets duration from environment with optional prefix
+func (l *Loader) GetEnvDuration(key string, defaultValue time.Duration) time.Duration {
+	if l.options.EnvPrefix != "" {
+		key = l.options.EnvPrefix + "_" + key
+	}
+	if value := os.Getenv(key); value != "" {
+		if d, err := time.ParseDuration(value); err == nil {
+			return d
+		}
 	}
 	return defaultValue
 }
