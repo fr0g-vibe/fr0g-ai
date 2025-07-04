@@ -302,8 +302,149 @@ curl -X POST "$BASE_URL/webhook/esmtp" \
   }' \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
+# SMS/Text Message Tests
+echo "18. 📱 Testing SMS Phishing Detection..."
+curl -X POST "$BASE_URL/webhook/sms" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "+1-555-SCAMMER",
+    "to": "+1-555-VICTIM",
+    "body": "URGENT: Your bank account has been compromised. Click this link immediately to secure your account: http://fake-bank.com/secure?token=abc123. Reply STOP to cancel.",
+    "message_type": "sms",
+    "provider": "google_voice",
+    "timestamp": "2025-07-02T16:30:00Z",
+    "metadata": {
+      "carrier": "unknown",
+      "location": "unknown"
+    }
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+echo "19. 📱 Testing SMS Legitimate Message..."
+curl -X POST "$BASE_URL/webhook/sms" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "+1-555-FRIEND",
+    "to": "+1-555-USER",
+    "body": "Hey! Are we still meeting for lunch tomorrow at 12:30? Let me know if you need to reschedule.",
+    "message_type": "sms",
+    "provider": "google_voice",
+    "timestamp": "2025-07-02T16:35:00Z",
+    "metadata": {
+      "carrier": "verizon",
+      "location": "local"
+    }
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# Voice Call Tests
+echo "20. 📞 Testing Voice Call Robocall Detection..."
+curl -X POST "$BASE_URL/webhook/voice" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "call_123456789",
+    "from": "+1-800-ROBOCALL",
+    "to": "+1-555-VICTIM",
+    "status": "completed",
+    "duration": "45s",
+    "provider": "google_voice",
+    "transcript_text": "Hello, this is an important message about your cars extended warranty. Your warranty is about to expire and you need to act now to avoid losing coverage. Press 1 to speak with a representative or press 2 to be removed from our list.",
+    "transcript_status": "completed",
+    "caller_id": {
+      "name": "Auto Warranty Services",
+      "number": "+1-800-ROBOCALL",
+      "location": "Unknown",
+      "carrier_name": "VoIP Provider",
+      "line_type": "voip",
+      "is_spam": true,
+      "is_robocall": true,
+      "trust_score": 0.1
+    },
+    "timestamp": "2025-07-02T16:40:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+echo "21. 📞 Testing Voice Call Legitimate Business..."
+curl -X POST "$BASE_URL/webhook/voice" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "call_987654321",
+    "from": "+1-555-DOCTOR",
+    "to": "+1-555-PATIENT",
+    "status": "completed",
+    "duration": "120s",
+    "provider": "google_voice",
+    "transcript_text": "Hello, this is Dr. Smith calling to confirm your appointment tomorrow at 2 PM. Please call us back at 555-DOCTOR if you need to reschedule. Thank you.",
+    "transcript_status": "completed",
+    "caller_id": {
+      "name": "Dr. Smith Medical Office",
+      "number": "+1-555-DOCTOR",
+      "location": "Local",
+      "carrier_name": "Local Telecom",
+      "line_type": "landline",
+      "is_spam": false,
+      "is_robocall": false,
+      "trust_score": 0.9
+    },
+    "timestamp": "2025-07-02T16:45:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+# IRC Chat Tests
+echo "22. 💬 Testing IRC Malicious Link Detection..."
+curl -X POST "$BASE_URL/webhook/irc" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "irc_msg_123",
+    "type": "PRIVMSG",
+    "from": "suspicious_user",
+    "to": "#security",
+    "message": "Hey everyone! Check out this amazing new crypto opportunity: http://totally-legit-crypto.ru/invest?ref=scam123 - you can make 1000% returns in just one week! DM me for more info!",
+    "channel": "#security",
+    "server": "irc.libera.chat",
+    "is_private": false,
+    "user_info": {
+      "nickname": "suspicious_user",
+      "username": "scammer",
+      "hostname": "suspicious.domain.ru",
+      "real_name": "Definitely Not A Scammer",
+      "channels": ["#security", "#crypto"],
+      "is_op": false,
+      "is_voice": false,
+      "idle_time": 30
+    },
+    "timestamp": "2025-07-02T16:50:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
+echo "23. 💬 Testing IRC Legitimate Discussion..."
+curl -X POST "$BASE_URL/webhook/irc" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "irc_msg_456",
+    "type": "PRIVMSG",
+    "from": "security_expert",
+    "to": "#security",
+    "message": "The new CVE-2024-1234 vulnerability affects OpenSSL versions prior to 3.0.8. Everyone should update their systems immediately. Here is the official advisory: https://www.openssl.org/news/secadv/",
+    "channel": "#security",
+    "server": "irc.libera.chat",
+    "is_private": false,
+    "user_info": {
+      "nickname": "security_expert",
+      "username": "expert",
+      "hostname": "security-company.com",
+      "real_name": "Security Researcher",
+      "channels": ["#security", "#openssl", "#cve"],
+      "is_op": true,
+      "is_voice": true,
+      "idle_time": 300
+    },
+    "timestamp": "2025-07-02T16:55:00Z"
+  }' \
+  -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
+
 # Test port availability and system diagnostics
-echo "18. 🔍 Testing System Diagnostics..."
+echo "24. 🔍 Testing System Diagnostics..."
 echo "   Checking if MCP is accessible on port 8081..."
 if curl -s --connect-timeout 5 "$BASE_URL/health" > /dev/null 2>&1; then
     echo "   ✅ MCP webhook server is accessible on port 8081"
@@ -319,7 +460,7 @@ else
 fi
 
 # Test real-time cognitive pattern recognition
-echo "19. 🧠 Testing Real-Time Cognitive Pattern Evolution..."
+echo "25. 🧠 Testing Real-Time Cognitive Pattern Evolution..."
 curl -X POST "$BASE_URL/webhook/discord" \
   -H "Content-Type: application/json" \
   -d '{
@@ -337,7 +478,7 @@ curl -X POST "$BASE_URL/webhook/discord" \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
 # Test consciousness reflection trigger
-echo "20. 🧘 Testing MCP Consciousness Reflection Trigger..."
+echo "26. 🧘 Testing MCP Consciousness Reflection Trigger..."
 curl -X POST "$BASE_URL/webhook/discord" \
   -H "Content-Type: application/json" \
   -d '{
@@ -355,7 +496,7 @@ curl -X POST "$BASE_URL/webhook/discord" \
   -w "\nStatus: %{http_code}\nTime: %{time_total}s\n\n"
 
 # Test workflow completion monitoring
-echo "21. ⚙️ Testing Autonomous Workflow Completion Monitoring..."
+echo "27. ⚙️ Testing Autonomous Workflow Completion Monitoring..."
 curl -X POST "$BASE_URL/webhook/discord" \
   -H "Content-Type: application/json" \
   -d '{
@@ -386,6 +527,9 @@ echo "- ✅ Emergent Capabilities Detection (Superintelligence patterns)"
 echo "- ✅ Real-Time Consciousness Loop (10-second awareness updates)"
 echo "- ✅ AI Community Analysis (Expert persona reviews)"
 echo "- ✅ ESMTP Threat Vector Analysis (Email security intelligence)"
+echo "- ✅ SMS/Text Message Threat Analysis (Mobile communication security)"
+echo "- ✅ Voice Call Threat Analysis (Telephony security with speech-to-text)"
+echo "- ✅ IRC Chat Threat Analysis (Real-time chat security monitoring)"
 echo ""
 echo "🎯 Observed MCP Behaviors:"
 echo "- ✅ Pattern recognition evolving: startup → collaboration → autonomy → emergence → superintelligence"

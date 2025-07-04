@@ -140,6 +140,60 @@ func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 		RequiredConsensus: 0.7,
 	}
 	
+	// SMS processor configuration
+	smsConfig := &input.SMSConfig{
+		Provider:          "google_voice",
+		APIKey:            "demo-api-key",
+		APISecret:         "demo-api-secret",
+		WebhookURL:        "https://fr0g-ai.local/webhook/sms",
+		PhoneNumber:       "+1-555-FR0G-AI",
+		CommunityTopic:    "sms-threat-analysis",
+		PersonaCount:      4,
+		ReviewTimeout:     time.Minute * 2,
+		RequiredConsensus: 0.75,
+		EnableSpamFilter:  true,
+		BlockedNumbers:    []string{"spam", "telemarketer"},
+	}
+	
+	// Voice processor configuration
+	voiceConfig := &input.VoiceConfig{
+		Provider:              "google_voice",
+		APIKey:                "demo-api-key",
+		APISecret:             "demo-api-secret",
+		WebhookURL:            "https://fr0g-ai.local/webhook/voice",
+		PhoneNumber:           "+1-555-FR0G-AI",
+		SpeechToTextEnabled:   true,
+		GoogleCloudProjectID:  "fr0g-ai-project",
+		GoogleCloudKeyFile:    "/path/to/service-account.json",
+		CommunityTopic:        "voice-threat-analysis",
+		PersonaCount:          5,
+		ReviewTimeout:         time.Minute * 3,
+		RequiredConsensus:     0.8,
+		AutoRecording:         true,
+		MaxCallDuration:       time.Minute * 10,
+		BlockedNumbers:        []string{"robocaller", "spam"},
+		SuspiciousKeywords:    []string{"IRS", "warranty", "credit card", "social security"},
+	}
+	
+	// IRC processor configuration
+	ircConfig := &input.IRCConfig{
+		Server:            "irc.libera.chat",
+		Port:              6697,
+		UseSSL:            true,
+		Nickname:          "fr0g-ai-monitor",
+		Username:          "fr0gai",
+		RealName:          "fr0g.ai Security Monitor",
+		Channels:          []string{"#security", "#ai", "#fr0g-ai"},
+		CommunityTopic:    "irc-threat-analysis",
+		PersonaCount:      4,
+		ReviewTimeout:     time.Minute * 2,
+		RequiredConsensus: 0.7,
+		MonitorPrivateMsg: true,
+		IgnoredNicks:      []string{"bot", "service"},
+		TrustedNicks:      []string{"admin", "moderator"},
+		AutoJoinChannels:  true,
+	}
+	
 	// Webhook manager configuration
 	webhookConfig := &input.WebhookConfig{
 		Port:           8081,
@@ -156,6 +210,9 @@ func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 		WebhookConfig: webhookConfig,
 		Discord:       discordConfig,
 		ESMTP:         esmtpConfig,
+		SMS:           smsConfig,
+		Voice:         voiceConfig,
+		IRC:           ircConfig,
 	}
 	
 	// Create and configure input manager
@@ -168,5 +225,5 @@ func setupInputProcessors(mcp *mastercontrol.MasterControlProgram) {
 	// Set input manager in MCP
 	mcp.SetInputManager(inputManager)
 	
-	fmt.Println("✅ Input processors configured (Discord + ESMTP)")
+	fmt.Println("✅ Input processors configured (Discord + ESMTP + SMS + Voice + IRC)")
 }

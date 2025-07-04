@@ -19,6 +19,9 @@ type InputManagerConfig struct {
 	WebhookConfig *WebhookConfig         `yaml:"webhook"`
 	Discord       *DiscordProcessorConfig `yaml:"discord"`
 	ESMTP         *ESMTPConfig           `yaml:"esmtp"`
+	SMS           *SMSConfig             `yaml:"sms"`
+	Voice         *VoiceConfig           `yaml:"voice"`
+	IRC           *IRCConfig             `yaml:"irc"`
 }
 
 // NewInputManager creates a new input manager
@@ -62,6 +65,45 @@ func (im *InputManager) Start(ctx context.Context) error {
 			return fmt.Errorf("failed to register ESMTP processor: %w", err)
 		}
 		log.Printf("Input Manager: Registered ESMTP processor")
+	}
+	
+	// Register SMS processor if enabled
+	if im.config.SMS != nil {
+		smsProcessor, err := NewSMSProcessor(im.config.SMS, im.aiClient)
+		if err != nil {
+			return fmt.Errorf("failed to create SMS processor: %w", err)
+		}
+		
+		if err := im.webhookManager.RegisterProcessor(smsProcessor); err != nil {
+			return fmt.Errorf("failed to register SMS processor: %w", err)
+		}
+		log.Printf("Input Manager: Registered SMS processor")
+	}
+	
+	// Register Voice processor if enabled
+	if im.config.Voice != nil {
+		voiceProcessor, err := NewVoiceProcessor(im.config.Voice, im.aiClient)
+		if err != nil {
+			return fmt.Errorf("failed to create Voice processor: %w", err)
+		}
+		
+		if err := im.webhookManager.RegisterProcessor(voiceProcessor); err != nil {
+			return fmt.Errorf("failed to register Voice processor: %w", err)
+		}
+		log.Printf("Input Manager: Registered Voice processor")
+	}
+	
+	// Register IRC processor if enabled
+	if im.config.IRC != nil {
+		ircProcessor, err := NewIRCProcessor(im.config.IRC, im.aiClient)
+		if err != nil {
+			return fmt.Errorf("failed to create IRC processor: %w", err)
+		}
+		
+		if err := im.webhookManager.RegisterProcessor(ircProcessor); err != nil {
+			return fmt.Errorf("failed to register IRC processor: %w", err)
+		}
+		log.Printf("Input Manager: Registered IRC processor")
 	}
 	
 	log.Println("Input Manager: Input management started successfully")
