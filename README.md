@@ -114,6 +114,28 @@ Key environment variables:
 - [API Documentation](docs/api/)
 - [Deployment Guide](docs/deployment.md)
 - [Development Setup](docs/development.md)
+- [AI Code Generation Guidelines](docs/ai-guidelines.md)
+
+## 🤖 AI Development Guidelines
+
+### Essential Context Files for AI Sessions
+When starting new AI coding sessions, always include these files:
+- `README.md` (this file - project overview)
+- `docker-compose.yml` (service configuration)
+- `Makefile` (build commands)
+- `.env.example` (configuration template)
+- Component-specific TODO.md file for the service being worked on
+
+### Component Boundaries
+- **fr0g-ai-aip**: Core AI processing engine (ports 8080/9090)
+- **fr0g-ai-bridge**: Integration bridge service (ports 8082/9091)  
+- **fr0g-ai-master-control**: Orchestration and cognitive engine (port 8081)
+
+### Repository Information
+- **GitHub URL**: `https://github.com/fr0g-vibe/fr0g-ai`
+- **License**: GPL-3.0
+- **Working Directory**: AI agents start in `/fr0g-ai` root
+- **Module Navigation**: Must `cd` into component directory before Go commands
 
 ## 🤝 Contributing
 
