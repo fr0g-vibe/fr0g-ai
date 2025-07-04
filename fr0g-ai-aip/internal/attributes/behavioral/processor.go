@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fr0g-ai/fr0g-ai-aip/internal/config"
-	pb "github.com/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
+	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
 )
 
 // Processor handles behavioral tendencies attribute processing and validation
