@@ -109,6 +109,10 @@ func LoadConfig(configPath string) (*Config, error) {
 	for _, envPath := range envPaths {
 		if err := loadEnvFile(envPath); err != nil {
 			fmt.Printf("Warning: failed to load %s: %v\n", envPath, err)
+		} else {
+			if _, err := os.Stat(envPath); err == nil {
+				fmt.Printf("Successfully loaded environment from: %s\n", envPath)
+			}
 		}
 	}
 
@@ -178,6 +182,9 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	if apiKey := os.Getenv("OPENWEBUI_API_KEY"); apiKey != "" {
 		config.OpenWebUI.APIKey = apiKey
+		fmt.Printf("OpenWebUI API Key loaded: %s...\n", apiKey[:min(8, len(apiKey))])
+	} else {
+		fmt.Println("WARNING: No OPENWEBUI_API_KEY found in environment")
 	}
 
 	if timeout := os.Getenv("OPENWEBUI_TIMEOUT"); timeout != "" {
