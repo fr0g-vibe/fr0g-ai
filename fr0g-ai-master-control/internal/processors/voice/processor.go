@@ -469,15 +469,18 @@ func (p *Processor) analyzeSpeechPatterns(transcript string) []string {
 
 	// Check for repetitive phrases
 	words := strings.Fields(transcript)
-	if len(words) > 10 {
+	if len(words) > 5 { // Reduced threshold from 10 to 5
 		// Simple repetition check
 		wordCount := make(map[string]int)
 		for _, word := range words {
-			wordCount[strings.ToLower(word)]++
+			cleanWord := strings.ToLower(strings.Trim(word, ".,!?"))
+			if len(cleanWord) > 2 { // Only count words longer than 2 characters
+				wordCount[cleanWord]++
+			}
 		}
 		
 		for word, count := range wordCount {
-			if count > 3 && len(word) > 3 {
+			if count > 2 && len(word) > 2 { // Reduced threshold from 3 to 2
 				patterns = append(patterns, fmt.Sprintf("repetitive_word_%s", word))
 			}
 		}
