@@ -15,3 +15,5 @@ require (
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 )
+
+replace github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip => ./
