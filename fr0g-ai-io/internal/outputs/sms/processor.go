@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
@@ -59,9 +59,9 @@ func NewProcessor(cfg *sharedconfig.Config) *Processor {
 }
 
 // Process executes an SMS output command
-func (p *Processor) Process(command *outputs.OutputCommand) (*outputs.OutputResult, error) {
+func (p *Processor) Process(command *types.OutputCommand) (*types.OutputResult, error) {
 	if !p.isEnabled {
-		return &outputs.OutputResult{
+		return &types.OutputResult{
 			CommandID:    command.ID,
 			Success:      false,
 			ErrorMessage: "SMS processor disabled - missing Google Voice API key",
@@ -72,7 +72,7 @@ func (p *Processor) Process(command *outputs.OutputCommand) (*outputs.OutputResu
 
 	// Validate command
 	if command.Target == "" {
-		return &outputs.OutputResult{
+		return &types.OutputResult{
 			CommandID:    command.ID,
 			Success:      false,
 			ErrorMessage: "SMS target phone number is required",
@@ -82,7 +82,7 @@ func (p *Processor) Process(command *outputs.OutputCommand) (*outputs.OutputResu
 	}
 
 	if command.Content == "" {
-		return &outputs.OutputResult{
+		return &types.OutputResult{
 			CommandID:    command.ID,
 			Success:      false,
 			ErrorMessage: "SMS message content is required",
@@ -94,7 +94,7 @@ func (p *Processor) Process(command *outputs.OutputCommand) (*outputs.OutputResu
 	// Send SMS via Google Voice API
 	messageID, err := p.sendSMS(command.Target, command.Content, command.Metadata)
 	if err != nil {
-		return &outputs.OutputResult{
+		return &types.OutputResult{
 			CommandID:    command.ID,
 			Success:      false,
 			ErrorMessage: fmt.Sprintf("Failed to send SMS: %v", err),
@@ -103,7 +103,7 @@ func (p *Processor) Process(command *outputs.OutputCommand) (*outputs.OutputResu
 		}, nil
 	}
 
-	return &outputs.OutputResult{
+	return &types.OutputResult{
 		CommandID:   command.ID,
 		Success:     true,
 		Metadata: map[string]string{

@@ -6,19 +6,20 @@ import (
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/sms"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
 )
 
 // Manager manages all output processors
 type Manager struct {
 	config     *sharedconfig.Config
-	processors map[string]OutputProcessor
+	processors map[string]types.OutputProcessor
 }
 
 // NewManager creates a new output manager
 func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 	mgr := &Manager{
 		config:     cfg,
-		processors: make(map[string]OutputProcessor),
+		processors: make(map[string]types.OutputProcessor),
 	}
 
 	// Initialize SMS processor
@@ -29,10 +30,10 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 }
 
 // ExecuteCommand executes an output command using the appropriate processor
-func (m *Manager) ExecuteCommand(command *OutputCommand) (*OutputResult, error) {
+func (m *Manager) ExecuteCommand(command *types.OutputCommand) (*types.OutputResult, error) {
 	processor, exists := m.processors[command.Type]
 	if !exists {
-		return &OutputResult{
+		return &types.OutputResult{
 			CommandID:    command.ID,
 			Success:      false,
 			ErrorMessage: fmt.Sprintf("no processor found for type: %s", command.Type),
@@ -45,12 +46,12 @@ func (m *Manager) ExecuteCommand(command *OutputCommand) (*OutputResult, error) 
 }
 
 // RegisterProcessor registers a new output processor
-func (m *Manager) RegisterProcessor(processor OutputProcessor) {
+func (m *Manager) RegisterProcessor(processor types.OutputProcessor) {
 	m.processors[processor.GetType()] = processor
 }
 
 // GetProcessors returns all registered processors
-func (m *Manager) GetProcessors() map[string]OutputProcessor {
+func (m *Manager) GetProcessors() map[string]types.OutputProcessor {
 	return m.processors
 }
 
