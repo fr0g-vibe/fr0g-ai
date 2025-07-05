@@ -1,12 +1,9 @@
 package email
 
 import (
-	"crypto/md5"
-	"fmt"
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
 // ThreatAnalyzer analyzes emails for various threats

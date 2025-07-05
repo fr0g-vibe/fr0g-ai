@@ -1,15 +1,10 @@
 package email
 
 import (
-	"bufio"
 	"context"
-	"crypto/tls"
 	"fmt"
 	"log"
-	"net"
 	"net/mail"
-	"net/textproto"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
