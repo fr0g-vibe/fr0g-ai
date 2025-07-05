@@ -134,20 +134,20 @@ func (h *Fr0gIOInputHandlerImpl) HandleIRCMessage(ctx context.Context, message *
 
 // HandleDiscordMessage processes Discord messages
 func (h *Fr0gIOInputHandlerImpl) HandleDiscordMessage(ctx context.Context, message *DiscordMessage) error {
-	log.Printf("Input Handler: Processing Discord message %s from %s in guild %s", message.ID, message.Username, message.GuildID)
+	log.Printf("Input Handler: Processing Discord message %s from %s in guild %s", message.ID, message.Author.Username, message.GuildID)
 
 	// Convert Discord message to generic input event
 	event := &InputEvent{
 		ID:      message.ID,
 		Type:    "discord",
-		Source:  fmt.Sprintf("%s#%s", message.Username, message.UserID),
+		Source:  fmt.Sprintf("%s#%s", message.Author.Username, message.Author.ID),
 		Content: message.Content,
 		Metadata: map[string]interface{}{
-			"guild_id":     message.GuildID,
-			"channel_id":   message.ChannelID,
-			"user_id":      message.UserID,
-			"username":     message.Username,
-			"message_type": message.MessageType,
+			"guild_id":   message.GuildID,
+			"channel_id": message.ChannelID,
+			"user_id":    message.Author.ID,
+			"username":   message.Author.Username,
+			"is_bot":     message.Author.Bot,
 		},
 		Timestamp: message.Timestamp,
 		Priority:  1, // Default priority for Discord
