@@ -19,7 +19,7 @@ RUN go mod download
 
 # Build the application
 WORKDIR /app/fr0g-ai-bridge
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-bridge ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-bridge .
 
 # Runtime stage
 FROM alpine:latest
