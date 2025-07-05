@@ -394,7 +394,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 	}
 
 	if len(errors) > 0 {
-		return middleware.ValidationErrors{Errors: errors}
+		return &middleware.ValidationErrors{Errors: convertValidationErrors(errors)}
 	}
 
 	return nil
