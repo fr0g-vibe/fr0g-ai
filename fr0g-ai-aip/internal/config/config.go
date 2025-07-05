@@ -14,12 +14,22 @@ type Config struct {
 	Storage    sharedconfig.StorageConfig  `yaml:"storage"`
 	Security   sharedconfig.SecurityConfig `yaml:"security"`
 	Validation ValidationConfig            `yaml:"validation"`
+	Client     ClientConfig                `yaml:"client"`
 }
 
 // ValidationConfig represents validation-specific configuration
 type ValidationConfig struct {
 	StrictMode bool `yaml:"strict_mode"`
 }
+
+// ClientConfig represents client-specific configuration
+type ClientConfig struct {
+	Type      string `yaml:"type"`
+	ServerURL string `yaml:"server_url"`
+}
+
+// StorageConfig type alias for shared config
+type StorageConfig = sharedconfig.StorageConfig
 
 // LoadConfig loads the configuration from environment variables and files
 func LoadConfig(configPath string) (*Config, error) {
@@ -51,9 +61,19 @@ func LoadConfig(configPath string) (*Config, error) {
 		Validation: ValidationConfig{
 			StrictMode: false,
 		},
+		Client: ClientConfig{
+			Type:      getEnvOrDefault("FR0G_CLIENT_TYPE", "local"),
+			ServerURL: getEnvOrDefault("FR0G_SERVER_URL", "http://localhost:8080"),
+		},
 	}
 	
 	return cfg, nil
+}
+
+// Load loads the configuration with default path
+func Load() *Config {
+	cfg, _ := LoadConfig("")
+	return cfg
 }
 
 // Validate validates the configuration

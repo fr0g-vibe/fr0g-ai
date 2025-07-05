@@ -55,7 +55,7 @@ func (app *App) ValidateConfig() error {
 
 // CreateServers creates HTTP and gRPC server instances
 func (app *App) CreateServers() (*api.Server, *grpcserver.PersonaServer, error) {
-	httpServer := api.NewServer(app.config, app.service)
+	httpServer := api.NewServer(app.config, app.service, nil)
 	grpcServer := grpcserver.NewPersonaServer(app.config, app.service)
 	return httpServer, grpcServer, nil
 }
@@ -101,7 +101,7 @@ func (app *App) RunServers(httpMode, grpcMode bool) error {
 			defer wg.Done()
 			fmt.Printf("Starting fr0g-ai-aip HTTP server on port %s (storage: %s)\n",
 				app.config.HTTP.Port, app.config.Storage.Type)
-			if err := api.StartServerWithConfig(app.config, app.service); err != nil {
+			if err := api.StartServerWithConfig(app.config, app.service, nil); err != nil {
 				errChan <- fmt.Errorf("HTTP server error: %v", err)
 			}
 		}()
@@ -145,7 +145,7 @@ func (app *App) printStartupBanner() {
 	fmt.Println()
 }
 
-func createStorage(cfg config.StorageConfig) (storage.Storage, error) {
+func createStorage(cfg sharedconfig.StorageConfig) (storage.Storage, error) {
 	switch cfg.Type {
 	case "memory":
 		return storage.NewMemoryStorage(), nil
