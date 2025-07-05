@@ -47,6 +47,14 @@
 - **LINT EARLY**: Run `make lint` frequently during development, not just at the end
 - **SHARED CONFIG**: Use centralized configuration from `pkg/config/` to avoid import errors
 
+### SEARCH/REPLACE BLOCK RULES - I/O COMPONENT
+- **QUADRUPLE BACKTICKS**: Always use ```` as fences, never triple backticks ```
+- **FULL FILE PATH**: Use complete file path alone on first line, no formatting
+- **EXACT MATCHING**: SEARCH section must match existing content character-for-character
+- **CONCISE BLOCKS**: Keep blocks small, include only changing lines plus context
+- **UNIQUE MATCHING**: Include enough surrounding lines for unique identification
+- **MULTIPLE BLOCKS**: Use separate blocks for multiple changes in same file
+
 ### CENTRALIZED CONFIGURATION RULES - I/O COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create I/O-specific config/validation libraries

@@ -47,6 +47,16 @@ When starting new AI coding sessions, always include these files:
 - **NO DIRECT PROCESS KILLING**: Never attempt to kill processes directly through system commands
 - **GRACEFUL SHUTDOWN**: Always use proper service shutdown mechanisms and scripts
 
+### SEARCH/REPLACE BLOCK RULES - PROJECT-WIDE
+- **QUADRUPLE BACKTICKS**: Always use ```` as fences, never triple backticks ```
+- **FULL FILE PATH**: Use complete file path alone on first line, no formatting
+- **EXACT MATCHING**: SEARCH section must match existing content character-for-character
+- **CONCISE BLOCKS**: Keep blocks small, include only changing lines plus context
+- **UNIQUE MATCHING**: Include enough surrounding lines for unique identification
+- **MULTIPLE BLOCKS**: Use separate blocks for multiple changes in same file
+- **FILE CREATION**: For new files, use empty SEARCH section with full content in REPLACE
+- **MOVE CODE**: Use two blocks - one to delete, one to insert at new location
+
 ### Centralized Configuration Rules
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create component-specific config/validation libraries
