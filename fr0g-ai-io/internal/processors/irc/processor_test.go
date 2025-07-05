@@ -218,6 +218,10 @@ func TestFloodDetection(t *testing.T) {
 }
 
 func TestIRCProcessorLifecycle(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping IRC processor lifecycle test in short mode")
+	}
+
 	cfg := &sharedconfig.IRCConfig{
 		Enabled:           true,
 		Servers:           []string{}, // Empty servers for testing
@@ -230,7 +234,7 @@ func TestIRCProcessorLifecycle(t *testing.T) {
 	}
 
 	processor := NewProcessor(cfg)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Test start

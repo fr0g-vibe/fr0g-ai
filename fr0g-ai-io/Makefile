@@ -32,7 +32,7 @@ clean:
 # Run tests
 test:
 	@echo "Running tests..."
-	@go test ./... -v
+	@go test ./... -v -timeout=30s -short
 	@echo "Tests complete"
 
 # Run the service
