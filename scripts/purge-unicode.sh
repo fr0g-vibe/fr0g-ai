@@ -137,3 +137,7 @@ echo ""
 echo "Unicode purge completed!"
 echo "All unicode symbols have been replaced with plain text alternatives."
 echo "Files have been processed in-place without backup files."
+echo ""
+echo "Cleaning up any remaining backup files..."
+find . -name '*.backup' -delete 2>/dev/null || true
+echo "Backup files cleaned up!"
