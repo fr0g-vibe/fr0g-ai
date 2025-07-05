@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,6 +73,30 @@ type OutputCommand struct {
 	Content  string                 `json:"content"`
 	Metadata map[string]interface{} `json:"metadata"`
 	Priority int                    `json:"priority"`
+	
+	// Review and validation fields
+	ReviewStatus   string     `json:"review_status,omitempty"`
+	ReviewedBy     string     `json:"reviewed_by,omitempty"`
+	ReviewedAt     *time.Time `json:"reviewed_at,omitempty"`
+	ReviewComments string     `json:"review_comments,omitempty"`
+	RequiresReview bool       `json:"requires_review"`
+}
+
+// ReviewableOutputCommand represents a command that needs review
+type ReviewableOutputCommand struct {
+	Command        *OutputCommand `json:"command"`
+	RequiresReview bool           `json:"requires_review"`
+	ReviewStatus   string         `json:"review_status"`
+	QueuedAt       time.Time      `json:"queued_at"`
+	ReviewDeadline *time.Time     `json:"review_deadline,omitempty"`
+}
+
+// ValidationIssue represents a validation problem
+type ValidationIssue struct {
+	Field      string `json:"field"`
+	Issue      string `json:"issue"`
+	Severity   string `json:"severity"` // "error", "warning", "info"
+	Suggestion string `json:"suggestion,omitempty"`
 }
 
 // OutputResponse represents response to output command
@@ -175,10 +200,67 @@ func (s *IOService) Stop() error {
 	return nil
 }
 
-// ProcessOutputCommand processes output commands from master-control
+// ProcessOutputCommand processes output commands from master-control with enhanced review capabilities
 func (s *IOService) ProcessOutputCommand(ctx context.Context, command *OutputCommand) (*OutputResponse, error) {
 	log.Printf("gRPC Service: Received output command %s of type %s", command.ID, command.Type)
 
+	// Validate the command first
+	validationIssues := s.validateOutputCommand(command)
+	if hasErrors(validationIssues) {
+		return &OutputResponse{
+			CommandID: command.ID,
+			Success:   false,
+			Message:   "Command validation failed",
+			Metadata: map[string]interface{}{
+				"validation_issues": validationIssues,
+				"rejected_at":       time.Now(),
+			},
+			Timestamp: time.Now(),
+		}, nil
+	}
+
+	// Check if command requires review
+	requiresReview := s.shouldRequireReview(command)
+	if requiresReview {
+		log.Printf("gRPC Service: Command %s requires review, queuing for review", command.ID)
+		
+		// Add to review queue instead of direct processing
+		reviewCommand := &ReviewableOutputCommand{
+			Command:        command,
+			RequiresReview: true,
+			ReviewStatus:   "pending",
+			QueuedAt:       time.Now(),
+		}
+		
+		if err := s.queueForReview(reviewCommand); err != nil {
+			return &OutputResponse{
+				CommandID: command.ID,
+				Success:   false,
+				Message:   fmt.Sprintf("Failed to queue command for review: %v", err),
+				Timestamp: time.Now(),
+			}, nil
+		}
+
+		return &OutputResponse{
+			CommandID: command.ID,
+			Success:   true,
+			Message:   "Command queued for review",
+			Metadata: map[string]interface{}{
+				"requires_review": true,
+				"review_status":   "pending",
+				"queued_at":       time.Now(),
+				"validation_issues": validationIssues, // Include warnings
+			},
+			Timestamp: time.Now(),
+		}, nil
+	}
+
+	// Process immediately if no review required
+	return s.processOutputCommandDirect(ctx, command, validationIssues)
+}
+
+// processOutputCommandDirect processes a command directly without review
+func (s *IOService) processOutputCommandDirect(ctx context.Context, command *OutputCommand, validationIssues []ValidationIssue) (*OutputResponse, error) {
 	// Convert to queue message and send to output queue
 	message := &queue.Message{
 		ID:          command.ID,
@@ -202,15 +284,137 @@ func (s *IOService) ProcessOutputCommand(ctx context.Context, command *OutputCom
 	}
 
 	log.Printf("gRPC Service: Successfully queued output command %s", command.ID)
+	
+	metadata := map[string]interface{}{
+		"queued_at":         time.Now(),
+		"auto_approved":     true,
+		"validation_issues": validationIssues,
+	}
+
 	return &OutputResponse{
 		CommandID: command.ID,
 		Success:   true,
 		Message:   "Command queued successfully",
-		Metadata: map[string]interface{}{
-			"queued_at": time.Now(),
-		},
+		Metadata:  metadata,
 		Timestamp: time.Now(),
 	}, nil
+}
+
+// validateOutputCommand validates an output command
+func (s *IOService) validateOutputCommand(command *OutputCommand) []ValidationIssue {
+	var issues []ValidationIssue
+
+	// Basic validation
+	if command.ID == "" {
+		issues = append(issues, ValidationIssue{
+			Field:    "id",
+			Issue:    "Command ID is required",
+			Severity: "error",
+		})
+	}
+
+	if command.Type == "" {
+		issues = append(issues, ValidationIssue{
+			Field:    "type",
+			Issue:    "Command type is required",
+			Severity: "error",
+		})
+	}
+
+	if command.Target == "" {
+		issues = append(issues, ValidationIssue{
+			Field:    "target",
+			Issue:    "Target is required",
+			Severity: "error",
+		})
+	}
+
+	if command.Content == "" {
+		issues = append(issues, ValidationIssue{
+			Field:      "content",
+			Issue:      "Content is empty",
+			Severity:   "warning",
+			Suggestion: "Consider adding meaningful content",
+		})
+	}
+
+	// Type-specific validation
+	switch command.Type {
+	case "sms":
+		if len(command.Content) > 160 {
+			issues = append(issues, ValidationIssue{
+				Field:      "content",
+				Issue:      "SMS content exceeds 160 characters",
+				Severity:   "warning",
+				Suggestion: "Consider splitting into multiple messages",
+			})
+		}
+	case "email":
+		// Basic email validation could be added here
+		if command.Metadata["subject"] == "" {
+			issues = append(issues, ValidationIssue{
+				Field:      "metadata.subject",
+				Issue:      "Email subject is missing",
+				Severity:   "warning",
+				Suggestion: "Add a subject line for better deliverability",
+			})
+		}
+	}
+
+	return issues
+}
+
+// shouldRequireReview determines if a command needs manual review
+func (s *IOService) shouldRequireReview(command *OutputCommand) bool {
+	// High priority commands might need review
+	if command.Priority > 8 {
+		return true
+	}
+
+	// Commands with sensitive content patterns
+	sensitivePatterns := []string{"urgent", "emergency", "critical", "alert"}
+	contentLower := strings.ToLower(command.Content)
+	for _, pattern := range sensitivePatterns {
+		if strings.Contains(contentLower, pattern) {
+			return true
+		}
+	}
+
+	// Commands to external targets might need review
+	if command.Metadata["external"] == "true" {
+		return true
+	}
+
+	// Large content might need review
+	if len(command.Content) > 1000 {
+		return true
+	}
+
+	return false
+}
+
+// queueForReview queues a command for manual review
+func (s *IOService) queueForReview(reviewCommand *ReviewableOutputCommand) error {
+	// This would integrate with a review system
+	// For now, just log it
+	log.Printf("gRPC Service: Command %s queued for review", reviewCommand.Command.ID)
+	
+	// In a real implementation, this would:
+	// 1. Store the command in a review database
+	// 2. Notify reviewers
+	// 3. Set up review workflow
+	
+	return nil
+}
+
+// hasErrors checks if validation issues contain any errors
+func hasErrors(issues []ValidationIssue) bool {
+	for _, issue := range issues {
+		if issue.Severity == "error" {
+			return true
+		}
+	}
+	return false
 }
 
 // ProcessThreatAnalysis processes threat analysis results from master-control
