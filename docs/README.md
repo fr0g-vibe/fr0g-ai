@@ -4,17 +4,17 @@
 
 This application consists of three main components working together:
 
-### 🤖 [AI Persona (AIP) Component](./ai-persona-component.md)
+### [AI Persona (AIP) Component](./ai-persona-component.md)
 Handles AI model interactions and personality management.
 - **Engineers**: Focus on AI integration, persona behavior, and context management
 - **Key Files**: AI model handlers, persona configs, context managers
 
-### 🌉 [Bridge Component](./bridge-component.md) 
+### [Bridge Component](./bridge-component.md) 
 Provides HTTP REST and gRPC interfaces for external clients.
 - **Engineers**: Focus on API design, protocol handling, and client communication
 - **Key Files**: HTTP handlers, gRPC services, middleware, API models
 
-### 🎛️ [Master Control Program (MCP)](./master-control-component.md)
+### [Master Control Program (MCP)](./master-control-component.md)
 The central intelligence and orchestration engine of the fr0g.ai system.
 - **Engineers**: Focus on cognitive architecture, intelligent orchestration, and emergent capabilities
 - **Key Files**: Cognitive engines, learning systems, workflow generators, system consciousness

@@ -135,7 +135,7 @@ func (app *App) RunServers(httpMode, grpcMode bool) error {
 
 // printStartupBanner displays a startup banner with configuration info
 func (app *App) printStartupBanner() {
-	fmt.Println("🐸 fr0g-ai-aip - AI Personas Management System")
+	fmt.Println("fr0g-ai-aip - AI Personas Management System")
 	fmt.Printf("   Version: 1.0.0\n")
 	fmt.Printf("   Storage: %s", app.config.Storage.Type)
 	if app.config.Storage.Type == "file" {

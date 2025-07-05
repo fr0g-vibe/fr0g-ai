@@ -47,7 +47,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("✓ Created persona with ID: %s\n", createResp.Persona.Id)
+	fmt.Printf("SUCCESS: Created persona with ID: %s\n", createResp.Persona.Id)
 	personaID := createResp.Persona.Id
 
 	// Test 2: Get the persona
@@ -60,7 +60,7 @@ func main() {
 	if err != nil {
 		log.Printf("Failed to get persona: %v", err)
 	} else {
-		fmt.Printf("✓ Retrieved persona: %s\n", getResp.Persona.Name)
+		fmt.Printf("SUCCESS: Retrieved persona: %s\n", getResp.Persona.Name)
 		fmt.Printf("  Topic: %s\n", getResp.Persona.Topic)
 		fmt.Printf("  Context entries: %d\n", len(getResp.Persona.Context))
 	}
@@ -86,7 +86,7 @@ func main() {
 	if err != nil {
 		log.Printf("Failed to update persona: %v", err)
 	} else {
-		fmt.Printf("✓ Updated persona: %s\n", updateResp.Persona.Name)
+		fmt.Printf("SUCCESS: Updated persona: %s\n", updateResp.Persona.Name)
 	}
 
 	// Test 4: List personas
@@ -97,7 +97,7 @@ func main() {
 	if err != nil {
 		log.Printf("Failed to list personas: %v", err)
 	} else {
-		fmt.Printf("✓ Found %d personas in total\n", len(listResp.Personas))
+		fmt.Printf("SUCCESS: Found %d personas in total\n", len(listResp.Personas))
 		for i, persona := range listResp.Personas {
 			if i < 5 { // Show first 5
 				fmt.Printf("  - %s (ID: %s)\n", persona.Name, persona.Id)
@@ -118,16 +118,16 @@ func main() {
 	if err != nil {
 		log.Printf("Failed to delete persona: %v", err)
 	} else {
-		fmt.Printf("✓ Deleted persona with ID: %s\n", personaID)
+		fmt.Printf("SUCCESS: Deleted persona with ID: %s\n", personaID)
 	}
 
 	// Test 6: Verify deletion
 	fmt.Println("\nTest 6: Verifying deletion...")
 	_, err = client.GetPersona(ctx, &pb.GetPersonaRequest{Id: personaID})
 	if err != nil {
-		fmt.Printf("✓ Persona successfully deleted (not found)\n")
+		fmt.Printf("SUCCESS: Persona successfully deleted (not found)\n")
 	} else {
-		fmt.Printf("⚠ Persona still exists after deletion\n")
+		fmt.Printf("WARNING: Persona still exists after deletion\n")
 	}
 
 	fmt.Println("\n=== gRPC Client Tests Completed ===")

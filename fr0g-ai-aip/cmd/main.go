@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("Configuration validation failed: %v", err)
 	}
 
-	log.Println("🚀 Starting fr0g.ai AIP servers...")
+	log.Println("STARTING: fr0g.ai AIP servers...")
 
 	// Initialize storage
 	var store storage.Storage
@@ -95,7 +95,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("✅ gRPC server starting on port %s", grpcPort)
+		log.Printf("SUCCESS: gRPC server starting on port %s", grpcPort)
 		if err := grpcServer.Serve(grpcListener); err != nil {
 			log.Printf("gRPC server error: %v", err)
 		}
@@ -105,20 +105,20 @@ func main() {
 	restServer := api.NewServer(cfg, personaService, registryClient)
 
 	go func() {
-		log.Printf("✅ REST API server starting on port %s", cfg.HTTP.Port)
+		log.Printf("SUCCESS: REST API server starting on port %s", cfg.HTTP.Port)
 		if err := restServer.Start(); err != nil && err != context.Canceled {
 			log.Printf("REST server error: %v", err)
 		}
 	}()
 
-	log.Println("🎯 fr0g.ai AIP is running...")
+	log.Println("RUNNING: fr0g.ai AIP is running...")
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	<-sigChan
 
-	log.Println("🛑 Shutting down servers...")
+	log.Println("SHUTTING DOWN: Servers...")
 
 	// Graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -132,7 +132,7 @@ func main() {
 	// Shutdown gRPC server
 	grpcServer.GracefulStop()
 
-	log.Println("👋 fr0g.ai AIP shutdown complete")
+	log.Println("COMPLETE: fr0g.ai AIP shutdown complete")
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
