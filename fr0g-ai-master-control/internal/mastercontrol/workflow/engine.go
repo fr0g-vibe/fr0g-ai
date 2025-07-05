@@ -6,6 +6,8 @@ import (
 	"log"
 	"sync"
 	"time"
+
+	"fr0g-ai-master-control/internal/mastercontrol/input"
 )
 
 // WorkflowEngine handles dynamic workflow generation and execution
@@ -13,6 +15,8 @@ type WorkflowEngine struct {
 	config             *WorkflowConfig
 	activeWorkflows    map[string]*SampleWorkflow
 	completedWorkflows []string
+	fr0gIOClient       input.Fr0gIOClient
+	inputHandler       input.Fr0gIOInputHandler
 	mu                 sync.RWMutex
 	ctx                context.Context
 	cancel             context.CancelFunc
@@ -52,13 +56,15 @@ type WorkflowStep struct {
 }
 
 // NewWorkflowEngine creates a new workflow engine
-func NewWorkflowEngine(config *WorkflowConfig) *WorkflowEngine {
+func NewWorkflowEngine(config *WorkflowConfig, fr0gIOClient input.Fr0gIOClient, inputHandler input.Fr0gIOInputHandler) *WorkflowEngine {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &WorkflowEngine{
 		config:             config,
 		activeWorkflows:    make(map[string]*SampleWorkflow),
 		completedWorkflows: make([]string, 0),
+		fr0gIOClient:       fr0gIOClient,
+		inputHandler:       inputHandler,
 		ctx:                ctx,
 		cancel:             cancel,
 	}
@@ -310,4 +316,268 @@ func (we *WorkflowEngine) manageContinuousWorkflows() {
 			}
 		}
 	}
+}
+
+// ProcessInputEvent processes an input event from fr0g-ai-io and triggers appropriate workflows
+func (we *WorkflowEngine) ProcessInputEvent(ctx context.Context, event *input.InputEvent) (*input.InputEventResponse, error) {
+	log.Printf("Workflow Engine: Processing input event %s of type %s", event.ID, event.Type)
+
+	// Create a specialized workflow for this input event
+	workflow := we.createInputEventWorkflow(event)
+	
+	// Start the workflow
+	we.startWorkflow(workflow)
+
+	// Perform immediate threat analysis
+	threatResult, err := we.performThreatAnalysis(ctx, event)
+	if err != nil {
+		log.Printf("Workflow Engine: Threat analysis failed for event %s: %v", event.ID, err)
+	}
+
+	// Generate response actions based on analysis
+	actions := we.generateResponseActions(event, threatResult)
+
+	// Send threat analysis result back to fr0g-ai-io if available
+	if threatResult != nil && we.fr0gIOClient != nil {
+		go func() {
+			if err := we.fr0gIOClient.SendThreatAnalysisResult(context.Background(), threatResult); err != nil {
+				log.Printf("Workflow Engine: Failed to send threat analysis result: %v", err)
+			}
+		}()
+	}
+
+	// Execute output actions through fr0g-ai-io
+	for _, action := range actions {
+		if we.fr0gIOClient != nil {
+			command := &input.OutputCommand{
+				ID:       fmt.Sprintf("cmd_%s_%d", event.ID, time.Now().UnixNano()),
+				Type:     action.Type,
+				Target:   action.Target,
+				Content:  action.Content,
+				Metadata: action.Metadata,
+				Priority: event.Priority,
+			}
+
+			go func(cmd *input.OutputCommand) {
+				if _, err := we.fr0gIOClient.SendOutputCommand(context.Background(), cmd); err != nil {
+					log.Printf("Workflow Engine: Failed to send output command: %v", err)
+				}
+			}(command)
+		}
+	}
+
+	return &input.InputEventResponse{
+		EventID:     event.ID,
+		Processed:   true,
+		Actions:     actions,
+		Analysis:    threatResult,
+		Metadata:    map[string]interface{}{"workflow_id": workflow.ID},
+		ProcessedAt: time.Now(),
+	}, nil
+}
+
+// createInputEventWorkflow creates a specialized workflow for processing input events
+func (we *WorkflowEngine) createInputEventWorkflow(event *input.InputEvent) *SampleWorkflow {
+	return &SampleWorkflow{
+		ID:          fmt.Sprintf("workflow_input_event_%s_%d", event.Type, time.Now().UnixNano()),
+		Name:        fmt.Sprintf("Input Event Processing - %s", event.Type),
+		Description: fmt.Sprintf("Process %s input event from %s", event.Type, event.Source),
+		Status:      "ready",
+		Progress:    0.0,
+		Metadata: map[string]interface{}{
+			"type":         "input_processing",
+			"input_type":   event.Type,
+			"input_source": event.Source,
+			"event_id":     event.ID,
+			"priority":     event.Priority,
+		},
+		Steps: []WorkflowStep{
+			{
+				ID:          "step_1",
+				Name:        "Content Analysis",
+				Description: "Analyze input content for patterns and context",
+				Status:      "pending",
+			},
+			{
+				ID:          "step_2",
+				Name:        "Threat Assessment",
+				Description: "Assess potential security threats in the input",
+				Status:      "pending",
+			},
+			{
+				ID:          "step_3",
+				Name:        "Response Generation",
+				Description: "Generate appropriate response actions",
+				Status:      "pending",
+			},
+			{
+				ID:          "step_4",
+				Name:        "Learning Integration",
+				Description: "Integrate insights into system knowledge base",
+				Status:      "pending",
+			},
+		},
+		CreatedAt: time.Now(),
+	}
+}
+
+// performThreatAnalysis performs threat analysis on input events
+func (we *WorkflowEngine) performThreatAnalysis(ctx context.Context, event *input.InputEvent) (*input.ThreatAnalysisResult, error) {
+	// Simulate threat analysis processing
+	threatScore := 0.0
+	threatLevel := "low"
+	threatTypes := []string{}
+	indicators := []input.ThreatIndicator{}
+
+	// Basic content analysis for demonstration
+	content := event.Content
+	if len(content) > 1000 {
+		threatScore += 0.2
+		threatTypes = append(threatTypes, "suspicious_length")
+	}
+
+	// Check for suspicious patterns (simplified)
+	suspiciousPatterns := []string{"hack", "attack", "exploit", "malware", "phishing"}
+	for _, pattern := range suspiciousPatterns {
+		if contains(content, pattern) {
+			threatScore += 0.3
+			threatTypes = append(threatTypes, "suspicious_content")
+			indicators = append(indicators, input.ThreatIndicator{
+				Type:        "keyword",
+				Value:       pattern,
+				Confidence:  0.8,
+				Description: fmt.Sprintf("Suspicious keyword detected: %s", pattern),
+			})
+		}
+	}
+
+	// Determine threat level based on score
+	if threatScore >= 0.7 {
+		threatLevel = "critical"
+	} else if threatScore >= 0.5 {
+		threatLevel = "high"
+	} else if threatScore >= 0.3 {
+		threatLevel = "medium"
+	}
+
+	// Generate mitigation recommendations
+	mitigation := []string{}
+	if threatScore > 0.5 {
+		mitigation = append(mitigation, "Monitor source closely")
+		mitigation = append(mitigation, "Apply content filtering")
+	}
+	if threatScore > 0.7 {
+		mitigation = append(mitigation, "Block source temporarily")
+		mitigation = append(mitigation, "Alert security team")
+	}
+
+	return &input.ThreatAnalysisResult{
+		EventID:     event.ID,
+		ThreatLevel: threatLevel,
+		ThreatScore: threatScore,
+		ThreatTypes: threatTypes,
+		Indicators:  indicators,
+		Mitigation:  mitigation,
+		Confidence:  0.85,
+		Analysis:    fmt.Sprintf("Automated threat analysis completed for %s event", event.Type),
+		Metadata: map[string]interface{}{
+			"analysis_version": "1.0",
+			"processing_time":  time.Now().Format(time.RFC3339),
+		},
+		AnalyzedAt: time.Now(),
+		RecommendedActions: we.generateThreatResponseActions(event, threatLevel, threatScore),
+	}, nil
+}
+
+// generateResponseActions generates appropriate response actions for input events
+func (we *WorkflowEngine) generateResponseActions(event *input.InputEvent, threatResult *input.ThreatAnalysisResult) []input.OutputAction {
+	actions := []input.OutputAction{}
+
+	// Generate acknowledgment response
+	actions = append(actions, input.OutputAction{
+		Type:    event.Type,
+		Target:  event.Source,
+		Content: "Message received and processed by Master Control Program",
+		Metadata: map[string]interface{}{
+			"response_type": "acknowledgment",
+			"event_id":      event.ID,
+		},
+	})
+
+	// Add threat-specific actions if needed
+	if threatResult != nil && threatResult.ThreatScore > 0.5 {
+		actions = append(actions, input.OutputAction{
+			Type:    "alert",
+			Target:  "security_team",
+			Content: fmt.Sprintf("High threat detected in %s from %s: %s", event.Type, event.Source, threatResult.Analysis),
+			Metadata: map[string]interface{}{
+				"threat_level": threatResult.ThreatLevel,
+				"threat_score": threatResult.ThreatScore,
+				"event_id":     event.ID,
+			},
+		})
+	}
+
+	return actions
+}
+
+// generateThreatResponseActions generates response actions based on threat analysis
+func (we *WorkflowEngine) generateThreatResponseActions(event *input.InputEvent, threatLevel string, threatScore float64) []input.OutputAction {
+	actions := []input.OutputAction{}
+
+	if threatScore > 0.7 {
+		// Critical threat - immediate response
+		actions = append(actions, input.OutputAction{
+			Type:    "alert",
+			Target:  "security_ops",
+			Content: fmt.Sprintf("CRITICAL THREAT DETECTED: %s from %s requires immediate attention", event.Type, event.Source),
+			Metadata: map[string]interface{}{
+				"priority":     "critical",
+				"threat_level": threatLevel,
+				"event_id":     event.ID,
+			},
+		})
+	} else if threatScore > 0.3 {
+		// Medium threat - monitoring response
+		actions = append(actions, input.OutputAction{
+			Type:    "log",
+			Target:  "security_log",
+			Content: fmt.Sprintf("Threat detected in %s from %s - monitoring initiated", event.Type, event.Source),
+			Metadata: map[string]interface{}{
+				"threat_level": threatLevel,
+				"event_id":     event.ID,
+			},
+		})
+	}
+
+	return actions
+}
+
+// contains checks if a string contains a substring (case-insensitive)
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 || 
+		(len(s) > len(substr) && containsHelper(s, substr)))
+}
+
+func containsHelper(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		match := true
+		for j := 0; j < len(substr); j++ {
+			if toLower(s[i+j]) != toLower(substr[j]) {
+				match = false
+				break
+			}
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
+func toLower(c byte) byte {
+	if c >= 'A' && c <= 'Z' {
+		return c + ('a' - 'A')
+	}
+	return c
 }

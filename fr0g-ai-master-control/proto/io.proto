@@ -1,0 +1,186 @@
+syntax = "proto3";
+
+package fr0g.ai.mastercontrol.io;
+
+option go_package = "fr0g-ai-master-control/internal/grpc";
+
+import "google/protobuf/timestamp.proto";
+
+// Fr0gIOInputService handles input events from fr0g-ai-io
+service Fr0gIOInputService {
+  rpc HandleInputEvent(InputEventRequest) returns (InputEventResponse);
+  rpc HandleSMSMessage(SMSMessageRequest) returns (SMSMessageResponse);
+  rpc HandleVoiceMessage(VoiceMessageRequest) returns (VoiceMessageResponse);
+  rpc HandleIRCMessage(IRCMessageRequest) returns (IRCMessageResponse);
+  rpc HandleDiscordMessage(DiscordMessageRequest) returns (DiscordMessageResponse);
+}
+
+// Fr0gIOOutputService sends commands to fr0g-ai-io
+service Fr0gIOOutputService {
+  rpc SendOutputCommand(OutputCommandRequest) returns (OutputCommandResponse);
+  rpc SendThreatAnalysis(ThreatAnalysisRequest) returns (ThreatAnalysisResponse);
+  rpc GetServiceStatus(ServiceStatusRequest) returns (ServiceStatusResponse);
+}
+
+// Input Event Messages
+message InputEventRequest {
+  InputEvent event = 1;
+}
+
+message InputEventResponse {
+  bool success = 1;
+  string message = 2;
+  string event_id = 3;
+  repeated OutputAction actions = 4;
+  google.protobuf.Timestamp processed_at = 5;
+}
+
+message InputEvent {
+  string id = 1;
+  string type = 2;
+  string source = 3;
+  string content = 4;
+  map<string, string> metadata = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  int32 priority = 7;
+}
+
+// SMS Messages
+message SMSMessageRequest {
+  SMSMessage message = 1;
+}
+
+message SMSMessageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SMSMessage {
+  string id = 1;
+  string from = 2;
+  string to = 3;
+  string content = 4;
+  google.protobuf.Timestamp timestamp = 5;
+  string provider = 6;
+  string message_type = 7;
+}
+
+// Voice Messages
+message VoiceMessageRequest {
+  VoiceMessage message = 1;
+}
+
+message VoiceMessageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message VoiceMessage {
+  string id = 1;
+  string from = 2;
+  string to = 3;
+  bytes audio_data = 4;
+  string transcription = 5;
+  double duration = 6;
+  google.protobuf.Timestamp timestamp = 7;
+  string format = 8;
+}
+
+// IRC Messages
+message IRCMessageRequest {
+  IRCMessage message = 1;
+}
+
+message IRCMessageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message IRCMessage {
+  string id = 1;
+  string server = 2;
+  string channel = 3;
+  string nick = 4;
+  string content = 5;
+  google.protobuf.Timestamp timestamp = 6;
+  bool is_private = 7;
+}
+
+// Discord Messages
+message DiscordMessageRequest {
+  DiscordMessage message = 1;
+}
+
+message DiscordMessageResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DiscordMessage {
+  string id = 1;
+  string guild_id = 2;
+  string channel_id = 3;
+  string user_id = 4;
+  string username = 5;
+  string content = 6;
+  google.protobuf.Timestamp timestamp = 7;
+  string message_type = 8;
+}
+
+// Output Commands
+message OutputCommandRequest {
+  OutputCommand command = 1;
+}
+
+message OutputCommandResponse {
+  bool success = 1;
+  string message = 2;
+  string command_id = 3;
+}
+
+message OutputCommand {
+  string id = 1;
+  string type = 2;
+  string target = 3;
+  string content = 4;
+  map<string, string> metadata = 5;
+  int32 priority = 6;
+}
+
+message OutputAction {
+  string type = 1;
+  string target = 2;
+  string content = 3;
+  map<string, string> metadata = 4;
+}
+
+// Threat Analysis
+message ThreatAnalysisRequest {
+  ThreatAnalysis analysis = 1;
+}
+
+message ThreatAnalysisResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ThreatAnalysis {
+  string event_id = 1;
+  string threat_level = 2;
+  double threat_score = 3;
+  repeated string threat_types = 4;
+  string analysis = 5;
+  double confidence = 6;
+  map<string, string> metadata = 7;
+  google.protobuf.Timestamp analyzed_at = 8;
+}
+
+// Service Status
+message ServiceStatusRequest {}
+
+message ServiceStatusResponse {
+  string status = 1;
+  string version = 2;
+  string uptime = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}

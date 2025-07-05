@@ -52,6 +52,22 @@ type AIPersonaCommunityClient interface {
 	GetCommunityMembers(ctx context.Context, communityID string) ([]PersonaInfo, error)
 }
 
+// Fr0gIOClient defines the interface for fr0g-ai-io service interactions
+type Fr0gIOClient interface {
+	SendOutputCommand(ctx context.Context, command *OutputCommand) (*OutputResponse, error)
+	SendThreatAnalysisResult(ctx context.Context, result *ThreatAnalysisResult) error
+	GetServiceStatus(ctx context.Context) (*ServiceStatus, error)
+}
+
+// Fr0gIOInputHandler defines the interface for handling input events from fr0g-ai-io
+type Fr0gIOInputHandler interface {
+	HandleInputEvent(ctx context.Context, event *InputEvent) (*InputEventResponse, error)
+	HandleSMSMessage(ctx context.Context, message *SMSMessage) error
+	HandleVoiceMessage(ctx context.Context, message *VoiceMessage) error
+	HandleIRCMessage(ctx context.Context, message *IRCMessage) error
+	HandleDiscordMessage(ctx context.Context, message *DiscordMessage) error
+}
+
 // Community represents an AI persona community
 type Community struct {
 	ID        string        `json:"id"`
@@ -114,4 +130,130 @@ type SentimentAnalysis struct {
 	Emotions     map[string]float64 `json:"emotions"`
 	Toxicity     float64            `json:"toxicity"`
 	Subjectivity float64            `json:"subjectivity"`
+}
+
+// InputEvent represents an input event from fr0g-ai-io
+type InputEvent struct {
+	ID        string                 `json:"id"`
+	Type      string                 `json:"type"` // "sms", "voice", "irc", "discord"
+	Source    string                 `json:"source"`
+	Content   string                 `json:"content"`
+	Metadata  map[string]interface{} `json:"metadata"`
+	Timestamp time.Time              `json:"timestamp"`
+	Priority  int                    `json:"priority"`
+}
+
+// InputEventResponse represents the response to an input event
+type InputEventResponse struct {
+	EventID     string                 `json:"event_id"`
+	Processed   bool                   `json:"processed"`
+	Actions     []OutputAction         `json:"actions"`
+	Analysis    *ThreatAnalysisResult  `json:"analysis,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	ProcessedAt time.Time              `json:"processed_at"`
+}
+
+// SMSMessage represents an SMS input message
+type SMSMessage struct {
+	ID          string    `json:"id"`
+	From        string    `json:"from"`
+	To          string    `json:"to"`
+	Content     string    `json:"content"`
+	Timestamp   time.Time `json:"timestamp"`
+	Provider    string    `json:"provider"`
+	MessageType string    `json:"message_type"`
+}
+
+// VoiceMessage represents a voice input message
+type VoiceMessage struct {
+	ID           string    `json:"id"`
+	From         string    `json:"from"`
+	To           string    `json:"to"`
+	AudioData    []byte    `json:"audio_data"`
+	Transcription string   `json:"transcription"`
+	Duration     float64   `json:"duration"`
+	Timestamp    time.Time `json:"timestamp"`
+	Format       string    `json:"format"`
+}
+
+// IRCMessage represents an IRC input message
+type IRCMessage struct {
+	ID        string    `json:"id"`
+	Server    string    `json:"server"`
+	Channel   string    `json:"channel"`
+	Nick      string    `json:"nick"`
+	Content   string    `json:"content"`
+	Timestamp time.Time `json:"timestamp"`
+	IsPrivate bool      `json:"is_private"`
+}
+
+// DiscordMessage represents a Discord input message
+type DiscordMessage struct {
+	ID          string    `json:"id"`
+	GuildID     string    `json:"guild_id"`
+	ChannelID   string    `json:"channel_id"`
+	UserID      string    `json:"user_id"`
+	Username    string    `json:"username"`
+	Content     string    `json:"content"`
+	Timestamp   time.Time `json:"timestamp"`
+	MessageType string    `json:"message_type"`
+}
+
+// OutputCommand represents a command to send to fr0g-ai-io for output processing
+type OutputCommand struct {
+	ID       string                 `json:"id"`
+	Type     string                 `json:"type"` // "sms", "voice", "irc", "discord"
+	Target   string                 `json:"target"`
+	Content  string                 `json:"content"`
+	Metadata map[string]interface{} `json:"metadata"`
+	Priority int                    `json:"priority"`
+}
+
+// OutputAction represents an action to be taken by fr0g-ai-io
+type OutputAction struct {
+	Type     string                 `json:"type"`
+	Target   string                 `json:"target"`
+	Content  string                 `json:"content"`
+	Metadata map[string]interface{} `json:"metadata"`
+}
+
+// OutputResponse represents the response from fr0g-ai-io after processing an output command
+type OutputResponse struct {
+	CommandID string                 `json:"command_id"`
+	Success   bool                   `json:"success"`
+	Message   string                 `json:"message"`
+	Metadata  map[string]interface{} `json:"metadata"`
+	Timestamp time.Time              `json:"timestamp"`
+}
+
+// ThreatAnalysisResult represents the result of threat analysis processing
+type ThreatAnalysisResult struct {
+	EventID       string                 `json:"event_id"`
+	ThreatLevel   string                 `json:"threat_level"` // "low", "medium", "high", "critical"
+	ThreatScore   float64                `json:"threat_score"` // 0.0-1.0
+	ThreatTypes   []string               `json:"threat_types"`
+	Indicators    []ThreatIndicator      `json:"indicators"`
+	Mitigation    []string               `json:"mitigation"`
+	Confidence    float64                `json:"confidence"`
+	Analysis      string                 `json:"analysis"`
+	Metadata      map[string]interface{} `json:"metadata"`
+	AnalyzedAt    time.Time              `json:"analyzed_at"`
+	RecommendedActions []OutputAction    `json:"recommended_actions"`
+}
+
+// ThreatIndicator represents a specific threat indicator
+type ThreatIndicator struct {
+	Type        string  `json:"type"`
+	Value       string  `json:"value"`
+	Confidence  float64 `json:"confidence"`
+	Description string  `json:"description"`
+}
+
+// ServiceStatus represents the status of fr0g-ai-io service
+type ServiceStatus struct {
+	ServiceName   string    `json:"service_name"`
+	Status        string    `json:"status"`
+	Version       string    `json:"version"`
+	Uptime        string    `json:"uptime"`
+	LastHeartbeat time.Time `json:"last_heartbeat"`
 }
