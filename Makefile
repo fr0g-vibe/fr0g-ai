@@ -66,23 +66,21 @@ build-all: init-submodules deps
 	@cd fr0g-ai-master-control && (make build-registry || go build -o bin/registry-server ./cmd/registry || echo "❌ Registry build failed")
 	@echo "✅ Build process completed"
 
-# Build bridge only
-build: proto
-	@echo "Building fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && go build -o bin/fr0g-ai-bridge cmd/fr0g-ai-bridge/main.go
+# Build the MCP server
+build:
+	@echo "🔨 Building fr0g.ai MCP server..."
+	@mkdir -p bin
+	go build -o bin/fr0g-ai-mcp ./cmd/mcp
 
 # Build AIP only
 build-aip: proto-aip
 	@echo "Building fr0g-ai-aip..."
 	cd fr0g-ai-aip && go build -o bin/fr0g-ai-aip ./main.go
 
-# Run the bridge service
-run: run-bridge
-
-# Run fr0g-ai-bridge server (build then run)
-run-bridge:
-	@echo "🚀 Starting fr0g-ai-bridge..."
-	@cd fr0g-ai-bridge && (make build || go build -o bin/fr0g-ai-bridge ./cmd/fr0g-ai-bridge || echo "❌ Build failed") && (test -f bin/fr0g-ai-bridge && ./bin/fr0g-ai-bridge || echo "❌ Binary not found")
+# Run the MCP server
+run: build
+	@echo "🚀 Starting fr0g.ai MCP server..."
+	./bin/fr0g-ai-mcp
 
 # Run fr0g-ai-aip server (build then run)
 run-aip:
@@ -109,10 +107,10 @@ run-esmtp: build-all
 	@echo "Starting fr0g-ai ESMTP Threat Vector Interceptor..."
 	cd fr0g-ai-master-control && ./bin/esmtp-interceptor -config configs/esmtp.yaml
 
-# Run tests for bridge only
+# Run tests
 test:
-	@echo "Running fr0g-ai-bridge tests..."
-	cd fr0g-ai-bridge && go test ./...
+	@echo "🧪 Running tests..."
+	go test ./...
 
 # Run tests for all projects
 test-all:
@@ -133,28 +131,16 @@ proto-aip:
 	@echo "Generating protobuf code for fr0g-ai-aip..."
 	cd fr0g-ai-aip && protoc --proto_path=internal/grpc/proto --go_out=internal/grpc/pb --go_opt=paths=source_relative --go-grpc_out=internal/grpc/pb --go-grpc_opt=paths=source_relative internal/grpc/proto/persona.proto
 
-# Install dependencies for all projects
-deps: init-submodules
-	@echo "Generating protobuf files for fr0g-ai-aip..."
-	make proto-aip || true
-	@echo "Installing dependencies for fr0g-ai-aip..."
-	cd fr0g-ai-aip && go mod tidy && go mod download
-	@echo "Generating protobuf files for fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && make proto-if-needed || make proto || true
-	@echo "Installing dependencies for fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && go mod tidy && go mod download
-	@echo "Installing dependencies for fr0g-ai-master-control..."
-	cd fr0g-ai-master-control && go mod tidy && go mod download
+# Install dependencies
+deps:
+	@echo "📦 Installing dependencies..."
+	go mod tidy
+	go mod download
 
-# Clean all build artifacts
+# Clean build artifacts
 clean:
-	@echo "Cleaning fr0g-ai-aip..."
-	cd fr0g-ai-aip && make clean || true
-	@echo "Cleaning fr0g-ai-bridge..."
-	rm -rf fr0g-ai-bridge/bin/
-	rm -rf fr0g-ai-bridge/internal/pb/*.pb.go
-	@echo "Cleaning fr0g-ai-master-control..."
-	rm -rf fr0g-ai-master-control/bin/
+	@echo "🧹 Cleaning build artifacts..."
+	rm -rf bin/
 
 # Build Docker images
 docker:
