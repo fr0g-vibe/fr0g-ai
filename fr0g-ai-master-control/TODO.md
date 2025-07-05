@@ -62,6 +62,15 @@
 - **UNIQUE MATCHING**: Include enough surrounding lines for unique identification
 - **MULTIPLE BLOCKS**: Use separate blocks for multiple changes in same file
 
+### CRITICAL SAFETY RULES - MASTER CONTROL COMPONENT
+- **⚠️ NEVER EXECUTE PKILL**: NEVER run pkill, killall, or any process termination commands
+- **⚠️ USE START/STOP SCRIPTS**: ONLY use designated start and stop scripts for process management
+- **⚠️ NO DIRECT PROCESS KILLING**: NEVER attempt to kill processes directly through system commands
+- **⚠️ ASK BEFORE DESTRUCTIVE OPERATIONS**: ALWAYS ask before deleting files, directories, or git operations
+- **⚠️ NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, or force push without explicit approval
+- **⚠️ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
+- **⚠️ VERIFY BEFORE EXECUTION**: Double-check all system commands before suggesting them
+
 ### CENTRALIZED CONFIGURATION RULES - MASTER CONTROL COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create master-control-specific config/validation libraries

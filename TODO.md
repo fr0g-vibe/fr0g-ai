@@ -41,11 +41,16 @@ When starting new AI coding sessions, always include these files:
 - **REAL INTEGRATIONS**: Always implement actual API calls, database connections, and service integrations
 - **PRODUCTION READY**: All code must be production-ready, not placeholder or demo code
 
-### Process Management Policy
-- **NO PKILL COMMANDS**: Never execute pkill, killall, or any process termination commands
-- **USE START/STOP SCRIPTS**: Only use designated start and stop scripts for process management
-- **NO DIRECT PROCESS KILLING**: Never attempt to kill processes directly through system commands
-- **GRACEFUL SHUTDOWN**: Always use proper service shutdown mechanisms and scripts
+### CRITICAL SAFETY RULES - PROJECT-WIDE
+- **⚠️ NEVER EXECUTE PKILL**: NEVER run pkill, killall, or any process termination commands
+- **⚠️ USE START/STOP SCRIPTS**: ONLY use designated start and stop scripts for process management
+- **⚠️ NO DIRECT PROCESS KILLING**: NEVER attempt to kill processes directly through system commands
+- **⚠️ ASK BEFORE DESTRUCTIVE OPERATIONS**: ALWAYS ask before deleting files, directories, or git operations
+- **⚠️ NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, or force push without explicit approval
+- **⚠️ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
+- **⚠️ VERIFY BEFORE EXECUTION**: Double-check all system commands before suggesting them
+- **⚠️ NO FORCE OPERATIONS**: Never suggest rm -rf, mv without confirmation, or other destructive file operations
+- **⚠️ BACKUP BEFORE CHANGES**: Always suggest backing up important files before major modifications
 
 ### SEARCH/REPLACE BLOCK RULES - PROJECT-WIDE
 - **QUADRUPLE BACKTICKS**: Always use ```` as fences, never triple backticks ```
