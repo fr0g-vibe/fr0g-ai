@@ -194,9 +194,10 @@ func (mcp *MasterControlProgram) updateSystemMetrics() {
 	}
 	
 	// Update intelligence metrics
-	mcp.systemState.Intelligence.PatternCount += int(time.Now().Unix()) % 3
-	mcp.systemState.Intelligence.AdaptationScore = 0.8 + (0.2 * (float64(time.Now().Unix()) % 10 / 10))
-	mcp.systemState.Intelligence.EfficiencyIndex = 0.85 + (0.15 * (float64(time.Now().Unix()) % 10 / 10))
+	now := time.Now().Unix()
+	mcp.systemState.Intelligence.PatternCount += int(now) % 3
+	mcp.systemState.Intelligence.AdaptationScore = 0.8 + (0.2 * float64(now%10) / 10)
+	mcp.systemState.Intelligence.EfficiencyIndex = 0.85 + (0.15 * float64(now%10) / 10)
 	
 	mcp.systemState.LastUpdate = time.Now()
 }
