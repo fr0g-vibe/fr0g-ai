@@ -151,8 +151,16 @@
 - [x] **OPERATIONAL**: Build system with Makefile integration
 
 ### 🎯 NEXT PRIORITIES: Integration and Enhancement
-- [ ] **HIGH**: Integrate with fr0g-ai-bridge for AI model communication
-- [ ] **HIGH**: Implement service registry client for discovery
+- [ ] **CRITICAL**: Implement service registry client for discovery
+  - Add service registry client library
+  - Implement automatic service registration on startup
+  - Add service deregistration on shutdown
+  - Enable other services to discover AIP endpoints
+- [ ] **HIGH**: Add real AI model integration (GPT-4, Claude) support
+  - Implement AI model client interfaces
+  - Add model selection and routing logic
+  - Integrate with external AI APIs (OpenAI, Anthropic)
+  - Add model response caching and optimization
 - [ ] **MEDIUM**: Add authentication and authorization middleware
 - [ ] **MEDIUM**: Implement caching layer for performance optimization
 - [ ] **LOW**: Add metrics and monitoring endpoints

@@ -117,9 +117,15 @@
 - [x] **COMPLETED**: Implement gRPC client for master-control communication
 - [x] **COMPLETED**: Send input events to master-control for analysis
 - [x] **COMPLETED**: Receive processing commands from master-control
-- [ ] **MEDIUM**: Implement event correlation and tracking
-- [ ] **HIGH**: Complete protobuf definitions for type-safe communication
-- [ ] **HIGH**: Replace simulated gRPC calls with actual protobuf services
+- [ ] **CRITICAL**: Complete protobuf definitions for type-safe communication
+  - Create .proto files for InputEvent, OutputCommand, and AnalysisResult
+  - Generate proper gRPC service definitions
+  - Replace simulated gRPC calls with actual protobuf services
+- [ ] **HIGH**: Implement event correlation and tracking
+- [ ] **HIGH**: Complete SMS output processor with external API integration
+  - Integrate with Google Voice API for SMS sending
+  - Add proper error handling and retry logic
+  - Implement rate limiting for SMS API calls
 
 ### External API Integration
 - [ ] **HIGH**: Google Voice API integration (SMS/Voice)

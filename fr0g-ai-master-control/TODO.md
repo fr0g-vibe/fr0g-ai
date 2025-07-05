@@ -471,8 +471,16 @@ Intelligence Metrics: **LIVE OPERATIONAL STATUS**
 
 **CURRENT TASKS:**
 5. **PRIORITY 1**: Complete ESMTP processor (`processors/email/`) with full SMTP server
-6. **PRIORITY 2**: Implement workflow definition parser (`workflow/definitions/`)
-7. **PRIORITY 3**: Add real AI model integration (GPT-4, Claude) to AIP client
+   - Implement complete SMTP server functionality in `internal/processors/email/`
+   - Add email parsing and threat detection algorithms
+   - Add email quarantine and forwarding logic
+   - Prepare for extraction to fr0g-ai-io service
+6. **PRIORITY 2**: Implement service registry server
+   - Create service registry implementation in `internal/registry/`
+   - Add service registration/deregistration endpoints
+   - Implement health checking for registered services
+   - Add service discovery API for other components
+7. **PRIORITY 3**: Implement workflow definition parser (`workflow/definitions/`)
 
 **MEDIUM-TERM TASKS (Month 1):**
 7. Implement advanced threat correlation across all vectors

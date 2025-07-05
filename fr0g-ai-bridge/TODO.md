@@ -122,11 +122,16 @@
 - [ ] Implement streaming gRPC endpoints (deferred - not critical for initial bridging)
 - [ ] Add gRPC middleware for logging/auth (deferred - authentication not implemented yet)
 
-### Service Discovery Integration - DEFERRED
-- [ ] Implement service registry client (deferred - not critical for initial bridging)
-- [ ] Add automatic service registration/deregistration (deferred)
-- [ ] Implement health checks with dependency status (basic health checks implemented)
-- [ ] Add service discovery for AIP service connection (deferred)
+### Service Discovery Integration - HIGH PRIORITY
+- [ ] **CRITICAL**: Implement service registry client
+  - Add service registry client library
+  - Implement automatic service registration on startup
+  - Add service deregistration on shutdown
+  - Implement service discovery for AIP service connection
+- [ ] **HIGH**: Add health checks with dependency status
+  - Check AIP service availability via service registry
+  - Report dependency health in health endpoint
+  - Implement circuit breaker for failed dependencies
 
 ## COMPLETED - Medium Priority Features
 
