@@ -158,11 +158,12 @@
 - [x] **OPERATIONAL**: Build system with Makefile integration
 
 ### 🎯 NEXT PRIORITIES: Integration and Enhancement
-- [ ] **CRITICAL**: Implement service registry client for discovery
-  - Add service registry client library
+- [ ] **CRITICAL**: Implement service registry client for discovery - MISSING FROM BUILD
+  - Add service registry client library (not found in internal/)
   - Implement automatic service registration on startup
-  - Add service deregistration on shutdown
+  - Add service deregistration on shutdown  
   - Enable other services to discover AIP endpoints
+  - **STATUS**: No registry references found in AIP internal/ directory
 - [ ] **HIGH**: Add real AI model integration (GPT-4, Claude) support
   - Implement AI model client interfaces
   - Add model selection and routing logic
