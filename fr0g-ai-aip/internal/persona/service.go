@@ -80,7 +80,7 @@ func (s *Service) CreatePersona(persona *types.Persona) error {
 	persona.UpdatedAt = now
 
 	// Store persona
-	return s.storage.CreatePersona(*persona)
+	return s.storage.Create(persona)
 }
 
 // GetPersona retrieves a persona by ID
@@ -89,12 +89,12 @@ func (s *Service) GetPersona(id string) (types.Persona, error) {
 		return types.Persona{}, fmt.Errorf("persona ID is required")
 	}
 
-	return s.storage.GetPersona(id)
+	return s.storage.Get(id)
 }
 
 // ListPersonas returns all personas
 func (s *Service) ListPersonas() ([]types.Persona, error) {
-	return s.storage.ListPersonas()
+	return s.storage.List()
 }
 
 // UpdatePersona updates an existing persona
@@ -112,7 +112,7 @@ func (s *Service) UpdatePersona(id string, persona types.Persona) error {
 	persona.Id = id
 	persona.UpdatedAt = time.Now()
 
-	return s.storage.UpdatePersona(id, persona)
+	return s.storage.Update(id, persona)
 }
 
 // DeletePersona removes a persona by ID
@@ -121,7 +121,7 @@ func (s *Service) DeletePersona(id string) error {
 		return fmt.Errorf("persona ID is required")
 	}
 
-	return s.storage.DeletePersona(id)
+	return s.storage.Delete(id)
 }
 
 // IDENTITY OPERATIONS
@@ -155,7 +155,7 @@ func (s *Service) CreateIdentity(identity *types.Identity) error {
 	identity.UpdatedAt = now
 
 	// Store identity
-	return s.storage.CreateIdentity(*identity)
+	return s.storage.CreateIdentity(identity)
 }
 
 // GetIdentity retrieves an identity by ID
@@ -217,7 +217,7 @@ func (s *Service) GetIdentityWithPersona(id string) (types.IdentityWithPersona, 
 		return types.IdentityWithPersona{}, err
 	}
 
-	persona, err := s.storage.GetPersona(identity.PersonaId)
+	persona, err := s.storage.Get(identity.PersonaId)
 	if err != nil {
 		return types.IdentityWithPersona{}, fmt.Errorf("failed to get associated persona: %w", err)
 	}
@@ -319,7 +319,7 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 	}
 
 	if len(errors) > 0 {
-		return middleware.ValidationErrors{Errors: errors}
+		return &middleware.ValidationErrors{Errors: convertValidationErrors(errors)}
 	}
 
 	return nil
@@ -385,7 +385,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 
 	// Verify persona exists
 	if identity.PersonaId != "" {
-		if _, err := s.storage.GetPersona(identity.PersonaId); err != nil {
+		if _, err := s.storage.Get(identity.PersonaId); err != nil {
 			errors = append(errors, config.ValidationError{
 				Field:   "persona_id",
 				Message: "referenced persona does not exist",
@@ -461,10 +461,22 @@ func (s *Service) processRichAttributes(attrs *types.RichAttributes) error {
 	}
 
 	if len(allErrors) > 0 {
-		return middleware.ValidationErrors{Errors: allErrors}
+		return &middleware.ValidationErrors{Errors: convertValidationErrors(allErrors)}
 	}
 
 	return nil
+}
+
+// convertValidationErrors converts config.ValidationError to middleware.ValidationError
+func convertValidationErrors(configErrors []config.ValidationError) []middleware.ValidationError {
+	var middlewareErrors []middleware.ValidationError
+	for _, err := range configErrors {
+		middlewareErrors = append(middlewareErrors, middleware.ValidationError{
+			Field:   err.Field,
+			Message: err.Message,
+		})
+	}
+	return middlewareErrors
 }
 
 // ANALYSIS AND INSIGHTS METHODS
