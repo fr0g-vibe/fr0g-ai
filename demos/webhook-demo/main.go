@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"../fr0g-ai-master-control/internal/mastercontrol"
+	"fr0g-ai-master-control/internal/mastercontrol"
 )
 
 func main() {
