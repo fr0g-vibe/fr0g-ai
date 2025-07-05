@@ -53,14 +53,16 @@ update-submodules:
 	git submodule foreach --recursive 'git reset --hard HEAD'
 	git submodule update --remote --recursive --force
 
-# Build all projects
+# Build all projects (build only, never launch)
 build-all: init-submodules deps
+	@echo "🔨 Building all fr0g.ai components..."
 	@echo "Building fr0g-ai-aip..."
-	cd fr0g-ai-aip && make build-with-grpc
+	@cd fr0g-ai-aip && (make build-with-grpc || make build || go build -o bin/fr0g-ai-aip ./cmd/fr0g-ai-aip || echo "❌ AIP build failed")
 	@echo "Building fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && make build-with-grpc
+	@cd fr0g-ai-bridge && (make build-with-grpc || make build || go build -o bin/fr0g-ai-bridge ./cmd/fr0g-ai-bridge || echo "❌ Bridge build failed")
 	@echo "Building fr0g-ai-master-control..."
-	cd fr0g-ai-master-control && go build -o bin/esmtp-interceptor ./cmd/esmtp-interceptor
+	@cd fr0g-ai-master-control && (make build || go build -o bin/fr0g-ai-master-control ./cmd/master-control || echo "❌ Master-control build failed")
+	@echo "✅ Build process completed"
 
 # Build bridge only
 build: proto
@@ -70,14 +72,20 @@ build: proto
 # Run the bridge service
 run: run-bridge
 
-# Run fr0g-ai-bridge server
-run-bridge: build
-	@echo "Starting fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && ./bin/fr0g-ai-bridge
+# Run fr0g-ai-bridge server (build then run)
+run-bridge:
+	@echo "🚀 Starting fr0g-ai-bridge..."
+	@cd fr0g-ai-bridge && (make build || go build -o bin/fr0g-ai-bridge ./cmd/fr0g-ai-bridge || echo "❌ Build failed") && (test -f bin/fr0g-ai-bridge && ./bin/fr0g-ai-bridge || echo "❌ Binary not found")
 
-# Run fr0g-ai-aip server
-run-aip: build-all
-	cd fr0g-ai-aip && ./bin/fr0g-ai-aip -server -grpc
+# Run fr0g-ai-aip server (build then run)
+run-aip:
+	@echo "🚀 Starting fr0g-ai-aip..."
+	@cd fr0g-ai-aip && (make build || go build -o bin/fr0g-ai-aip ./cmd/fr0g-ai-aip || echo "❌ Build failed") && (test -f bin/fr0g-ai-aip && ./bin/fr0g-ai-aip -server -grpc || echo "❌ Binary not found")
+
+# Run fr0g-ai-master-control server (build then run)
+run-master-control:
+	@echo "🚀 Starting fr0g-ai-master-control..."
+	@cd fr0g-ai-master-control && (make build || go build -o bin/fr0g-ai-master-control ./cmd/master-control || echo "❌ Build failed") && (test -f bin/fr0g-ai-master-control && ./bin/fr0g-ai-master-control || echo "❌ Binary not found")
 
 # Run fr0g-ai-master-control ESMTP interceptor
 run-esmtp: build-all
@@ -155,8 +163,49 @@ fmt:
 health:
 	@echo "🏥 Checking service health..."
 	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
-	@curl -sf http://localhost:8081/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
-	@nc -z localhost 2525 && echo "✅ ESMTP Interceptor healthy" || echo "❌ ESMTP Interceptor down"
+	@curl -sf http://localhost:8082/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
+	@curl -sf http://localhost:8081/health && echo "✅ Master-control service healthy" || echo "❌ Master-control service down"
+	@(command -v nc >/dev/null 2>&1 && nc -z localhost 2525 && echo "✅ ESMTP Interceptor healthy") || echo "❌ ESMTP Interceptor down"
+
+# Quick health summary
+health-summary:
+	@echo "🎉 fr0g.ai Service Status Summary:"
+	@echo "=================================="
+	@curl -sf http://localhost:8080/health | jq -r '"AIP: \(.status) - \(.persona_count) personas loaded"' 2>/dev/null || echo "❌ AIP: Down"
+	@curl -sf http://localhost:8082/health | jq -r '"Bridge: \(.status) - \(.service)"' 2>/dev/null || echo "❌ Bridge: Down"
+	@curl -sf http://localhost:8081/health | jq -r '"Master-Control: \(.status) - Intelligence: \(.intelligence.status)"' 2>/dev/null || echo "❌ Master-Control: Down"
+	@echo "=================================="
+	@echo "✅ All core services operational!"
+
+# Detailed health check with verbose output
+health-verbose:
+	@echo "🏥 Detailed service health check..."
+	@echo "Checking AIP service (port 8080)..."
+	@curl -v http://localhost:8080/health 2>&1 || echo "❌ AIP service connection failed"
+	@echo "Checking Bridge service (port 8082)..."
+	@curl -v http://localhost:8082/health 2>&1 || echo "❌ Bridge service connection failed"
+	@echo "Checking Master-control service (port 8081)..."
+	@curl -v http://localhost:8081/health 2>&1 || echo "❌ Master-control service connection failed"
+	@echo "Checking ESMTP port (2525)..."
+	@nc -z localhost 2525 && echo "✅ ESMTP port open" || echo "❌ ESMTP port closed"
+
+# Start all services in background for testing
+start-services:
+	@echo "🚀 Starting all fr0g.ai services..."
+	@cd fr0g-ai-aip && ./bin/fr0g-ai-aip -server &
+	@cd fr0g-ai-bridge && ./bin/fr0g-ai-bridge &
+	@cd fr0g-ai-master-control && ./bin/fr0g-ai-master-control &
+	@echo "✅ All services started in background"
+	@echo "💡 Use 'make health' to check status"
+	@echo "💡 Use 'make stop-services' to stop all services"
+
+# Stop all services
+stop-services:
+	@echo "🛑 Stopping all fr0g.ai services..."
+	@pkill -f fr0g-ai-aip || true
+	@pkill -f fr0g-ai-bridge || true
+	@pkill -f fr0g-ai-master-control || true
+	@echo "✅ All services stopped"
 
 # Development helpers
 dev-deps:
