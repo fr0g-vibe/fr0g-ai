@@ -408,12 +408,10 @@ func GetDefaults() *Config {
 	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
 	
 	// Debug output for environment variables
-	if os.Getenv("ENVIRONMENT") == "development" {
-		fmt.Printf("DEBUG: AIP_HTTP_PORT=%s, AIP_GRPC_PORT=%s, GRPC_ENABLE_REFLECTION=%s\n", 
-			os.Getenv("AIP_HTTP_PORT"), os.Getenv("AIP_GRPC_PORT"), os.Getenv("GRPC_ENABLE_REFLECTION"))
-		fmt.Printf("DEBUG: Using HTTP port %s, gRPC port %s, reflection %t\n", 
-			httpPort, grpcPort, enableReflection)
-	}
+	fmt.Printf("DEBUG: Environment variables - AIP_HTTP_PORT=%s, AIP_GRPC_PORT=%s, GRPC_ENABLE_REFLECTION=%s\n", 
+		os.Getenv("AIP_HTTP_PORT"), os.Getenv("AIP_GRPC_PORT"), os.Getenv("GRPC_ENABLE_REFLECTION"))
+	fmt.Printf("DEBUG: Final configuration - HTTP port %s, gRPC port %s, reflection %t\n", 
+		httpPort, grpcPort, enableReflection)
 	
 	return &Config{
 		HTTP: HTTPConfig{

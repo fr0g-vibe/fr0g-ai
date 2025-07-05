@@ -182,14 +182,10 @@ test-with-reflection:
 	@echo "🧪 Running AIP tests with gRPC reflection enabled..."
 	@echo "⚠️  This will start the service with reflection for testing"
 	@echo "Setting environment variables..."
-	@export GRPC_ENABLE_REFLECTION=true && \
-	export ENVIRONMENT=development && \
-	export AIP_HTTP_PORT=8080 && \
-	export AIP_GRPC_PORT=9090 && \
-	echo "Starting service in background..." && \
-	$(MAKE) run & \
+	@echo "Starting service in background with environment variables..."
+	@GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development AIP_HTTP_PORT=8080 AIP_GRPC_PORT=9090 $(MAKE) run & \
 	echo "Waiting for service to start..." && \
-	sleep 10 && \
+	sleep 12 && \
 	chmod +x ../test_aip_service.sh && \
 	../test_aip_service.sh; \
 	echo "Stopping test service..." && \
