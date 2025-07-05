@@ -212,19 +212,26 @@
 ### 🎯 PHASE 2: PRODUCTION HARDENING (IMMEDIATE - NEXT 2 WEEKS)
 
 #### **CRITICAL PATH - Week 1**
-1. **URGENT**: Add Redis persistence layer (service data survives restarts)
+1. **URGENT**: Optimize service discovery performance under load
+   - **IDENTIFIED ISSUE**: 606ms average latency under 200 concurrent requests
+   - Implement in-memory cache for frequently accessed services
+   - Add cache invalidation on service changes
+   - Optimize discovery response times (target <50ms under load)
+   - Add connection pooling for HTTP handlers
+
+2. **URGENT**: Add Redis persistence layer (service data survives restarts)
    - Implement Redis backend storage adapter
    - Add Redis connection pooling and failover
    - Migrate in-memory storage to Redis with backward compatibility
    - Add Redis health monitoring and circuit breaker
 
-2. **URGENT**: Implement Prometheus metrics integration
+3. **URGENT**: Implement Prometheus metrics integration
    - Add /metrics endpoint for Prometheus scraping
-   - Track service registration/deregistration rates
-   - Monitor discovery request latency and throughput
+   - Track service registration/deregistration rates (current: 4,668 ops/sec)
+   - Monitor discovery request latency and throughput (current: 209 req/sec)
    - Add service health status metrics and alerting
 
-3. **HIGH**: Add automated health checking with configurable intervals
+4. **HIGH**: Add automated health checking with configurable intervals
    - Implement background health checker goroutines
    - Add configurable health check intervals per service
    - Implement health check retry logic and exponential backoff
@@ -322,16 +329,18 @@
 
 ### 🚀 PHASE 2 SUCCESS CRITERIA
 **Week 1 Targets:**
+- [ ] **CRITICAL**: Discovery optimization: <50ms latency under 200+ concurrent requests (current: 606ms)
 - [ ] Redis persistence: Zero data loss on restart
-- [ ] Prometheus metrics: <1s scrape time, 99.9% availability
+- [ ] Prometheus metrics: <1s scrape time, 99.9% availability, track 4,668+ ops/sec
 - [ ] Health checking: <5s detection of service failures
-- [ ] Performance: Maintain current 13.9ms discovery latency
+- [ ] Performance: Maintain 13.9ms normal discovery latency, improve concurrent performance
 
 **Week 2 Targets:**
 - [ ] Graceful shutdown: <10s clean shutdown time
-- [ ] Discovery caching: <5ms cached lookup latency
+- [ ] Discovery caching: <5ms cached lookup latency (addresses 606ms load issue)
 - [ ] Observability: 100% request tracing coverage
-- [ ] Reliability: 99.99% uptime under load
+- [ ] Reliability: 99.99% uptime under load (currently 100% success rate)
+- [ ] Load optimization: Maintain 4,668+ concurrent registrations/sec performance
 
 ### 🎖️ PRODUCTION READINESS CHECKLIST
 - [x] **Performance Validated**: All benchmarks exceed targets (13.9ms discovery latency)
