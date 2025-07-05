@@ -274,13 +274,23 @@ func (p *Processor) calculateSpamScore(content string) float64 {
 	for _, keyword := range p.spamKeywords {
 		if strings.Contains(content, keyword) {
 			keywordCount++
-			score += 0.1
+			score += 0.2 // Increased sensitivity
 		}
 	}
 
 	// Bonus for multiple keywords
-	if keywordCount > 3 {
-		score += float64(keywordCount-3) * 0.05
+	if keywordCount > 2 { // Reduced threshold
+		score += float64(keywordCount-2) * 0.1 // Increased bonus
+	}
+
+	// Check for URL shorteners (high phishing indicator)
+	if strings.Contains(content, "bit.ly") || strings.Contains(content, "tinyurl") {
+		score += 0.6
+	}
+
+	// Check for account suspension language
+	if strings.Contains(content, "suspended") || strings.Contains(content, "verify") {
+		score += 0.4
 	}
 
 	if score > 1.0 {

@@ -309,19 +309,19 @@ func (p *Processor) calculateSpamScore(content string) float64 {
 
 	for _, word := range p.suspiciousWords {
 		if strings.Contains(content, word) {
-			score += 0.15
+			score += 0.25 // Increased sensitivity
 		}
 	}
 
 	// Check for excessive mentions
-	if strings.Count(content, "@") > 3 {
-		score += 0.3
+	if strings.Count(content, "@") > 2 { // Reduced threshold
+		score += 0.4 // Increased penalty
 	}
 
 	// Check for excessive emojis
 	emojiCount := strings.Count(content, ":")
-	if emojiCount > 10 {
-		score += 0.2
+	if emojiCount > 8 { // Reduced threshold
+		score += 0.3 // Increased penalty
 	}
 
 	// Check for excessive caps
@@ -331,8 +331,13 @@ func (p *Processor) calculateSpamScore(content string) float64 {
 			capsCount++
 		}
 	}
-	if len(content) > 0 && float64(capsCount)/float64(len(content)) > 0.5 {
-		score += 0.3
+	if len(content) > 0 && float64(capsCount)/float64(len(content)) > 0.3 { // Reduced threshold
+		score += 0.4 // Increased penalty
+	}
+
+	// Check for Discord-specific scams
+	if strings.Contains(content, "free nitro") || strings.Contains(content, "discord.gg") {
+		score += 0.6
 	}
 
 	if score > 1.0 {

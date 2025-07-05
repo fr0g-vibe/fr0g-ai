@@ -327,21 +327,26 @@ func (p *Processor) calculateScamScore(transcript string) float64 {
 	for _, word := range p.suspiciousWords {
 		if strings.Contains(transcript, word) {
 			wordCount++
-			score += 0.1
+			score += 0.2 // Increased sensitivity
 		}
 	}
 
 	// Bonus for multiple suspicious words
-	if wordCount > 3 {
-		score += float64(wordCount-3) * 0.05
+	if wordCount > 2 { // Reduced threshold
+		score += float64(wordCount-2) * 0.1 // Increased bonus
 	}
 
 	// Check for urgency indicators
-	urgencyWords := []string{"urgent", "immediate", "act now", "expires", "deadline"}
+	urgencyWords := []string{"urgent", "immediate", "act now", "expires", "deadline", "arrest", "warrant"}
 	for _, word := range urgencyWords {
 		if strings.Contains(transcript, word) {
-			score += 0.2
+			score += 0.3 // Increased penalty
 		}
+	}
+
+	// IRS/government scam indicators
+	if strings.Contains(transcript, "irs") || strings.Contains(transcript, "arrest") {
+		score += 0.5
 	}
 
 	if score > 1.0 {

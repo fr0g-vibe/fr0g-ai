@@ -316,18 +316,18 @@ func (p *Processor) calculateSpamScore(body string) float64 {
 	for _, keyword := range p.spamKeywords {
 		if strings.Contains(body, keyword) {
 			keywordCount++
-			score += 0.15 // Increased from 0.1 to 0.15
+			score += 0.25 // Increased sensitivity
 		}
 	}
 
 	// Bonus for multiple keywords
-	if keywordCount > 2 { // Reduced threshold from 3 to 2
-		score += float64(keywordCount-2) * 0.1 // Increased bonus from 0.05 to 0.1
+	if keywordCount > 1 { // Reduced threshold
+		score += float64(keywordCount-1) * 0.15 // Increased bonus
 	}
 
 	// Check for excessive punctuation/caps
-	if strings.Count(body, "!") > 2 { // Reduced threshold from 3 to 2
-		score += 0.3 // Increased from 0.2 to 0.3
+	if strings.Count(body, "!") > 1 { // Reduced threshold
+		score += 0.4 // Increased penalty
 	}
 
 	capsCount := 0
@@ -336,8 +336,13 @@ func (p *Processor) calculateSpamScore(body string) float64 {
 			capsCount++
 		}
 	}
-	if len(body) > 0 && float64(capsCount)/float64(len(body)) > 0.3 { // Reduced threshold from 0.5 to 0.3
-		score += 0.4 // Increased from 0.3 to 0.4
+	if len(body) > 0 && float64(capsCount)/float64(len(body)) > 0.2 { // Reduced threshold
+		score += 0.5 // Increased penalty
+	}
+
+	// Check for URL shorteners (high spam indicator)
+	if strings.Contains(body, "bit.ly") || strings.Contains(body, "tinyurl") {
+		score += 0.6
 	}
 
 	if score > 1.0 {
