@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // Processor handles SMS threat detection and analysis
@@ -90,7 +90,7 @@ type PhoneNumberInfo struct {
 }
 
 // NewProcessor creates a new SMS processor instance
-func NewProcessor(cfg *config.SMSConfig) *Processor {
+func NewProcessor(cfg *sharedconfig.SMSConfig) *Processor {
 	p := &Processor{
 		config:         cfg,
 		threatPatterns: make(map[string]*regexp.Regexp),

@@ -6,14 +6,14 @@ import (
 	"log"
 	"sync"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/sms"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/voice"
 )
 
 // Manager manages all I/O processors
 type Manager struct {
-	config     *config.Config
+	config     *sharedconfig.Config
 	processors map[string]Processor
 	mu         sync.RWMutex
 	isRunning  bool
@@ -29,7 +29,7 @@ type Processor interface {
 }
 
 // NewManager creates a new processor manager
-func NewManager(cfg *config.Config) (*Manager, error) {
+func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 	mgr := &Manager{
 		config:     cfg,
 		processors: make(map[string]Processor),

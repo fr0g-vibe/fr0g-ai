@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 func TestNewProcessor(t *testing.T) {
-	cfg := &config.SMSConfig{
+	cfg := &sharedconfig.SMSConfig{
 		Enabled:            true,
 		ProcessingInterval: 30,
 		MaxHistorySize:     1000,
@@ -32,7 +32,7 @@ func TestNewProcessor(t *testing.T) {
 }
 
 func TestProcessMessage(t *testing.T) {
-	cfg := &config.SMSConfig{
+	cfg := &sharedconfig.SMSConfig{
 		Enabled:            true,
 		ProcessingInterval: 30,
 		MaxHistorySize:     1000,
@@ -83,7 +83,7 @@ func TestProcessMessage(t *testing.T) {
 }
 
 func TestThreatAnalysis(t *testing.T) {
-	cfg := &config.SMSConfig{
+	cfg := &sharedconfig.SMSConfig{
 		Enabled:            true,
 		ProcessingInterval: 30,
 		MaxHistorySize:     1000,
@@ -120,7 +120,7 @@ func TestThreatAnalysis(t *testing.T) {
 }
 
 func TestProcessorLifecycle(t *testing.T) {
-	cfg := &config.SMSConfig{
+	cfg := &sharedconfig.SMSConfig{
 		Enabled:            true,
 		ProcessingInterval: 1, // Short interval for testing
 		MaxHistorySize:     1000,
@@ -157,7 +157,7 @@ func TestProcessorLifecycle(t *testing.T) {
 }
 
 func TestGetStats(t *testing.T) {
-	cfg := &config.SMSConfig{
+	cfg := &sharedconfig.SMSConfig{
 		Enabled:            true,
 		ProcessingInterval: 30,
 		MaxHistorySize:     1000,

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // Processor handles voice call threat detection and analysis
@@ -96,7 +96,7 @@ type CallerInfo struct {
 }
 
 // NewProcessor creates a new voice processor instance
-func NewProcessor(cfg *config.VoiceConfig) *Processor {
+func NewProcessor(cfg *sharedconfig.VoiceConfig) *Processor {
 	p := &Processor{
 		config:         cfg,
 		threatPatterns: make(map[string]*regexp.Regexp),

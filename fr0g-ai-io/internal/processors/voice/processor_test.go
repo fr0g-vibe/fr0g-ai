@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 func TestNewVoiceProcessor(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:            true,
 		MonitoringInterval: 30,
 		MaxHistorySize:     1000,
@@ -32,7 +32,7 @@ func TestNewVoiceProcessor(t *testing.T) {
 }
 
 func TestProcessCall(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:            true,
 		MonitoringInterval: 30,
 		MaxHistorySize:     1000,
@@ -91,7 +91,7 @@ func TestProcessCall(t *testing.T) {
 }
 
 func TestThreatAnalysis(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:            true,
 		MonitoringInterval: 30,
 		MaxHistorySize:     1000,
@@ -130,7 +130,7 @@ func TestThreatAnalysis(t *testing.T) {
 }
 
 func TestVoiceProcessorLifecycle(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:            true,
 		MonitoringInterval: 1, // Short interval for testing
 		MaxHistorySize:     1000,
@@ -167,7 +167,7 @@ func TestVoiceProcessorLifecycle(t *testing.T) {
 }
 
 func TestVoiceGetStats(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:               true,
 		MonitoringInterval:    30,
 		MaxHistorySize:        1000,
@@ -244,7 +244,7 @@ func TestVoiceThreatLevelString(t *testing.T) {
 }
 
 func TestSpeechPatternAnalysis(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:            true,
 		MonitoringInterval: 30,
 		MaxHistorySize:     1000,
@@ -272,7 +272,7 @@ func TestSpeechPatternAnalysis(t *testing.T) {
 }
 
 func TestEmotionalManipulationDetection(t *testing.T) {
-	cfg := &config.VoiceConfig{
+	cfg := &sharedconfig.VoiceConfig{
 		Enabled:            true,
 		MonitoringInterval: 30,
 		MaxHistorySize:     1000,
