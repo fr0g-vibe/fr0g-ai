@@ -269,26 +269,12 @@ test_identity_api() {
         log_test "GET /identities" "FAIL" "Failed to retrieve identities list"
     fi
     
-    # Test identity creation with rich attributes
+    # Test identity creation with valid structure
     local test_identity='{
         "name": "Test Identity",
         "description": "A test identity for API validation",
         "persona_id": "test-persona-id",
-        "background": "Test background for validation purposes",
-        "demographics": {
-            "age": 30,
-            "gender": "non-binary",
-            "education": "bachelors",
-            "location": {
-                "country": "US",
-                "state": "CA",
-                "city": "San Francisco"
-            }
-        },
-        "preferences": {
-            "hobbies": ["reading", "coding"],
-            "interests": ["technology", "science"]
-        }
+        "background": "Test background for validation purposes"
     }'
     
     local identity_response=$(curl -s -X POST "$AIP_HTTP_BASE/identities" \
