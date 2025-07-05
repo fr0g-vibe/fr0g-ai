@@ -56,6 +56,15 @@ type Fr0gIOConfig struct {
 	ServiceName string `yaml:"service_name"`
 }
 
+// IOConfig represents I/O processing configuration
+type IOConfig struct {
+	Enabled                bool          `yaml:"enabled"`
+	InputEventBufferSize   int           `yaml:"input_event_buffer_size"`
+	OutputCommandTimeout   time.Duration `yaml:"output_command_timeout"`
+	ThreatAnalysisEnabled  bool          `yaml:"threat_analysis_enabled"`
+	MaxConcurrentEvents    int           `yaml:"max_concurrent_events"`
+}
+
 // DefaultMCPConfig returns a default MCP configuration
 func DefaultMCPConfig() *MCPConfig {
 	return &MCPConfig{
