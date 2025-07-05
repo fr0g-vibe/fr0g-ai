@@ -1,8 +1,9 @@
 .PHONY: build clean test run deps fmt lint
 
 # Build the registry binary
-build:
+build: deps
 	@echo "Building fr0g-ai-registry..."
+	@mkdir -p bin
 	go build -o bin/fr0g-ai-registry ./cmd/registry
 
 # Clean build artifacts
