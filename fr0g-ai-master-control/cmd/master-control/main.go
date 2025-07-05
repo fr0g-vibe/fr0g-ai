@@ -18,13 +18,13 @@ type Config struct {
 	Server     sharedconfig.ServerConfig     `yaml:"server"`
 	Security   sharedconfig.SecurityConfig   `yaml:"security"`
 	Monitoring sharedconfig.MonitoringConfig `yaml:"monitoring"`
-	
+
 	// Master-control specific config
 	Learning struct {
 		Enabled bool    `yaml:"enabled"`
 		Rate    float64 `yaml:"rate"`
 	} `yaml:"learning"`
-	
+
 	Cognitive struct {
 		Enabled bool `yaml:"enabled"`
 	} `yaml:"cognitive"`
@@ -33,17 +33,17 @@ type Config struct {
 // Validate validates the configuration using shared validation
 func (c *Config) Validate() sharedconfig.ValidationErrors {
 	var errors []sharedconfig.ValidationError
-	
+
 	// Validate shared configurations
 	errors = append(errors, c.Server.Validate()...)
 	errors = append(errors, c.Security.Validate()...)
 	errors = append(errors, c.Monitoring.Validate()...)
-	
+
 	// Validate learning rate
 	if err := sharedconfig.ValidateRange(c.Learning.Rate, 0.0, 1.0, "learning.rate"); err != nil {
 		errors = append(errors, *err)
 	}
-	
+
 	return sharedconfig.ValidationErrors(errors)
 }
 
@@ -62,8 +62,8 @@ func main() {
 			HTTPPort: 8081,
 		},
 		Security: sharedconfig.SecurityConfig{
-			EnableCORS:    true,
-			RateLimitRPM:  100,
+			EnableCORS:   true,
+			RateLimitRPM: 100,
 		},
 		Monitoring: sharedconfig.MonitoringConfig{
 			EnableMetrics: true,
@@ -98,7 +98,7 @@ func main() {
 
 	// Create HTTP server
 	mux := http.NewServeMux()
-	
+
 	// Health check endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
