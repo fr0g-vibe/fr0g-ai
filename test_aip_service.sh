@@ -223,21 +223,52 @@ test_grpc_api() {
         return 0
     fi
     
-    # Test gRPC service reflection with better error handling
-    if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list > "$TEST_OUTPUT_DIR/grpc_services.txt" 2>"$TEST_OUTPUT_DIR/grpc_error.txt"; then
-        local service_count=$(cat "$TEST_OUTPUT_DIR/grpc_services.txt" | wc -l)
-        if [ $service_count -gt 0 ]; then
-            log_test "gRPC Service Reflection" "PASS" "Found $service_count services"
+    # Check health endpoint first to see if reflection is enabled
+    local health_response=$(curl -s "$AIP_HTTP_BASE/health" 2>/dev/null)
+    local reflection_status=$(echo "$health_response" | grep -o '"grpc_reflection":"[^"]*"' | cut -d'"' -f4)
+    
+    if [ "$reflection_status" = "enabled" ]; then
+        echo -e "${BLUE}💡 Health endpoint reports gRPC reflection is enabled${NC}"
+        
+        # Test gRPC service reflection with better error handling
+        if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list > "$TEST_OUTPUT_DIR/grpc_services.txt" 2>"$TEST_OUTPUT_DIR/grpc_error.txt"; then
+            local service_count=$(cat "$TEST_OUTPUT_DIR/grpc_services.txt" | wc -l)
+            if [ $service_count -gt 0 ]; then
+                log_test "gRPC Service Reflection" "PASS" "Found $service_count services (reflection enabled)"
+                
+                # List the services found
+                echo -e "${BLUE}Available gRPC services:${NC}"
+                cat "$TEST_OUTPUT_DIR/grpc_services.txt" | sed 's/^/  /'
+                
+                # Test service methods
+                if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list persona.PersonaService > "$TEST_OUTPUT_DIR/persona_methods.txt" 2>/dev/null; then
+                    log_test "PersonaService Discovery" "PASS" "PersonaService methods available via reflection"
+                    echo -e "${BLUE}Available PersonaService methods:${NC}"
+                    cat "$TEST_OUTPUT_DIR/persona_methods.txt" | sed 's/^/  /'
+                else
+                    log_test "PersonaService Discovery" "FAIL" "PersonaService not found via reflection"
+                fi
+                
+                # Test actual gRPC calls
+                test_grpc_direct_calls
+                return 0
+            else
+                log_test "gRPC Service Reflection" "FAIL" "No services found via reflection"
+                return 1
+            fi
         else
-            log_test "gRPC Service Reflection" "FAIL" "No services found via reflection"
+            local error_msg=$(cat "$TEST_OUTPUT_DIR/grpc_error.txt" 2>/dev/null | head -1)
+            log_test "gRPC Service Reflection" "FAIL" "Reflection failed despite being enabled: $error_msg"
             return 1
         fi
     else
+        # Reflection is disabled
         local error_msg=$(cat "$TEST_OUTPUT_DIR/grpc_error.txt" 2>/dev/null | head -1)
-        if echo "$error_msg" | grep -q "does not support the reflection API"; then
-            log_test "gRPC Service Reflection" "SKIP" "Reflection not enabled (expected for production)"
-            echo -e "${YELLOW}💡 Info: gRPC reflection is disabled for security in production${NC}"
-            echo -e "${YELLOW}   This is normal and expected behavior${NC}"
+        if echo "$error_msg" | grep -q "does not support the reflection API" || [ "$reflection_status" = "disabled" ]; then
+            log_test "gRPC Service Reflection" "SKIP" "Reflection disabled (health reports: $reflection_status)"
+            echo -e "${YELLOW}💡 Info: gRPC reflection is disabled for security${NC}"
+            echo -e "${YELLOW}   To test with reflection enabled, restart with:${NC}"
+            echo -e "${YELLOW}   GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development docker-compose up fr0g-ai-aip -d${NC}"
             # Continue with direct service testing
             test_grpc_direct_calls
             return 0
@@ -249,12 +280,6 @@ test_grpc_api() {
         fi
     fi
     
-    # Test PersonaService methods (skip if reflection failed)
-    if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list persona.PersonaService > "$TEST_OUTPUT_DIR/persona_methods.txt" 2>/dev/null; then
-        log_test "PersonaService Discovery" "PASS" "PersonaService methods available"
-    else
-        log_test "PersonaService Discovery" "SKIP" "PersonaService discovery requires reflection"
-    fi
 }
 
 # Function to test identity endpoints
