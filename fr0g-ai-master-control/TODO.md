@@ -195,14 +195,19 @@
 - [x] **COMPLETED**: Configuration system with centralized defaults
 
 ### Service Registry Integration
-- [x] **COMPLETED**: Service registry framework (referenced in docker-compose)
-- [x] **COMPLETED**: Service registration/deregistration APIs
-- [x] **COMPLETED**: Service discovery client library
-- [x] **COMPLETED**: Health checking for registered services
+- [x] **COMPLETED**: Service registry framework (extracted to fr0g-ai-registry)
+- [x] **COMPLETED**: Service registration/deregistration APIs (moved to fr0g-ai-registry)
+- [x] **COMPLETED**: Service discovery client library (shared across components)
+- [x] **COMPLETED**: Health checking for registered services (moved to fr0g-ai-registry)
 - [x] **COMPLETED**: Cross-service message handling (I/O manager operational)
 - [x] **COMPLETED**: Message struct field compatibility across services
-- [ ] **NEXT**: Implement service load balancing
-- [ ] **NEXT**: Add service mesh integration
+- [x] **COMPLETED**: Registry extraction to standalone fr0g-ai-registry service
+- [x] **COMPLETED**: Registry service build system integration
+- [x] **COMPLETED**: Registry service development environment setup
+- [x] **COMPLETED**: Registry service lifecycle management (start/stop scripts)
+- [ ] **HIGH**: Fix storage type validation error (currently rejecting 'file' type)
+- [ ] **MEDIUM**: Implement service load balancing in registry
+- [ ] **LOW**: Add service mesh integration
 
 ### AI Community Client Enhancement
 - [x] **COMPLETED**: Intelligent AI community client (realistic threat analysis)
