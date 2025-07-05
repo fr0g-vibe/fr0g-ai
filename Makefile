@@ -94,6 +94,16 @@ run-master-control:
 	@echo "🚀 Starting fr0g-ai-master-control..."
 	@cd fr0g-ai-master-control && (make build || go build -o bin/fr0g-ai-master-control ./cmd/master-control || echo "❌ Build failed") && (test -f bin/fr0g-ai-master-control && ./bin/fr0g-ai-master-control || echo "❌ Binary not found")
 
+# Run service registry server (build then run)
+run-registry:
+	@echo "🚀 Starting service registry..."
+	@cd fr0g-ai-master-control && (make build-registry || go build -o bin/registry-server ./cmd/registry || echo "❌ Build failed") && (test -f bin/registry-server && ./bin/registry-server || echo "❌ Binary not found")
+
+# Build registry only
+build-registry:
+	@echo "Building service registry..."
+	@cd fr0g-ai-master-control && go build -o bin/registry-server ./cmd/registry
+
 # Run fr0g-ai-master-control ESMTP interceptor
 run-esmtp: build-all
 	@echo "Starting fr0g-ai ESMTP Threat Vector Interceptor..."
