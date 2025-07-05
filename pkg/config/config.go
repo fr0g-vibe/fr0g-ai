@@ -71,6 +71,39 @@ type LoggingConfig struct {
 	Format string `yaml:"format" json:"format"`
 }
 
+// Config represents the main configuration structure used by applications
+type Config struct {
+	HTTP     HTTPConfig     `yaml:"http" json:"http"`
+	GRPC     GRPCConfig     `yaml:"grpc" json:"grpc"`
+	Storage  StorageConfig  `yaml:"storage" json:"storage"`
+	Security SecurityConfig `yaml:"security" json:"security"`
+	Logging  LoggingConfig  `yaml:"logging" json:"logging"`
+}
+
+// HTTPConfig holds HTTP server configuration
+type HTTPConfig struct {
+	Port            string        `yaml:"port" json:"port"`
+	Host            string        `yaml:"host" json:"host"`
+	ReadTimeout     time.Duration `yaml:"read_timeout" json:"read_timeout"`
+	WriteTimeout    time.Duration `yaml:"write_timeout" json:"write_timeout"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" json:"shutdown_timeout"`
+	EnableTLS       bool          `yaml:"enable_tls" json:"enable_tls"`
+	CertFile        string        `yaml:"cert_file" json:"cert_file"`
+	KeyFile         string        `yaml:"key_file" json:"key_file"`
+}
+
+// GRPCConfig holds gRPC server configuration
+type GRPCConfig struct {
+	Port              string        `yaml:"port" json:"port"`
+	Host              string        `yaml:"host" json:"host"`
+	MaxRecvMsgSize    int           `yaml:"max_recv_msg_size" json:"max_recv_msg_size"`
+	MaxSendMsgSize    int           `yaml:"max_send_msg_size" json:"max_send_msg_size"`
+	ConnectionTimeout time.Duration `yaml:"connection_timeout" json:"connection_timeout"`
+	EnableTLS         bool          `yaml:"enable_tls" json:"enable_tls"`
+	CertFile          string        `yaml:"cert_file" json:"cert_file"`
+	KeyFile           string        `yaml:"key_file" json:"key_file"`
+}
+
 // Validate validates the CommonConfig
 func (c *CommonConfig) Validate() ValidationErrors {
 	var errors []ValidationError
@@ -202,4 +235,35 @@ func (c *MonitoringConfig) Validate() ValidationErrors {
 	}
 	
 	return ValidationErrors(errors)
+}
+
+// Validate validates the main Config
+func (c *Config) Validate() error {
+	var allErrors []ValidationError
+	
+	// Validate HTTP config
+	if c.HTTP.Port == "" {
+		allErrors = append(allErrors, ValidationError{
+			Field:   "http.port",
+			Message: "HTTP port is required",
+		})
+	}
+	
+	// Validate gRPC config
+	if c.GRPC.Port == "" {
+		allErrors = append(allErrors, ValidationError{
+			Field:   "grpc.port",
+			Message: "gRPC port is required",
+		})
+	}
+	
+	// Validate other components
+	allErrors = append(allErrors, c.Security.Validate()...)
+	allErrors = append(allErrors, c.Storage.Validate()...)
+	
+	if len(allErrors) > 0 {
+		return ValidationErrors(allErrors)
+	}
+	
+	return nil
 }
