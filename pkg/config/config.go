@@ -426,7 +426,7 @@ func GetDefaults() *Config {
 			ResponseEnabled:   false,
 		},
 		ESMTP: ESMTPConfig{
-			Enabled:        false,
+			Enabled:        true,
 			ListenAddress:  "0.0.0.0",
 			Port:           2525,
 			MaxMessageSize: 10 * 1024 * 1024, // 10MB
