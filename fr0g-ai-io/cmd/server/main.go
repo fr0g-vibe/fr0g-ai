@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -13,28 +12,19 @@ import (
 )
 
 func main() {
-	// Load configuration
-	loader := sharedconfig.NewLoader(sharedconfig.LoaderOptions{
-		ConfigPath:   "config/config.yaml",
-		EnvPrefix:    "FROG_IO",
-		EnvFilePaths: []string{".env", ".env.local"},
-	})
-
-	var cfg sharedconfig.Config
-	if err := loader.Load(&cfg); err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
-	}
+	// Load configuration with defaults
+	cfg := sharedconfig.GetDefaults()
 
 	// Validate configuration
-	if errors := cfg.Validate(); len(errors) > 0 {
-		log.Fatalf("Configuration validation failed: %v", errors)
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("Configuration validation failed: %v", err)
 	}
 
 	log.Printf("Starting fr0g-ai-io service with config: HTTP=%s, gRPC=%s",
 		cfg.HTTP.Address, cfg.GRPC.Address)
 
 	// Create server
-	server, err := api.NewServer(&cfg)
+	server, err := api.NewServer(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
 	}
