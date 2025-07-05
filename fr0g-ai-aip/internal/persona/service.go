@@ -488,7 +488,7 @@ func (s *Service) GetPersonaInsights(personaID string) (*types.PersonaInsights, 
 	}
 
 	// Get persona
-	persona, err := s.storage.GetPersona(personaID)
+	persona, err := s.storage.Get(personaID)
 	if err != nil {
 		return nil, fmt.Errorf("persona not found: %w", err)
 	}
@@ -543,7 +543,11 @@ func (s *Service) GetIdentityProfile(identityID string) (*types.IdentityProfile,
 		}
 
 		if identity.RichAttributes.Psychographics != nil {
-			profile.PsychographicProfile = s.psychographicsProcessor.GetCognitiveProfile(identity.RichAttributes.Psychographics)
+			cognitiveProfile := s.psychographicsProcessor.GetCognitiveProfile(identity.RichAttributes.Psychographics)
+			profile.PsychographicProfile = make(map[string]interface{})
+			for k, v := range cognitiveProfile {
+				profile.PsychographicProfile[k] = v
+			}
 		}
 
 		if identity.RichAttributes.Preferences != nil {
