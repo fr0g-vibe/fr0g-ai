@@ -8,6 +8,7 @@ import (
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/sms"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/voice"
 )
 
 // Manager manages all I/O processors
@@ -53,8 +54,9 @@ func (m *Manager) initializeProcessors() error {
 
 	// Voice Processor
 	if m.config.Voice.Enabled {
-		// TODO: Create Voice processor
-		log.Println("Voice processor would be initialized here")
+		voiceProcessor := voice.NewProcessor(&m.config.Voice)
+		m.processors["voice"] = voiceProcessor
+		log.Println("Voice processor initialized")
 	}
 
 	// IRC Processor
