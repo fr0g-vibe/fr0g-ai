@@ -380,6 +380,10 @@ Test Execution Time: 0.005s (excellent performance)
 - [x] **HIGH**: Implement service registry for inter-service discovery - COMPLETED
 - [x] **HIGH**: Implement service registry client for AIP component - COMPLETED
 - [x] **HIGH**: Verify AIP service configuration uses correct ports 8080/9090 - COMPLETED
+- [ ] **HIGH**: Test AIP service endpoints - verify persona CRUD operations and gRPC service functionality
+  - Test framework created with comprehensive endpoint validation
+  - Service startup required for testing (docker-compose up fr0g-ai-aip)
+  - gRPC client test moved to fr0g-ai-aip/cmd/test-client/ for proper module access
 - [ ] **HIGH**: Complete IRC processor implementation (framework exists, core missing)
 - [ ] **MEDIUM**: Complete ESMTP processor core logic (framework exists, needs completion)
 - [ ] **MEDIUM**: Add authentication and authorization middleware across services

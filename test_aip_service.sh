@@ -49,6 +49,18 @@ log_test() {
 check_service_health() {
     echo -e "${BLUE}--- Health Check Tests ---${NC}"
     
+    # Check if HTTP port is listening first
+    if ! nc -z localhost 8080 2>/dev/null; then
+        log_test "HTTP Port Check" "FAIL" "Port 8080 not listening - service not running"
+        echo -e "${YELLOW}💡 To start the AIP service, run:${NC}"
+        echo -e "${YELLOW}   docker-compose up fr0g-ai-aip${NC}"
+        echo -e "${YELLOW}   OR${NC}"
+        echo -e "${YELLOW}   cd fr0g-ai-aip && make run${NC}"
+        return 1
+    fi
+    
+    log_test "HTTP Port Check" "PASS" "Port 8080 is listening"
+    
     # Test HTTP health endpoint
     if curl -s -f "$AIP_HTTP_BASE/health" > "$TEST_OUTPUT_DIR/health_response.json" 2>/dev/null; then
         local health_status=$(cat "$TEST_OUTPUT_DIR/health_response.json" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
@@ -340,6 +352,22 @@ main() {
         test_attribute_processors
     else
         echo -e "${RED}Service health check failed. Skipping remaining tests.${NC}"
+        echo ""
+        echo -e "${BLUE}=== Service Startup Instructions ===${NC}"
+        echo -e "${YELLOW}To start the AIP service for testing:${NC}"
+        echo ""
+        echo -e "${GREEN}Option 1: Docker Compose (Recommended)${NC}"
+        echo -e "  docker-compose up fr0g-ai-aip"
+        echo ""
+        echo -e "${GREEN}Option 2: Direct Build and Run${NC}"
+        echo -e "  cd fr0g-ai-aip"
+        echo -e "  make build"
+        echo -e "  make run"
+        echo ""
+        echo -e "${GREEN}Option 3: Background Service${NC}"
+        echo -e "  docker-compose up -d fr0g-ai-aip"
+        echo -e "  ./test_aip_service.sh  # Run tests again"
+        echo ""
     fi
     
     # Generate final report
