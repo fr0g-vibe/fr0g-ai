@@ -9,6 +9,11 @@ import (
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
+// GetString gets a string value from environment or returns default
+func (c *Config) GetString(key, defaultValue string) string {
+	return getEnv(key, defaultValue)
+}
+
 // Config holds all application configuration
 type Config struct {
 	// Server configuration
@@ -69,8 +74,8 @@ type LoggingConfig struct {
 	Format string `yaml:"format"` // json, text
 }
 
-// LoadConfig loads configuration from environment variables with defaults
-func LoadConfig() *Config {
+// Load loads configuration from environment variables with defaults
+func Load() *Config {
 	config := &Config{
 		HTTP: HTTPConfig{
 			Port:            getEnv("FR0G_HTTP_PORT", "8080"),
