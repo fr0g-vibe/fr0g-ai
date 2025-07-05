@@ -19,7 +19,7 @@ RUN go mod download
 
 # Build the application
 WORKDIR /app/fr0g-ai-master-control
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-master-control ./cmd/master-control
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-master-control ./cmd/server
 
 # Final stage
 FROM alpine:latest
