@@ -114,48 +114,108 @@ func (s *RESTServer) GetRouter() *mux.Router {
 	return s.router
 }
 
-// handleHealth handles health check requests
+// handleHealth handles health check requests with comprehensive validation
 func (s *RESTServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	// Check OpenWebUI health
-	err := s.client.HealthCheck(ctx)
-	
+	// Initialize response with required fields
 	response := models.HealthResponse{
-		Time:    time.Now(),
+		Time:    time.Now().UTC(), // Use UTC for consistency
 		Version: "1.0.0",
 	}
 
+	// Check OpenWebUI health
+	err := s.client.HealthCheck(ctx)
+	
 	if err != nil {
 		response.Status = "unhealthy"
-		response.Error = err.Error()
-		response.Details = map[string]interface{}{
-			"openwebui_url": s.config.OpenWebUI.BaseURL,
-			"has_api_key":   s.config.OpenWebUI.APIKey != "",
-			"api_key_value": s.config.OpenWebUI.APIKey,
-			"timeout_seconds": s.config.OpenWebUI.Timeout,
-		}
-		w.WriteHeader(http.StatusServiceUnavailable)
+		response.Error = s.sanitizeErrorMessage(err.Error())
+		response.Details = s.buildHealthDetails(false, err)
 		log.Printf("Health check failed: %v", err)
 	} else {
 		response.Status = "healthy"
-		response.Details = map[string]interface{}{
-			"openwebui_url": s.config.OpenWebUI.BaseURL,
-			"authenticated": true,
-		}
-		w.WriteHeader(http.StatusOK)
+		response.Details = s.buildHealthDetails(true, nil)
 	}
 
-	// Validate response format before sending
-	if err := response.Validate(); err != nil {
-		log.Printf("Health response validation failed: %v", err)
-		s.writeError(w, http.StatusInternalServerError, "Invalid health response format", err)
+	// Validate response format and get appropriate status code
+	statusCode, validationErr := response.ValidateForStatusCode()
+	if validationErr != nil {
+		log.Printf("Health response validation failed: %v", validationErr)
+		s.writeError(w, http.StatusInternalServerError, "Health check validation failed", validationErr)
 		return
 	}
 
+	// Set headers and status code
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("X-Health-Check-Time", response.Time.Format(time.RFC3339))
+	w.WriteHeader(statusCode)
+
+	// Encode and send response
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("Failed to encode health response: %v", err)
+		return
+	}
+
+	// Log health check result
+	log.Printf("Health check completed: status=%s, code=%d", response.Status, statusCode)
+}
+
+// buildHealthDetails creates the details map for health responses
+func (s *RESTServer) buildHealthDetails(healthy bool, err error) map[string]interface{} {
+	details := map[string]interface{}{
+		"service":         "fr0g-ai-bridge",
+		"openwebui_url":   s.config.OpenWebUI.BaseURL,
+		"has_api_key":     s.config.OpenWebUI.APIKey != "",
+		"timeout_seconds": s.config.OpenWebUI.Timeout,
+		"timestamp":       time.Now().UTC().Format(time.RFC3339),
+	}
+
+	if healthy {
+		details["authenticated"] = true
+		details["connection"] = "ok"
+	} else {
+		details["connection"] = "failed"
+		if err != nil {
+			details["error_type"] = s.categorizeError(err)
+		}
+	}
+
+	return details
+}
+
+// sanitizeErrorMessage removes sensitive information from error messages
+func (s *RESTServer) sanitizeErrorMessage(errMsg string) string {
+	// Remove potential sensitive information
+	sanitized := strings.ReplaceAll(errMsg, s.config.OpenWebUI.APIKey, "[REDACTED]")
+	
+	// Truncate if too long
+	if len(sanitized) > 500 {
+		sanitized = sanitized[:497] + "..."
+	}
+	
+	return sanitized
+}
+
+// categorizeError categorizes errors for better debugging
+func (s *RESTServer) categorizeError(err error) string {
+	errStr := strings.ToLower(err.Error())
+	
+	if strings.Contains(errStr, "timeout") || strings.Contains(errStr, "deadline") {
+		return "timeout"
+	}
+	if strings.Contains(errStr, "connection") || strings.Contains(errStr, "dial") {
+		return "connection"
+	}
+	if strings.Contains(errStr, "unauthorized") || strings.Contains(errStr, "401") {
+		return "authentication"
+	}
+	if strings.Contains(errStr, "not found") || strings.Contains(errStr, "404") {
+		return "not_found"
+	}
+	
+	return "unknown"
 }
 
 // handleChatCompletion handles OpenAI-compatible chat completion requests

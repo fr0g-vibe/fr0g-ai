@@ -2,6 +2,8 @@ package models
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -54,33 +56,102 @@ type HealthResponse struct {
 	Details map[string]interface{} `json:"details,omitempty"`
 }
 
-// Validate validates the health response format
+// Validate validates the health response format comprehensively
 func (hr *HealthResponse) Validate() error {
-	if hr.Status == "" {
-		return fmt.Errorf("status field is required")
-	}
+	var errors []string
 	
-	validStatuses := []string{"healthy", "unhealthy", "degraded"}
-	isValidStatus := false
-	for _, validStatus := range validStatuses {
-		if hr.Status == validStatus {
-			isValidStatus = true
-			break
+	// Validate required status field
+	if hr.Status == "" {
+		errors = append(errors, "status field is required")
+	} else {
+		validStatuses := []string{"healthy", "unhealthy", "degraded"}
+		isValidStatus := false
+		for _, validStatus := range validStatuses {
+			if hr.Status == validStatus {
+				isValidStatus = true
+				break
+			}
+		}
+		if !isValidStatus {
+			errors = append(errors, fmt.Sprintf("status must be one of: %v, got: %s", validStatuses, hr.Status))
 		}
 	}
-	if !isValidStatus {
-		return fmt.Errorf("status must be one of: %v", validStatuses)
-	}
 	
+	// Validate required time field
 	if hr.Time.IsZero() {
-		return fmt.Errorf("time field is required")
+		errors = append(errors, "time field is required and cannot be zero")
+	} else {
+		// Ensure time is not in the future (with 1 minute tolerance)
+		if hr.Time.After(time.Now().Add(time.Minute)) {
+			errors = append(errors, "time cannot be in the future")
+		}
+		// Ensure time is not too old (24 hours)
+		if hr.Time.Before(time.Now().Add(-24 * time.Hour)) {
+			errors = append(errors, "time cannot be older than 24 hours")
+		}
 	}
 	
+	// Validate required version field
 	if hr.Version == "" {
-		return fmt.Errorf("version field is required")
+		errors = append(errors, "version field is required")
+	} else {
+		// Basic semantic version validation
+		if len(hr.Version) > 50 {
+			errors = append(errors, "version field too long (max 50 characters)")
+		}
+	}
+	
+	// Validate error field constraints
+	if hr.Error != "" {
+		if len(hr.Error) > 1000 {
+			errors = append(errors, "error field too long (max 1000 characters)")
+		}
+		// If error is present, status should be unhealthy or degraded
+		if hr.Status == "healthy" {
+			errors = append(errors, "error field should not be present when status is healthy")
+		}
+	}
+	
+	// Validate details field
+	if hr.Details != nil {
+		if len(hr.Details) > 20 {
+			errors = append(errors, "details field has too many entries (max 20)")
+		}
+		// Check for sensitive information in details
+		for key, value := range hr.Details {
+			if len(key) > 100 {
+				errors = append(errors, fmt.Sprintf("details key '%s' too long (max 100 characters)", key))
+			}
+			if valueStr, ok := value.(string); ok && len(valueStr) > 500 {
+				errors = append(errors, fmt.Sprintf("details value for key '%s' too long (max 500 characters)", key))
+			}
+		}
+	}
+	
+	// Return combined errors
+	if len(errors) > 0 {
+		return fmt.Errorf("validation failed: %s", strings.Join(errors, "; "))
 	}
 	
 	return nil
+}
+
+// ValidateForStatusCode validates the health response and returns appropriate HTTP status code
+func (hr *HealthResponse) ValidateForStatusCode() (int, error) {
+	if err := hr.Validate(); err != nil {
+		return http.StatusInternalServerError, err
+	}
+	
+	switch hr.Status {
+	case "healthy":
+		return http.StatusOK, nil
+	case "degraded":
+		return http.StatusOK, nil // Still operational but with issues
+	case "unhealthy":
+		return http.StatusServiceUnavailable, nil
+	default:
+		return http.StatusInternalServerError, fmt.Errorf("unknown status: %s", hr.Status)
+	}
 }
 
 // ErrorResponse represents an error response
