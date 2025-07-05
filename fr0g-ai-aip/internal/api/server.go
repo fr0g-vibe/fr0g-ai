@@ -149,7 +149,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Enhanced health check
 	health := map[string]interface{}{
-		"status":    "ok",
+		"status":    "healthy",
 		"timestamp": time.Now().UTC().Format(time.RFC3339),
 		"version":   "1.0.0", // This could be injected at build time
 		"storage":   s.config.Storage.Type,
@@ -157,23 +157,33 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Check storage health safely
 	var personaCount int
+	var isHealthy = true
+	
 	if s.service != nil {
 		if personas, err := s.service.ListPersonas(); err != nil {
-			health["status"] = "degraded"
+			health["status"] = "unhealthy"
 			health["storage_error"] = err.Error()
-			w.WriteHeader(http.StatusServiceUnavailable)
+			isHealthy = false
 			personaCount = 0
 		} else {
 			personaCount = len(personas)
 		}
 	} else {
-		health["status"] = "degraded"
+		health["status"] = "unhealthy"
 		health["storage_error"] = "service not initialized"
-		w.WriteHeader(http.StatusServiceUnavailable)
+		isHealthy = false
 		personaCount = 0
 	}
 
 	health["persona_count"] = personaCount
+	
+	// Set appropriate HTTP status code
+	if !isHealthy {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+	
 	json.NewEncoder(w).Encode(health)
 }
 
