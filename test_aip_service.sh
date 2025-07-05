@@ -269,24 +269,61 @@ test_identity_api() {
         log_test "GET /identities" "FAIL" "Failed to retrieve identities list"
     fi
     
-    # Test identity creation with valid structure
-    local test_identity='{
-        "name": "Test Identity",
-        "description": "A test identity for API validation",
-        "persona_id": "test-persona-id",
-        "background": "Test background for validation purposes"
+    # First, create a persona to use for the identity test
+    local test_persona_for_identity='{
+        "name": "Identity Test Persona",
+        "topic": "Identity Testing",
+        "prompt": "You are a persona for identity testing",
+        "context": {
+            "purpose": "identity_validation"
+        },
+        "rag": ["identity_test_doc"]
     }'
     
-    local identity_response=$(curl -s -X POST "$AIP_HTTP_BASE/identities" \
+    local persona_response=$(curl -s -X POST "$AIP_HTTP_BASE/personas" \
         -H "Content-Type: application/json" \
-        -d "$test_identity" \
+        -d "$test_persona_for_identity" \
         -w "%{http_code}")
     
-    local identity_http_code="${identity_response: -3}"
-    if [ "$identity_http_code" = "201" ] || [ "$identity_http_code" = "200" ]; then
-        log_test "POST /identities" "PASS" "Created identity successfully"
+    local persona_http_code="${persona_response: -3}"
+    local persona_body="${persona_response%???}"
+    
+    if [ "$persona_http_code" = "201" ] || [ "$persona_http_code" = "200" ]; then
+        local persona_id=$(echo "$persona_body" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+        
+        # Now test identity creation with valid persona_id
+        local test_identity='{
+            "name": "Test Identity",
+            "description": "A test identity for API validation",
+            "persona_id": "'$persona_id'",
+            "background": "Test background for validation purposes"
+        }'
+        
+        local identity_response=$(curl -s -X POST "$AIP_HTTP_BASE/identities" \
+            -H "Content-Type: application/json" \
+            -d "$test_identity" \
+            -w "%{http_code}")
+        
+        local identity_http_code="${identity_response: -3}"
+        local identity_body="${identity_response%???}"
+        
+        if [ "$identity_http_code" = "201" ] || [ "$identity_http_code" = "200" ]; then
+            log_test "POST /identities" "PASS" "Created identity successfully"
+            
+            # Clean up: delete the test identity and persona
+            local identity_id=$(echo "$identity_body" | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+            if [ -n "$identity_id" ]; then
+                curl -s -X DELETE "$AIP_HTTP_BASE/identities/$identity_id" >/dev/null 2>&1
+            fi
+        else
+            log_test "POST /identities" "FAIL" "HTTP code: $identity_http_code, Response: $identity_body"
+        fi
+        
+        # Clean up: delete the test persona
+        curl -s -X DELETE "$AIP_HTTP_BASE/personas/$persona_id" >/dev/null 2>&1
+        
     else
-        log_test "POST /identities" "FAIL" "HTTP code: $identity_http_code"
+        log_test "POST /identities" "FAIL" "Failed to create test persona for identity test"
     fi
 }
 

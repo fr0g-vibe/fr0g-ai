@@ -336,6 +336,12 @@ func (s *Server) identitiesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Validate that the persona exists
+		if _, err := s.service.GetPersona(identity.PersonaId); err != nil {
+			s.handleError(w, fmt.Errorf("persona_id '%s' does not exist", identity.PersonaId), http.StatusBadRequest)
+			return
+		}
+
 		if err := s.service.CreateIdentity(&identity); err != nil {
 			s.handleError(w, err, http.StatusBadRequest)
 			return
