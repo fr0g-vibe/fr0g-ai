@@ -125,14 +125,13 @@ tmux send-keys -t $SESSION_NAME:7 "echo 'Quick Start: docker-compose up -d'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Available commands:'" C-m
 tmux send-keys -t $SESSION_NAME:7 "make help" C-m
 
-# Window 8: System Monitor
-tmux new-window -t $SESSION_NAME -n "Monitor" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:8 "echo 'SYSTEM MONITOR'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Role: Real-time system monitoring, log viewing, service status'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Commands: docker-compose logs, make health, watch docker ps'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo ''" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Service Status:'" C-m
-tmux send-keys -t $SESSION_NAME:8 "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || echo 'Docker not running - use: docker-compose up -d'" C-m
+# Window 8: Registry Agent
+tmux new-window -t $SESSION_NAME -n "Registry" -c "$PROJECT_ROOT/fr0g-ai-registry"
+tmux send-keys -t $SESSION_NAME:8 "echo 'FR0G-AI-REGISTRY AGENT'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Role: Service discovery, registration, and health monitoring'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Port: HTTP :8500'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
+tmux send-keys -t $SESSION_NAME:8 "$AIDER_CMD TODO.md" C-m
 
 # Window 9: Interactive Shell
 tmux new-window -t $SESSION_NAME -n "Shell" -c "$PROJECT_ROOT"
@@ -167,7 +166,7 @@ echo "  4: IO                - fr0g-ai-io (I/O Processing) :8083/:9092"
 echo "  5: Config            - Configuration & environment management"
 echo "  6: DevOps            - Infrastructure & deployment"
 echo "  7: Build-Test        - Build & test automation"
-echo "  8: Monitor           - System monitoring"
+echo "  8: Registry          - Service discovery & registration :8500"
 echo "  9: Shell             - Interactive shell"
 echo ""
 echo "🚀 USAGE:"

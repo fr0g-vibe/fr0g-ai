@@ -50,6 +50,8 @@ build-all:
 	@cd fr0g-ai-master-control && $(MAKE) build
 	@echo "Building fr0g-ai-io..."
 	@cd fr0g-ai-io && $(MAKE) build
+	@echo "Building fr0g-ai-registry..."
+	@cd fr0g-ai-registry && $(MAKE) build
 	@echo "✅ All components built successfully!"
 
 # Clean all build artifacts
@@ -75,6 +77,8 @@ test-all:
 	@cd fr0g-ai-master-control && $(MAKE) test
 	@echo "Testing fr0g-ai-io..."
 	@cd fr0g-ai-io && $(MAKE) test
+	@echo "Testing fr0g-ai-registry..."
+	@cd fr0g-ai-registry && $(MAKE) test
 	@echo "✅ All tests completed!"
 
 # Run individual services
@@ -107,6 +111,8 @@ deps:
 	@cd fr0g-ai-master-control && $(MAKE) deps
 	@echo "Installing fr0g-ai-io dependencies..."
 	@cd fr0g-ai-io && $(MAKE) deps
+	@echo "Installing fr0g-ai-registry dependencies..."
+	@cd fr0g-ai-registry && $(MAKE) deps
 	@echo "✅ All dependencies installed!"
 
 # Code quality checks for all components
@@ -117,6 +123,7 @@ lint:
 	@cd fr0g-ai-bridge && $(MAKE) lint
 	@cd fr0g-ai-master-control && $(MAKE) lint
 	@cd fr0g-ai-io && $(MAKE) lint
+	@cd fr0g-ai-registry && $(MAKE) lint
 
 fmt:
 	@echo "🎨 Formatting code for all components..."
@@ -125,6 +132,7 @@ fmt:
 	@cd fr0g-ai-bridge && $(MAKE) fmt
 	@cd fr0g-ai-master-control && $(MAKE) fmt
 	@cd fr0g-ai-io && $(MAKE) fmt
+	@cd fr0g-ai-registry && $(MAKE) fmt
 
 # Generate protobuf files
 proto:

@@ -3,7 +3,7 @@ services:
   service-registry:
     build:
       context: .
-      dockerfile: fr0g-ai-master-control/Dockerfile.registry
+      dockerfile: fr0g-ai-registry/Dockerfile
     ports:
       - "8500:8500"
     environment:
