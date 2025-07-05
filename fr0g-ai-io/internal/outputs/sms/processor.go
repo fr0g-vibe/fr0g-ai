@@ -44,7 +44,7 @@ type Processor struct {
 func NewProcessor(cfg *sharedconfig.Config) *Processor {
 	// Initialize Google Voice API client
 	googleAPI := &GoogleVoiceAPI{
-		apiKey:  cfg.GetString("GOOGLE_VOICE_API_KEY"),
+		apiKey:  "", // TODO: Get from config when method is available
 		baseURL: "https://www.googleapis.com/voice/v1",
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
@@ -54,7 +54,7 @@ func NewProcessor(cfg *sharedconfig.Config) *Processor {
 	return &Processor{
 		config:    cfg,
 		googleAPI: googleAPI,
-		isEnabled: cfg.GetString("GOOGLE_VOICE_API_KEY") != "",
+		isEnabled: false, // TODO: Enable when config method is available
 	}
 }
 

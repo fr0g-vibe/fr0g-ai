@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"sync"
-	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
@@ -76,7 +75,7 @@ func (s *Sender) Send(message *types.OutputCommand) error {
 
 	// TODO: Implement actual SMS sending logic
 	// This would integrate with SMS providers like Twilio, AWS SNS, etc.
-	log.Printf("Sending SMS to %s: %s", message.Destination, message.Content)
+	log.Printf("Sending SMS to %s: %s", message.Target, message.Content)
 
 	s.sentCount++
 	return nil
