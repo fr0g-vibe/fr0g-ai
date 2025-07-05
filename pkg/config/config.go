@@ -401,7 +401,7 @@ func GetDefaults() *Config {
 			TLS:     false,
 		},
 		SMS: SMSConfig{
-			Enabled:            false,
+			Enabled:            true,
 			ProcessingInterval: 30,
 			MaxHistorySize:     1000,
 			ThreatThreshold:    0.5,
