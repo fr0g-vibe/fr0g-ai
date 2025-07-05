@@ -312,29 +312,24 @@ func (s *Server) identitiesHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(identities)
 
 	case http.MethodPost:
-		var req struct {
-			PersonaID   string   `json:"persona_id"`
-			Name        string   `json:"name"`
-			Description string   `json:"description"`
-			Background  string   `json:"background"`
-			Tags        []string `json:"tags"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		var identity types.Identity
+		if err := json.NewDecoder(r.Body).Decode(&identity); err != nil {
+			s.handleError(w, err, http.StatusBadRequest)
 			return
 		}
 
-		// Create identity
-		identity := &types.Identity{
-			PersonaId:   req.PersonaID,
-			Name:        req.Name,
-			Description: req.Description,
-			Background:  req.Background,
-			Tags:        req.Tags,
+		// Validate required fields
+		if identity.Name == "" {
+			s.handleError(w, fmt.Errorf("name is required"), http.StatusBadRequest)
+			return
+		}
+		if identity.PersonaId == "" {
+			s.handleError(w, fmt.Errorf("persona_id is required"), http.StatusBadRequest)
+			return
 		}
 
-		if err := s.service.CreateIdentity(identity); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if err := s.service.CreateIdentity(&identity); err != nil {
+			s.handleError(w, err, http.StatusBadRequest)
 			return
 		}
 
