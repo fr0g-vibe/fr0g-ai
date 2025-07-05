@@ -33,7 +33,7 @@ func main() {
 	}{
 		{
 			eventType: "sms",
-			content:   "URGENT! You've won $1000! Click here to claim your prize now!",
+			content:   "URGENT! You've won $1000! Click here to claim your prize now! Reply STOP to opt out. bit.ly/scam123",
 			metadata: map[string]interface{}{
 				"from": "+1234567890",
 				"to":   "+0987654321",
@@ -41,7 +41,7 @@ func main() {
 		},
 		{
 			eventType: "voice",
-			content:   "This is the IRS calling about your tax refund. Press 1 to speak with an agent.",
+			content:   "This is the IRS calling about your tax refund. You owe money and will be arrested if you don't pay immediately. Press 1 to speak with an agent or face legal action.",
 			metadata: map[string]interface{}{
 				"from":     "+18001234567",
 				"to":       "+1234567890",
@@ -50,7 +50,7 @@ func main() {
 		},
 		{
 			eventType: "irc",
-			content:   "Check out this amazing deal! Download from http://bit.ly/malware123",
+			content:   "Check out this amazing deal! Download malware.exe from http://bit.ly/malware123 - FREE MONEY GUARANTEED!",
 			metadata: map[string]interface{}{
 				"server":       "irc.example.com",
 				"channel":      "#general",
@@ -71,11 +71,11 @@ func main() {
 		},
 		{
 			eventType: "esmtp",
-			content:   "Your account has been suspended. Click here to verify your credentials immediately.",
+			content:   "Your account has been suspended due to suspicious activity. Click here to verify your credentials immediately: http://bit.ly/phishing123 or your account will be permanently deleted.",
 			metadata: map[string]interface{}{
 				"from":    "noreply@phishing-site.com",
 				"to":      []string{"victim@example.com"},
-				"subject": "URGENT: Account Verification Required",
+				"subject": "URGENT: Account Verification Required - Immediate Action Needed",
 				"headers": map[string]string{
 					"X-Mailer": "Suspicious Mailer 1.0",
 				},
