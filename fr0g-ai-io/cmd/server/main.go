@@ -8,6 +8,9 @@ import (
 	"syscall"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/api"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/grpc"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
@@ -23,13 +26,32 @@ func main() {
 	log.Printf("Starting fr0g-ai-io service with config: HTTP=%s, gRPC=%s",
 		cfg.HTTP.Address, cfg.GRPC.Address)
 
-	// Create server
+	// Create processor manager
+	processorMgr, err := processors.NewManager(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create processor manager: %v", err)
+	}
+
+	// Create output manager
+	outputMgr, err := outputs.NewManager(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create output manager: %v", err)
+	}
+
+	// Create HTTP API server
 	server, err := api.NewServer(cfg)
 	if err != nil {
 		log.Fatalf("Failed to create server: %v", err)
 	}
 
-	// Start server
+	// Create and start gRPC server
+	grpcServer := grpc.NewServer(cfg, processorMgr, outputMgr)
+	if err := grpcServer.Start(); err != nil {
+		log.Fatalf("Failed to start gRPC server: %v", err)
+	}
+	defer grpcServer.Stop()
+
+	// Start HTTP server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
