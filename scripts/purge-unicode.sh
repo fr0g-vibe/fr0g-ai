@@ -74,12 +74,25 @@ echo "Cleaning up existing backup files..."
 find . -name '*.backup' -delete 2>/dev/null || true
 
 # Get list of files with unicode symbols (excluding binary data and dot files)
-files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -not -path '*/bin/*' -exec grep -l '✅\|❌\|🔥\|🚀\|⚡\|🎯\|🧪\|🔍\|🔨\|📦\|🐸\|🏥\|🛠\|🔒\|💡\|⏳\|🐳\|🧹' {} \; 2>/dev/null || true)
+files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exec grep -l '✅\|❌\|🔥\|🚀\|⚡\|🎯\|🧪\|🔍\|🔨\|📦\|🐸\|🏥\|🛠\|🔒\|💡\|⏳\|🐳\|🧹' {} \; 2>/dev/null || true)
 
-# Filter out binary files
+# Filter out binary files and directories we should skip
 filtered_files=""
 while IFS= read -r file; do
-    if [ -f "$file" ] && ! file "$file" | grep -q "ELF\|executable\|binary"; then
+    if [ -f "$file" ]; then
+        # Skip binary files
+        if file "$file" | grep -q "ELF\|executable\|binary"; then
+            echo "  Skipping binary file: $file"
+            continue
+        fi
+        
+        # Skip files in bin directories
+        if [[ "$file" == */bin/* ]]; then
+            echo "  Skipping bin directory file: $file"
+            continue
+        fi
+        
+        # Add to filtered list
         filtered_files="$filtered_files$file"$'\n'
     fi
 done <<< "$files_with_unicode"
