@@ -11,7 +11,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
 
 // Processor handles ESMTP threat detection and analysis
@@ -131,14 +131,14 @@ func (p *Processor) IsEnabled() bool {
 
 
 // Process processes an input event (converts to EmailMessage and back)
-func (p *Processor) Process(event *processors.InputEvent) (*processors.InputEventResponse, error) {
+func (p *Processor) Process(event *types.InputEvent) (*types.InputEventResponse, error) {
 	// Convert InputEvent to EmailMessage
 	emailMsg, err := p.convertToEmailMessage(event)
 	if err != nil {
-		return &processors.InputEventResponse{
+		return &types.InputEventResponse{
 			EventID:     event.ID,
 			Processed:   false,
-			Actions:     []processors.OutputAction{},
+			Actions:     []types.OutputAction{},
 			Metadata:    map[string]interface{}{"error": err.Error()},
 			ProcessedAt: time.Now(),
 		}, nil
@@ -147,17 +147,17 @@ func (p *Processor) Process(event *processors.InputEvent) (*processors.InputEven
 	// Process the email message
 	processedMsg, err := p.ProcessMessage(*emailMsg)
 	if err != nil {
-		return &processors.InputEventResponse{
+		return &types.InputEventResponse{
 			EventID:     event.ID,
 			Processed:   false,
-			Actions:     []processors.OutputAction{},
+			Actions:     []types.OutputAction{},
 			Metadata:    map[string]interface{}{"error": err.Error()},
 			ProcessedAt: time.Now(),
 		}, nil
 	}
 
 	// Convert back to InputEventResponse
-	response := &processors.InputEventResponse{
+	response := &types.InputEventResponse{
 		EventID:     event.ID,
 		Processed:   true,
 		Actions:     p.generateActions(processedMsg),
@@ -459,7 +459,7 @@ func (p *Processor) updateSenderInfo(email string) {
 }
 
 // convertToEmailMessage converts InputEvent to EmailMessage
-func (p *Processor) convertToEmailMessage(event *processors.InputEvent) (*EmailMessage, error) {
+func (p *Processor) convertToEmailMessage(event *types.InputEvent) (*EmailMessage, error) {
 	emailMsg := &EmailMessage{
 		ID:        event.ID,
 		Timestamp: event.Timestamp,
@@ -493,8 +493,8 @@ func (p *Processor) convertToEmailMessage(event *processors.InputEvent) (*EmailM
 }
 
 // generateActions generates output actions based on threat analysis
-func (p *Processor) generateActions(msg *EmailMessage) []processors.OutputAction {
-	actions := []processors.OutputAction{}
+func (p *Processor) generateActions(msg *EmailMessage) []types.OutputAction {
+	actions := []types.OutputAction{}
 
 	if msg.Analysis == nil {
 		return actions
@@ -502,7 +502,7 @@ func (p *Processor) generateActions(msg *EmailMessage) []processors.OutputAction
 
 	// Generate alert action for high-threat emails
 	if msg.ThreatLevel >= ThreatLevelHigh {
-		action := processors.OutputAction{
+		action := types.OutputAction{
 			ID:       fmt.Sprintf("alert-%s", msg.ID),
 			Type:     "alert",
 			Target:   "security-team@company.com", // This should be configurable
@@ -520,7 +520,7 @@ func (p *Processor) generateActions(msg *EmailMessage) []processors.OutputAction
 
 	// Generate quarantine action for critical threats
 	if msg.ThreatLevel == ThreatLevelCritical {
-		action := processors.OutputAction{
+		action := types.OutputAction{
 			ID:       fmt.Sprintf("quarantine-%s", msg.ID),
 			Type:     "quarantine",
 			Target:   "email-system",

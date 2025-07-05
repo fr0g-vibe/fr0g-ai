@@ -6,38 +6,8 @@ import (
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/esmtp"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
-
-// InputEvent represents an incoming event from external sources
-type InputEvent struct {
-	ID        string                 `json:"id"`
-	Type      string                 `json:"type"`
-	Source    string                 `json:"source"`
-	Content   string                 `json:"content"`
-	Metadata  map[string]interface{} `json:"metadata"`
-	Timestamp time.Time              `json:"timestamp"`
-	Priority  int                    `json:"priority"`
-}
-
-// InputEventResponse represents the response after processing an input event
-type InputEventResponse struct {
-	EventID     string                 `json:"event_id"`
-	Processed   bool                   `json:"processed"`
-	Actions     []OutputAction         `json:"actions"`
-	Metadata    map[string]interface{} `json:"metadata"`
-	ProcessedAt time.Time              `json:"processed_at"`
-}
-
-// OutputAction represents an action to be taken as a result of processing
-type OutputAction struct {
-	ID        string                 `json:"id"`
-	Type      string                 `json:"type"`
-	Target    string                 `json:"target"`
-	Content   string                 `json:"content"`
-	Metadata  map[string]interface{} `json:"metadata"`
-	Priority  int                    `json:"priority"`
-	CreatedAt time.Time              `json:"created_at"`
-}
 
 // Manager manages all input processors
 type Manager struct {
@@ -47,7 +17,7 @@ type Manager struct {
 
 // InputProcessor defines the interface for input processors
 type InputProcessor interface {
-	Process(event *InputEvent) (*InputEventResponse, error)
+	Process(event *types.InputEvent) (*types.InputEventResponse, error)
 	GetType() string
 	IsEnabled() bool
 }
@@ -71,14 +41,14 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 }
 
 // ProcessEvent processes an input event using the appropriate processor
-func (m *Manager) ProcessEvent(event *InputEvent) (*InputEventResponse, error) {
+func (m *Manager) ProcessEvent(event *types.InputEvent) (*types.InputEventResponse, error) {
 	processor, exists := m.processors[event.Type]
 	if !exists {
 		// Return a basic response for unknown types
-		return &InputEventResponse{
+		return &types.InputEventResponse{
 			EventID:     event.ID,
 			Processed:   false,
-			Actions:     []OutputAction{},
+			Actions:     []types.OutputAction{},
 			Metadata:    map[string]interface{}{"error": "no processor found for type: " + event.Type},
 			ProcessedAt: time.Now(),
 		}, nil
