@@ -20,7 +20,7 @@ IO_URL="http://localhost:8083"
 TIMEOUT=30
 TEST_RESULTS=()
 
-echo -e "${BLUE}🔌 fr0g.ai API Integration Test${NC}"
+echo -e "${BLUE}fr0g.ai API Integration Test${NC}"
 echo "================================="
 echo "Testing all service APIs..."
 echo ""
@@ -32,13 +32,13 @@ log_test() {
     local message="$3"
     
     if [ "$result" = "PASS" ]; then
-        echo -e "${GREEN}✅ $test_name: PASS${NC}"
+        echo -e "${GREEN}PASS $test_name${NC}"
         TEST_RESULTS+=("PASS: $test_name")
     elif [ "$result" = "FAIL" ]; then
-        echo -e "${RED}❌ $test_name: FAIL - $message${NC}"
+        echo -e "${RED}FAIL $test_name: $message${NC}"
         TEST_RESULTS+=("FAIL: $test_name - $message")
     elif [ "$result" = "SKIP" ]; then
-        echo -e "${YELLOW}⏭️  $test_name: SKIP - $message${NC}"
+        echo -e "${YELLOW}SKIP $test_name: $message${NC}"
         TEST_RESULTS+=("SKIP: $test_name - $message")
     fi
 }
@@ -350,10 +350,10 @@ main() {
     
     # Determine overall result
     if [ $failed_tests -eq 0 ]; then
-        echo -e "\n${GREEN}🎉 All API tests passed!${NC}"
+        echo -e "\n${GREEN}SUCCESS: All API tests passed!${NC}"
         exit 0
     else
-        echo -e "\n${RED}❌ Some API tests failed.${NC}"
+        echo -e "\n${RED}ERROR: Some API tests failed.${NC}"
         exit 1
     fi
 }

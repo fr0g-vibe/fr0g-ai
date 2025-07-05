@@ -27,7 +27,7 @@ IO_HTTP_URL="http://localhost:8083"
 IO_GRPC_URL="localhost:9092"
 MCP_HTTP_URL="http://localhost:8081"
 
-echo -e "${BLUE}🔍 fr0g.ai Health Check and Inter-Service Communication Test${NC}"
+echo -e "${BLUE}fr0g.ai Health Check and Inter-Service Communication Test${NC}"
 echo "=================================================================="
 
 # Function to check HTTP health endpoint
@@ -40,14 +40,14 @@ check_http_health() {
     
     while [ $retries -lt $MAX_RETRIES ]; do
         if curl -sf "$url/health" >/dev/null 2>&1; then
-            echo -e "${GREEN}✅ HEALTHY${NC}"
+            echo -e "${GREEN}HEALTHY${NC}"
             return 0
         fi
         retries=$((retries + 1))
         sleep $RETRY_INTERVAL
     done
     
-    echo -e "${RED}❌ UNHEALTHY${NC}"
+    echo -e "${RED}UNHEALTHY${NC}"
     return 1
 }
 
@@ -61,10 +61,10 @@ check_grpc_health() {
     # Check if grpcurl is available
     if command -v grpcurl >/dev/null 2>&1; then
         if grpcurl -plaintext "$url" grpc.health.v1.Health/Check >/dev/null 2>&1; then
-            echo -e "${GREEN}✅ HEALTHY${NC}"
+            echo -e "${GREEN}HEALTHY${NC}"
             return 0
         else
-            echo -e "${RED}❌ UNHEALTHY${NC}"
+            echo -e "${RED}UNHEALTHY${NC}"
             return 1
         fi
     else
@@ -72,10 +72,10 @@ check_grpc_health() {
         local host=$(echo $url | cut -d: -f1)
         local port=$(echo $url | cut -d: -f2)
         if nc -z "$host" "$port" 2>/dev/null; then
-            echo -e "${YELLOW}⚠️  PORT OPEN (grpcurl not available)${NC}"
+            echo -e "${YELLOW}PORT OPEN (grpcurl not available)${NC}"
             return 0
         else
-            echo -e "${RED}❌ PORT CLOSED${NC}"
+            echo -e "${RED}PORT CLOSED${NC}"
             return 1
         fi
     fi
@@ -94,11 +94,11 @@ test_service_registry() {
     # Test service registration endpoint
     echo -n "Testing service registration API... "
     if curl -sf "$REGISTRY_URL/v1/agent/services" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE${NC}"
+        echo -e "${GREEN}ACCESSIBLE${NC}"
     elif curl -sf "$REGISTRY_URL/services" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE (alternate endpoint)${NC}"
+        echo -e "${GREEN}ACCESSIBLE (alternate endpoint)${NC}"
     else
-        echo -e "${YELLOW}⚠️  REGISTRY API ENDPOINT NOT FOUND${NC}"
+        echo -e "${YELLOW}REGISTRY API ENDPOINT NOT FOUND${NC}"
         # Don't fail here as registry health is working
     fi
     
@@ -106,18 +106,18 @@ test_service_registry() {
     echo -n "Checking registered services... "
     local services=$(curl -s "$REGISTRY_URL/v1/agent/services" 2>/dev/null)
     if [ $? -eq 0 ] && [ -n "$services" ]; then
-        echo -e "${GREEN}✅ SERVICES FOUND${NC}"
+        echo -e "${GREEN}SERVICES FOUND${NC}"
         echo "Registered services:"
         echo "$services" | jq -r 'keys[]' 2>/dev/null || echo "$services"
     else
         # Try alternate endpoint
         services=$(curl -s "$REGISTRY_URL/services" 2>/dev/null)
         if [ $? -eq 0 ] && [ -n "$services" ]; then
-            echo -e "${GREEN}✅ SERVICES FOUND (alternate endpoint)${NC}"
+            echo -e "${GREEN}SERVICES FOUND (alternate endpoint)${NC}"
             echo "Registered services:"
             echo "$services" | jq -r 'keys[]' 2>/dev/null || echo "$services"
         else
-            echo -e "${YELLOW}⚠️  NO SERVICES REGISTERED${NC}"
+            echo -e "${YELLOW}NO SERVICES REGISTERED${NC}"
         fi
     fi
     
@@ -126,7 +126,7 @@ test_service_registry() {
 
 # Function to test AIP service
 test_aip_service() {
-    echo -e "\n${BLUE}🤖 Testing AIP Service${NC}"
+    echo -e "\n${BLUE}Testing AIP Service${NC}"
     echo "----------------------"
     
     # Check HTTP health
@@ -205,7 +205,7 @@ test_grpc_reflection_status() {
 
 # Function to test Bridge service
 test_bridge_service() {
-    echo -e "\n${BLUE}🌉 Testing Bridge Service${NC}"
+    echo -e "\n${BLUE}Testing Bridge Service${NC}"
     echo "-------------------------"
     
     # Check HTTP health
@@ -231,7 +231,7 @@ test_bridge_service() {
 
 # Function to test IO service
 test_io_service() {
-    echo -e "\n${BLUE}📡 Testing IO Service${NC}"
+    echo -e "\n${BLUE}Testing IO Service${NC}"
     echo "--------------------"
     
     # Check HTTP health
@@ -255,7 +255,7 @@ test_io_service() {
 
 # Function to test Master Control service
 test_mcp_service() {
-    echo -e "\n${BLUE}🧠 Testing Master Control Service${NC}"
+    echo -e "\n${BLUE}Testing Master Control Service${NC}"
     echo "--------------------------------"
     
     # Check HTTP health
@@ -277,7 +277,7 @@ test_mcp_service() {
 
 # Function to test inter-service communication
 test_inter_service_communication() {
-    echo -e "\n${BLUE}🔗 Testing Inter-Service Communication${NC}"
+    echo -e "\n${BLUE}Testing Inter-Service Communication${NC}"
     echo "-------------------------------------"
     
     # Test Bridge -> AIP communication
@@ -313,12 +313,12 @@ test_inter_service_communication() {
 
 # Function to test Docker container health
 test_container_health() {
-    echo -e "\n${BLUE}🐳 Testing Docker Container Health${NC}"
+    echo -e "\n${BLUE}Testing Docker Container Health${NC}"
     echo "----------------------------------"
     
     # Check if Docker is available
     if ! command -v docker >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  Docker not available, skipping container tests${NC}"
+        echo -e "${YELLOW}Docker not available, skipping container tests${NC}"
         return 0
     fi
     
@@ -336,16 +336,16 @@ test_container_health() {
         local health=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null)
         case "$health" in
             "healthy")
-                echo -e "${GREEN}✅ HEALTHY${NC}"
+                echo -e "${GREEN}HEALTHY${NC}"
                 ;;
             "unhealthy")
-                echo -e "${RED}❌ UNHEALTHY${NC}"
+                echo -e "${RED}UNHEALTHY${NC}"
                 ;;
             "starting")
-                echo -e "${YELLOW}⚠️  STARTING${NC}"
+                echo -e "${YELLOW}STARTING${NC}"
                 ;;
             *)
-                echo -e "${YELLOW}⚠️  NO HEALTH CHECK${NC}"
+                echo -e "${YELLOW}NO HEALTH CHECK${NC}"
                 ;;
         esac
     done
@@ -355,7 +355,7 @@ test_container_health() {
 
 # Function to generate summary report
 generate_summary() {
-    echo -e "\n${BLUE}📊 Health Check Summary${NC}"
+    echo -e "\n${BLUE}Health Check Summary${NC}"
     echo "======================="
     
     local total_tests=0
@@ -365,29 +365,29 @@ generate_summary() {
     # In a real implementation, you'd track each test result
     
     # Check which services are actually running
-    local registry_status="${GREEN}✅ OPERATIONAL${NC}"
-    local aip_status="${GREEN}✅ OPERATIONAL${NC}"
-    local bridge_status="${YELLOW}⚠️  NOT RUNNING${NC}"
-    local io_status="${YELLOW}⚠️  NOT RUNNING${NC}"
-    local mcp_status="${YELLOW}⚠️  NOT RUNNING${NC}"
+    local registry_status="${GREEN}OPERATIONAL${NC}"
+    local aip_status="${GREEN}OPERATIONAL${NC}"
+    local bridge_status="${YELLOW}NOT RUNNING${NC}"
+    local io_status="${YELLOW}NOT RUNNING${NC}"
+    local mcp_status="${YELLOW}NOT RUNNING${NC}"
     
     # Test actual service status
     if ! curl -sf "$BRIDGE_HTTP_URL/health" >/dev/null 2>&1; then
-        bridge_status="${RED}❌ DOWN${NC}"
+        bridge_status="${RED}DOWN${NC}"
     else
-        bridge_status="${GREEN}✅ OPERATIONAL${NC}"
+        bridge_status="${GREEN}OPERATIONAL${NC}"
     fi
     
     if ! curl -sf "$IO_HTTP_URL/health" >/dev/null 2>&1; then
-        io_status="${RED}❌ DOWN${NC}"
+        io_status="${RED}DOWN${NC}"
     else
-        io_status="${GREEN}✅ OPERATIONAL${NC}"
+        io_status="${GREEN}OPERATIONAL${NC}"
     fi
     
     if ! curl -sf "$MCP_HTTP_URL/health" >/dev/null 2>&1; then
-        mcp_status="${YELLOW}⚠️  NOT DEPLOYED${NC}"
+        mcp_status="${YELLOW}NOT DEPLOYED${NC}"
     else
-        mcp_status="${GREEN}✅ OPERATIONAL${NC}"
+        mcp_status="${GREEN}OPERATIONAL${NC}"
     fi
     
     echo -e "Service Registry: $registry_status"
@@ -397,24 +397,24 @@ generate_summary() {
     echo -e "Master Control: $mcp_status"
     
     # Check gRPC reflection status for security
-    echo -e "\n${BLUE}🔒 Security Status:${NC}"
+    echo -e "\n${BLUE}Security Status:${NC}"
     if command -v grpcurl >/dev/null 2>&1; then
         if grpcurl -plaintext "$AIP_GRPC_URL" list >/dev/null 2>&1; then
-            echo -e "${YELLOW}⚠️  gRPC reflection is ENABLED${NC}"
+            echo -e "${YELLOW}WARNING: gRPC reflection is ENABLED${NC}"
             echo -e "${YELLOW}   This should be disabled in production${NC}"
             echo -e "${YELLOW}   Use: make validate-production${NC}"
         else
-            echo -e "${GREEN}✅ gRPC reflection is properly disabled${NC}"
+            echo -e "${GREEN}SUCCESS: gRPC reflection is properly disabled${NC}"
         fi
     else
-        echo -e "${BLUE}ℹ️  grpcurl not available - cannot check reflection${NC}"
+        echo -e "${BLUE}INFO: grpcurl not available - cannot check reflection${NC}"
     fi
     
-    echo -e "\n${BLUE}📋 Service Status Summary:${NC}"
-    echo -e "✅ Core services (Registry + AIP) are operational"
-    echo -e "⚠️  Additional services need to be started with docker-compose"
+    echo -e "\n${BLUE}Service Status Summary:${NC}"
+    echo -e "SUCCESS: Core services (Registry + AIP) are operational"
+    echo -e "WARNING: Additional services need to be started with docker-compose"
     
-    echo -e "\n${BLUE}🛠️  Testing Commands:${NC}"
+    echo -e "\n${BLUE}Testing Commands:${NC}"
     echo -e "  make test-aip-service       # Run AIP service tests"
     echo -e "  make test-grpc-reflection   # Test gRPC reflection"
     echo -e "  make test-aip-with-reflection # Test with reflection enabled"
@@ -440,9 +440,9 @@ main() {
     generate_summary
     
     if [ $exit_code -eq 0 ]; then
-        echo -e "\n${GREEN}✅ All health checks passed!${NC}"
+        echo -e "\n${GREEN}SUCCESS: All health checks passed!${NC}"
     else
-        echo -e "\n${RED}❌ Some health checks failed!${NC}"
+        echo -e "\n${RED}ERROR: Some health checks failed!${NC}"
     fi
     
     exit $exit_code
@@ -457,15 +457,15 @@ check_dependencies() {
     fi
     
     if ! command -v jq >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  jq not found - JSON parsing will be limited${NC}"
+        echo -e "${YELLOW}WARNING: jq not found - JSON parsing will be limited${NC}"
     fi
     
     if ! command -v nc >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  nc (netcat) not found - port checks will be limited${NC}"
+        echo -e "${YELLOW}WARNING: nc (netcat) not found - port checks will be limited${NC}"
     fi
     
     if [ ${#missing_tools[@]} -gt 0 ]; then
-        echo -e "${RED}❌ Missing required tools: ${missing_tools[*]}${NC}"
+        echo -e "${RED}ERROR: Missing required tools: ${missing_tools[*]}${NC}"
         echo "Please install the missing tools and try again."
         exit 1
     fi

@@ -28,10 +28,10 @@ check_service() {
     echo -n "Testing $service_name ($url$endpoint)... "
     
     if curl -s -f --max-time $TIMEOUT "$url$endpoint" > /dev/null; then
-        echo -e "${GREEN}OK${NC}"
+        echo -e "${GREEN}PASS${NC}"
         return 0
     else
-        echo -e "${RED}FAILED${NC}"
+        echo -e "${RED}FAIL${NC}"
         return 1
     fi
 }
