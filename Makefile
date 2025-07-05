@@ -177,18 +177,21 @@ test-aip-service:
 
 test-aip-with-reflection:
 	@echo "🧪 Running AIP tests against running service with gRPC reflection..."
+	@echo "🔧 gRPC reflection enables MCP integration for dynamic service discovery"
 	@cd fr0g-ai-aip && $(MAKE) test-with-reflection
 
 test-grpc-reflection:
-	@echo "🔍 Testing gRPC reflection..."
+	@echo "🔍 Testing gRPC reflection for MCP compatibility..."
+	@echo "🔧 This enables Model Context Protocol exposure for other gRPC services"
 	@cd fr0g-ai-aip && $(MAKE) test-grpc-reflection
 
 build-aip-test:
-	@echo "🔨 Building AIP service with gRPC reflection for testing..."
+	@echo "🔨 Building AIP service with gRPC reflection for testing and MCP integration..."
 	@cd fr0g-ai-aip && $(MAKE) build-test
 
 run-aip-test:
-	@echo "🚀 Starting AIP service with reflection enabled..."
+	@echo "🚀 Starting AIP service with reflection enabled for MCP exposure..."
+	@echo "🔧 Other gRPC clients can now discover AIP services dynamically"
 	@cd fr0g-ai-aip && $(MAKE) run-test
 
 # Global validation (checks all services)

@@ -152,10 +152,16 @@ test-grpc-reflection:
 	@echo "Testing reflection endpoint..."
 	@if grpcurl -plaintext localhost:9090 list >/dev/null 2>&1; then \
 		echo "✅ gRPC reflection is working"; \
+		echo "📋 Available services:"; \
 		grpcurl -plaintext localhost:9090 list; \
+		echo ""; \
+		echo "🔧 MCP Integration Ready: Services can be discovered dynamically"; \
+		echo "🔍 Service Methods:"; \
+		grpcurl -plaintext localhost:9090 list persona.PersonaService; \
 	else \
 		echo "❌ gRPC reflection not available"; \
 		echo "💡 Start service with reflection: make run-test"; \
+		echo "🔧 For MCP integration, enable reflection in development mode"; \
 	fi
 
 # Build and run with reflection enabled for testing
@@ -265,6 +271,12 @@ help:
 	@echo "  fmt                - Format code"
 	@echo "  lint               - Lint code (requires golangci-lint)"
 	@echo ""
+	@echo "gRPC Reflection & MCP Integration:"
+	@echo "  🔧 gRPC reflection enables Model Context Protocol (MCP) exposure"
+	@echo "  🔍 Other services can discover AIP methods dynamically"
+	@echo "  🛡️  Reflection is disabled by default in production for security"
+	@echo "  🧪 Enable reflection for development: GRPC_ENABLE_REFLECTION=true"
+	@echo ""
 	@echo "Quick Start Examples:"
 	@echo "  # Generate sample data"
 	@echo "  go run ./cmd generate-identities"
@@ -276,9 +288,12 @@ help:
 	@echo "  # Start API server"
 	@echo "  make run-server"
 	@echo ""
-	@echo "  # Test with reflection"
+	@echo "  # Test with reflection (MCP-ready)"
 	@echo "  make run-test"
 	@echo "  make test-grpc-reflection"
+	@echo ""
+	@echo "  # MCP service discovery example"
+	@echo "  grpcurl -plaintext localhost:9090 list"
 	@echo ""
 	@echo "Help:"
 	@echo "  help               - Show this help"

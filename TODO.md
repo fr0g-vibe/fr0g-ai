@@ -81,6 +81,13 @@ When starting new AI coding sessions, always include these files:
 - **Use Build Commands**: Always use `make proto` or `protoc` commands for protobuf generation
 - **Generated Files**: Treat all `.pb.go` files as build artifacts, not source code
 
+### gRPC Reflection and MCP Integration Rules
+- **DEVELOPMENT ONLY**: Enable gRPC reflection only in development/testing environments
+- **SECURITY FIRST**: Always disable reflection in production (GRPC_ENABLE_REFLECTION=false)
+- **MCP EXPOSURE**: Use reflection for Model Context Protocol service discovery
+- **CROSS-SERVICE DISCOVERY**: Enable dynamic gRPC service introspection between components
+- **TESTING INTEGRATION**: Use reflection for automated gRPC endpoint testing
+
 ### Tmux Agent Dispatch Capability (Project Lead Only)
 The project lead can dispatch commands to specialized agent windows:
 ```bash
@@ -166,6 +173,7 @@ tmux send-keys -t fr0g-ai:9 "git status" C-m
 - VALIDATION FRAMEWORK: Comprehensive validation with detailed error reporting
 - STORAGE SYSTEM: File-based persistence with health monitoring
 - CONFIGURATION: Centralized config system implemented
+- GRPC REFLECTION: Dynamic reflection for MCP integration and service discovery
 
 ### Shared Infrastructure
 - CENTRALIZED CONFIG: pkg/config/ system implemented across all components
