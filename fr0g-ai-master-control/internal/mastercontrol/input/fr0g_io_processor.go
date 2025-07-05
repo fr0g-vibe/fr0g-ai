@@ -331,33 +331,6 @@ func (p *Fr0gIOWebhookProcessor) performThreatAnalysis(event *InputEvent) *Threa
 
 // Utility functions
 
-func contains(text, substring string) bool {
-	return len(text) >= len(substring) && 
-		   (text == substring || 
-		    (len(text) > len(substring) && 
-		     (text[:len(substring)] == substring || 
-		      text[len(text)-len(substring):] == substring ||
-		      containsSubstring(text, substring))))
-}
-
-func containsSubstring(text, substring string) bool {
-	for i := 0; i <= len(text)-len(substring); i++ {
-		if text[i:i+len(substring)] == substring {
-			return true
-		}
-	}
-	return false
-}
-
 func containsURLs(text string) bool {
 	return contains(text, "http://") || contains(text, "https://") || contains(text, "www.")
-}
-
-func getBoolFromMap(m map[string]interface{}, key string) bool {
-	if value, ok := m[key]; ok {
-		if b, ok := value.(bool); ok {
-			return b
-		}
-	}
-	return false
 }

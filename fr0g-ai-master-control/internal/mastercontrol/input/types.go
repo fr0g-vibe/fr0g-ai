@@ -153,51 +153,6 @@ type InputEventResponse struct {
 	ProcessedAt time.Time              `json:"processed_at"`
 }
 
-// SMSMessage represents an SMS input message
-type SMSMessage struct {
-	ID          string    `json:"id"`
-	From        string    `json:"from"`
-	To          string    `json:"to"`
-	Content     string    `json:"content"`
-	Timestamp   time.Time `json:"timestamp"`
-	Provider    string    `json:"provider"`
-	MessageType string    `json:"message_type"`
-}
-
-// VoiceMessage represents a voice input message
-type VoiceMessage struct {
-	ID           string    `json:"id"`
-	From         string    `json:"from"`
-	To           string    `json:"to"`
-	AudioData    []byte    `json:"audio_data"`
-	Transcription string   `json:"transcription"`
-	Duration     float64   `json:"duration"`
-	Timestamp    time.Time `json:"timestamp"`
-	Format       string    `json:"format"`
-}
-
-// IRCMessage represents an IRC input message
-type IRCMessage struct {
-	ID        string    `json:"id"`
-	Server    string    `json:"server"`
-	Channel   string    `json:"channel"`
-	Nick      string    `json:"nick"`
-	Content   string    `json:"content"`
-	Timestamp time.Time `json:"timestamp"`
-	IsPrivate bool      `json:"is_private"`
-}
-
-// DiscordMessage represents a Discord input message
-type DiscordMessage struct {
-	ID          string    `json:"id"`
-	GuildID     string    `json:"guild_id"`
-	ChannelID   string    `json:"channel_id"`
-	UserID      string    `json:"user_id"`
-	Username    string    `json:"username"`
-	Content     string    `json:"content"`
-	Timestamp   time.Time `json:"timestamp"`
-	MessageType string    `json:"message_type"`
-}
 
 // OutputCommand represents a command to send to fr0g-ai-io for output processing
 type OutputCommand struct {
