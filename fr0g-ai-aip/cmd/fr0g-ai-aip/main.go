@@ -15,6 +15,7 @@ import (
 	grpcserver "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // App holds the application state
