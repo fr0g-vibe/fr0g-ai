@@ -4,50 +4,17 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 
-	"gopkg.in/yaml.v3"
-	sharedconfig "pkg/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // Config holds the application configuration
 type Config struct {
-	Server     ServerConfig     `yaml:"server"`
-	OpenWebUI  OpenWebUIConfig  `yaml:"openwebui"`
-	Logging    LoggingConfig    `yaml:"logging"`
-	Security   SecurityConfig   `yaml:"security"`
-	Monitoring MonitoringConfig `yaml:"monitoring"`
-}
-
-// ServerConfig holds server-related configuration
-type ServerConfig struct {
-	HTTPPort int    `yaml:"http_port"`
-	GRPCPort int    `yaml:"grpc_port"`
-	Host     string `yaml:"host"`
-}
-
-// OpenWebUIConfig holds OpenWebUI API configuration
-type OpenWebUIConfig struct {
-	BaseURL string `yaml:"base_url"`
-	APIKey  string `yaml:"api_key"`
-	Timeout int    `yaml:"timeout"` // timeout in seconds
-}
-
-// LoggingConfig holds logging configuration
-type LoggingConfig struct {
-	Level  string `yaml:"level"`
-	Format string `yaml:"format"`
-}
-
-// SecurityConfig holds security-related configuration
-type SecurityConfig struct {
-	sharedconfig.SecurityConfig `yaml:",inline"`
-	EnableReflection            bool `yaml:"enable_reflection"`
-}
-
-// MonitoringConfig holds monitoring configuration
-type MonitoringConfig struct {
-	sharedconfig.MonitoringConfig `yaml:",inline"`
+	Server     sharedconfig.ServerConfig     `yaml:"server"`
+	OpenWebUI  sharedconfig.OpenWebUIConfig  `yaml:"openwebui"`
+	Logging    sharedconfig.LoggingConfig    `yaml:"logging"`
+	Security   sharedconfig.SecurityConfig   `yaml:"security"`
+	Monitoring sharedconfig.MonitoringConfig `yaml:"monitoring"`
 }
 
 // LoadConfig loads configuration from file and environment variables
@@ -69,27 +36,27 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 
 	config := &Config{
-		Server: ServerConfig{
+		Server: sharedconfig.ServerConfig{
 			HTTPPort: 8080,
 			GRPCPort: 9090,
 			Host:     "0.0.0.0",
 		},
-		OpenWebUI: OpenWebUIConfig{
+		OpenWebUI: sharedconfig.OpenWebUIConfig{
 			BaseURL: "http://localhost:3000",
 			Timeout: 30,
 		},
-		Logging: LoggingConfig{
+		Logging: sharedconfig.LoggingConfig{
 			Level:  "info",
 			Format: "json",
 		},
-		Security: SecurityConfig{
+		Security: sharedconfig.SecurityConfig{
 			EnableCORS:           true,
 			AllowedOrigins:       []string{"*"},
 			RateLimitRPM:         60,
 			RequireAPIKey:        false,
 			EnableReflection:     true,
 		},
-		Monitoring: MonitoringConfig{
+		Monitoring: sharedconfig.MonitoringConfig{
 			EnableMetrics:        true,
 			MetricsPort:         8082,
 			HealthCheckInterval: 30,
