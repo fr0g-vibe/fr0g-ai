@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
@@ -74,7 +75,7 @@ func (c *Config) Validate() error {
 
 // Helper function to get environment variable or default
 func getEnvOrDefault(key, defaultValue string) string {
-	if value := sharedconfig.GetEnv(key); value != "" {
+	if value := os.Getenv(key); value != "" {
 		return value
 	}
 	return defaultValue
