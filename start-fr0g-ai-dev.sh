@@ -115,23 +115,23 @@ tmux send-keys -t $SESSION_NAME:6 "echo 'Focus: docker-compose.yml, Makefile, .e
 tmux send-keys -t $SESSION_NAME:6 "echo 'Services: service-registry:8500, aip:8080/9090, bridge:8082/9091, mcp:8081, io:8083/9092'" C-m
 tmux send-keys -t $SESSION_NAME:6 "$AIDER_CMD docker-compose.yml Makefile .env.example" C-m
 
-# Window 7: Build & Test Runner
-tmux new-window -t $SESSION_NAME -n "Build-Test" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:7 "echo 'BUILD & TEST RUNNER'" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Build automation, test execution, continuous integration'" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Commands: make build-all, make test-all, docker-compose up'" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo ''" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Quick Start: docker-compose up -d'" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Available commands:'" C-m
-tmux send-keys -t $SESSION_NAME:7 "make help" C-m
-
-# Window 8: Registry Agent
+# Window 7: Registry Agent
 tmux new-window -t $SESSION_NAME -n "Registry" -c "$PROJECT_ROOT/fr0g-ai-registry"
-tmux send-keys -t $SESSION_NAME:8 "echo 'FR0G-AI-REGISTRY AGENT'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Role: Service discovery, registration, and health monitoring'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Port: HTTP :8500'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
-tmux send-keys -t $SESSION_NAME:8 "$AIDER_CMD TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'FR0G-AI-REGISTRY AGENT'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Service discovery, registration, and health monitoring'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Port: HTTP :8500'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
+tmux send-keys -t $SESSION_NAME:7 "$AIDER_CMD TODO.md" C-m
+
+# Window 8: Build & Test Runner
+tmux new-window -t $SESSION_NAME -n "Build-Test" -c "$PROJECT_ROOT"
+tmux send-keys -t $SESSION_NAME:8 "echo 'BUILD & TEST RUNNER'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Role: Build automation, test execution, continuous integration'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Commands: make build-all, make test-all, docker-compose up'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo ''" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Quick Start: docker-compose up -d'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Available commands:'" C-m
+tmux send-keys -t $SESSION_NAME:8 "make help" C-m
 
 # Window 9: Interactive Shell
 tmux new-window -t $SESSION_NAME -n "Shell" -c "$PROJECT_ROOT"
@@ -165,8 +165,8 @@ echo "  3: MCP               - fr0g-ai-master-control (Cognitive Engine) :8081"
 echo "  4: IO                - fr0g-ai-io (I/O Processing) :8083/:9092"
 echo "  5: Config            - Configuration & environment management"
 echo "  6: DevOps            - Infrastructure & deployment"
-echo "  7: Build-Test        - Build & test automation"
-echo "  8: Registry          - Service discovery & registration :8500"
+echo "  7: Registry          - Service discovery & registration :8500"
+echo "  8: Build-Test        - Build & test automation"
 echo "  9: Shell             - Interactive shell"
 echo ""
 echo "🚀 USAGE:"
