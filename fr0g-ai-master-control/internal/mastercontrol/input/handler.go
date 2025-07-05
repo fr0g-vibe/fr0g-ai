@@ -57,11 +57,13 @@ func (h *Fr0gIOInputHandlerImpl) HandleSMSMessage(ctx context.Context, message *
 		ID:      message.ID,
 		Type:    "sms",
 		Source:  message.From,
-		Content: message.Content,
+		Content: message.Body,
 		Metadata: map[string]interface{}{
 			"to":           message.To,
-			"provider":     message.Provider,
+			"message_sid":  message.MessageSID,
 			"message_type": message.MessageType,
+			"status":       message.Status,
+			"direction":    message.Direction,
 		},
 		Timestamp: message.Timestamp,
 		Priority:  1, // Default priority for SMS
@@ -74,7 +76,7 @@ func (h *Fr0gIOInputHandlerImpl) HandleSMSMessage(ctx context.Context, message *
 
 // HandleVoiceMessage processes voice messages
 func (h *Fr0gIOInputHandlerImpl) HandleVoiceMessage(ctx context.Context, message *VoiceMessage) error {
-	log.Printf("Input Handler: Processing voice message %s from %s (duration: %.2fs)", message.ID, message.From, message.Duration)
+	log.Printf("Input Handler: Processing voice message %s from %s (duration: %.2fs)", message.ID, message.From, message.RecordingDuration)
 
 	// Convert voice message to generic input event
 	event := &InputEvent{
@@ -83,11 +85,16 @@ func (h *Fr0gIOInputHandlerImpl) HandleVoiceMessage(ctx context.Context, message
 		Source:  message.From,
 		Content: message.Transcription, // Use transcription as content
 		Metadata: map[string]interface{}{
-			"to":            message.To,
-			"duration":      message.Duration,
-			"format":        message.Format,
-			"has_audio":     len(message.AudioData) > 0,
-			"audio_length":  len(message.AudioData),
+			"to":                message.To,
+			"duration":          message.RecordingDuration,
+			"format":            message.AudioFormat,
+			"call_sid":          message.CallSID,
+			"recording_url":     message.RecordingURL,
+			"confidence":        message.Confidence,
+			"language":          message.Language,
+			"file_size":         message.FileSize,
+			"direction":         message.Direction,
+			"status":            message.Status,
 		},
 		Timestamp: message.Timestamp,
 		Priority:  2, // Higher priority for voice messages
@@ -100,18 +107,20 @@ func (h *Fr0gIOInputHandlerImpl) HandleVoiceMessage(ctx context.Context, message
 
 // HandleIRCMessage processes IRC messages
 func (h *Fr0gIOInputHandlerImpl) HandleIRCMessage(ctx context.Context, message *IRCMessage) error {
-	log.Printf("Input Handler: Processing IRC message %s from %s in %s", message.ID, message.Nick, message.Channel)
+	log.Printf("Input Handler: Processing IRC message %s from %s in %s", message.ID, message.From, message.Channel)
 
 	// Convert IRC message to generic input event
 	event := &InputEvent{
 		ID:      message.ID,
 		Type:    "irc",
-		Source:  fmt.Sprintf("%s@%s", message.Nick, message.Server),
-		Content: message.Content,
+		Source:  fmt.Sprintf("%s@%s", message.From, message.Server),
+		Content: message.Message,
 		Metadata: map[string]interface{}{
 			"server":     message.Server,
 			"channel":    message.Channel,
-			"nick":       message.Nick,
+			"from":       message.From,
+			"to":         message.To,
+			"type":       message.Type,
 			"is_private": message.IsPrivate,
 		},
 		Timestamp: message.Timestamp,
