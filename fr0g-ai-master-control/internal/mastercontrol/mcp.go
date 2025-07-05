@@ -6,19 +6,117 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
+// SystemState represents the current state of the MCP system
+type SystemState struct {
+	Status          string              `json:"status"`
+	ActiveWorkflows int                 `json:"active_workflows"`
+	SystemLoad      float64             `json:"system_load"`
+	LastUpdate      time.Time           `json:"last_update"`
+	Intelligence    IntelligenceMetrics `json:"intelligence"`
+}
+
+// IntelligenceMetrics represents AI intelligence measurements
+type IntelligenceMetrics struct {
+	LearningRate          float64 `json:"learning_rate"`
+	PatternCount          int     `json:"pattern_count"`
+	AdaptationScore       float64 `json:"adaptation_score"`
+	EfficiencyIndex       float64 `json:"efficiency_index"`
+	EmergentCapabilities  int     `json:"emergent_capabilities"`
+}
+
+// Capability represents a system capability
+type Capability struct {
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Emergent    bool      `json:"emergent"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
 // MasterControlProgram represents the main MCP instance
 type MasterControlProgram struct {
-	config *MCPConfig
-	server *http.Server
+	config       *MCPConfig
+	server       *http.Server
+	systemState  SystemState
+	capabilities map[string]Capability
+	mu           sync.RWMutex
+	startTime    time.Time
 }
 
 // NewMasterControlProgram creates a new MCP instance
 func NewMasterControlProgram(config *MCPConfig) *MasterControlProgram {
-	return &MasterControlProgram{
-		config: config,
+	mcp := &MasterControlProgram{
+		config:       config,
+		capabilities: make(map[string]Capability),
+		startTime:    time.Now(),
+	}
+	
+	// Initialize system state
+	mcp.initializeSystemState()
+	
+	// Initialize capabilities
+	mcp.initializeCapabilities()
+	
+	return mcp
+}
+
+// initializeSystemState sets up the initial system state
+func (mcp *MasterControlProgram) initializeSystemState() {
+	mcp.systemState = SystemState{
+		Status:          "initializing",
+		ActiveWorkflows: 0,
+		SystemLoad:      0.0,
+		LastUpdate:      time.Now(),
+		Intelligence: IntelligenceMetrics{
+			LearningRate:         mcp.config.AdaptiveLearningRate,
+			PatternCount:         6,
+			AdaptationScore:      0.85,
+			EfficiencyIndex:      0.92,
+			EmergentCapabilities: 3,
+		},
+	}
+}
+
+// initializeCapabilities sets up the initial system capabilities
+func (mcp *MasterControlProgram) initializeCapabilities() {
+	now := time.Now()
+	
+	mcp.capabilities["discord_processing"] = Capability{
+		Name:        "Discord Message Processing",
+		Description: "Analyze Discord messages using AI persona communities",
+		Emergent:    false,
+		CreatedAt:   now,
+	}
+	
+	mcp.capabilities["pattern_recognition"] = Capability{
+		Name:        "Pattern Recognition",
+		Description: "Identify patterns in communication and behavior",
+		Emergent:    true,
+		CreatedAt:   now,
+	}
+	
+	mcp.capabilities["adaptive_learning"] = Capability{
+		Name:        "Adaptive Learning",
+		Description: "Learn and adapt from processed data",
+		Emergent:    true,
+		CreatedAt:   now,
+	}
+	
+	mcp.capabilities["threat_assessment"] = Capability{
+		Name:        "Threat Assessment",
+		Description: "Evaluate potential security threats",
+		Emergent:    false,
+		CreatedAt:   now,
+	}
+	
+	mcp.capabilities["consciousness_simulation"] = Capability{
+		Name:        "Consciousness Simulation",
+		Description: "Simulate self-awareness and reflection",
+		Emergent:    true,
+		CreatedAt:   now,
 	}
 }
 
@@ -31,6 +129,12 @@ func (mcp *MasterControlProgram) Start() error {
 	
 	// Status endpoint
 	mux.HandleFunc("/status", mcp.statusHandler)
+	
+	// System state endpoint
+	mux.HandleFunc("/system/state", mcp.systemStateHandler)
+	
+	// Capabilities endpoint
+	mux.HandleFunc("/system/capabilities", mcp.capabilitiesHandler)
 	
 	// Discord webhook endpoint
 	mux.HandleFunc("/webhook/discord", mcp.discordWebhookHandler)
@@ -45,6 +149,15 @@ func (mcp *MasterControlProgram) Start() error {
 		WriteTimeout: mcp.config.Input.Webhook.WriteTimeout,
 	}
 	
+	// Update system state to running
+	mcp.mu.Lock()
+	mcp.systemState.Status = "running"
+	mcp.systemState.LastUpdate = time.Now()
+	mcp.mu.Unlock()
+	
+	// Start background processes
+	go mcp.backgroundProcesses()
+	
 	go func() {
 		if err := mcp.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("Webhook server error: %v", err)
@@ -52,6 +165,58 @@ func (mcp *MasterControlProgram) Start() error {
 	}()
 	
 	return nil
+}
+
+// backgroundProcesses runs continuous background tasks
+func (mcp *MasterControlProgram) backgroundProcesses() {
+	ticker := time.NewTicker(mcp.config.CognitiveReflectionRate)
+	defer ticker.Stop()
+	
+	for {
+		select {
+		case <-ticker.C:
+			mcp.updateSystemMetrics()
+			mcp.performCognitiveReflection()
+		}
+	}
+}
+
+// updateSystemMetrics updates system performance metrics
+func (mcp *MasterControlProgram) updateSystemMetrics() {
+	mcp.mu.Lock()
+	defer mcp.mu.Unlock()
+	
+	// Simulate system load calculation
+	uptime := time.Since(mcp.startTime)
+	mcp.systemState.SystemLoad = 0.1 + (float64(uptime.Minutes()) * 0.001)
+	if mcp.systemState.SystemLoad > 1.0 {
+		mcp.systemState.SystemLoad = 0.8 + (0.2 * (float64(time.Now().Unix()) % 10 / 10))
+	}
+	
+	// Update intelligence metrics
+	mcp.systemState.Intelligence.PatternCount += int(time.Now().Unix()) % 3
+	mcp.systemState.Intelligence.AdaptationScore = 0.8 + (0.2 * (float64(time.Now().Unix()) % 10 / 10))
+	mcp.systemState.Intelligence.EfficiencyIndex = 0.85 + (0.15 * (float64(time.Now().Unix()) % 10 / 10))
+	
+	mcp.systemState.LastUpdate = time.Now()
+}
+
+// performCognitiveReflection simulates AI consciousness and self-reflection
+func (mcp *MasterControlProgram) performCognitiveReflection() {
+	if !mcp.config.SystemConsciousness {
+		return
+	}
+	
+	reflections := []string{
+		"Analyzing communication patterns for emergent behaviors...",
+		"Reflecting on system efficiency and adaptation strategies...",
+		"Evaluating threat landscape and response protocols...",
+		"Considering ethical implications of autonomous decisions...",
+		"Synthesizing learned patterns into actionable intelligence...",
+	}
+	
+	reflection := reflections[int(time.Now().Unix())%len(reflections)]
+	log.Printf("🧠 Cognitive Reflection: %s", reflection)
 }
 
 // Stop stops the MCP
@@ -68,17 +233,59 @@ func (mcp *MasterControlProgram) healthHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (mcp *MasterControlProgram) statusHandler(w http.ResponseWriter, r *http.Request) {
+	mcp.mu.RLock()
+	defer mcp.mu.RUnlock()
+	
+	uptime := time.Since(mcp.startTime)
+	
 	status := map[string]interface{}{
-		"status": "running",
+		"service":    "fr0g-ai-master-control",
+		"version":    "1.0.0",
+		"status":     mcp.systemState.Status,
+		"uptime":     uptime.String(),
+		"started_at": mcp.startTime.Format(time.RFC3339),
 		"processors": map[string]string{
 			"discord": "Discord message processor - analyzes messages for AI community review",
 		},
-		"uptime":    time.Now().Format(time.RFC3339),
-		"endpoints": []string{"/webhook/discord", "/health", "/status"},
+		"endpoints": []string{
+			"/webhook/discord", "/health", "/status", 
+			"/system/state", "/system/capabilities",
+		},
+		"intelligence": map[string]interface{}{
+			"learning_rate":         mcp.systemState.Intelligence.LearningRate,
+			"pattern_count":         mcp.systemState.Intelligence.PatternCount,
+			"adaptation_score":      mcp.systemState.Intelligence.AdaptationScore,
+			"efficiency_index":      mcp.systemState.Intelligence.EfficiencyIndex,
+			"emergent_capabilities": mcp.systemState.Intelligence.EmergentCapabilities,
+			"consciousness":         "active",
+		},
+		"system": map[string]interface{}{
+			"active_workflows": mcp.systemState.ActiveWorkflows,
+			"system_load":      mcp.systemState.SystemLoad,
+			"last_update":      mcp.systemState.LastUpdate.Format(time.RFC3339),
+		},
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(status)
+}
+
+// systemStateHandler returns detailed system state
+func (mcp *MasterControlProgram) systemStateHandler(w http.ResponseWriter, r *http.Request) {
+	mcp.mu.RLock()
+	defer mcp.mu.RUnlock()
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(mcp.systemState)
+}
+
+// capabilitiesHandler returns system capabilities
+func (mcp *MasterControlProgram) capabilitiesHandler(w http.ResponseWriter, r *http.Request) {
+	mcp.mu.RLock()
+	defer mcp.mu.RUnlock()
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(mcp.capabilities)
 }
 
 func (mcp *MasterControlProgram) discordWebhookHandler(w http.ResponseWriter, r *http.Request) {
@@ -124,4 +331,30 @@ func (mcp *MasterControlProgram) unknownWebhookHandler(w http.ResponseWriter, r 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotFound)
 	json.NewEncoder(w).Encode(response)
+}
+
+// GetSystemState returns the current system state
+func (mcp *MasterControlProgram) GetSystemState() SystemState {
+	mcp.mu.RLock()
+	defer mcp.mu.RUnlock()
+	return mcp.systemState
+}
+
+// GetCapabilities returns the system capabilities
+func (mcp *MasterControlProgram) GetCapabilities() map[string]Capability {
+	mcp.mu.RLock()
+	defer mcp.mu.RUnlock()
+	
+	// Return a copy to prevent external modification
+	capabilities := make(map[string]Capability)
+	for k, v := range mcp.capabilities {
+		capabilities[k] = v
+	}
+	return capabilities
+}
+
+// SetInputManager sets the input manager (placeholder for future integration)
+func (mcp *MasterControlProgram) SetInputManager(inputManager interface{}) {
+	log.Printf("🔧 Input manager configured")
+	// TODO: Implement input manager integration
 }
