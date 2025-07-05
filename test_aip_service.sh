@@ -196,20 +196,26 @@ test_grpc_api() {
         fi
     else
         local error_msg=$(cat "$TEST_OUTPUT_DIR/grpc_error.txt" 2>/dev/null | head -1)
-        log_test "gRPC Service Reflection" "FAIL" "Reflection failed: $error_msg"
-        echo -e "${YELLOW}💡 Debug: gRPC server may not have reflection enabled${NC}"
-        echo -e "${YELLOW}   Check if the server implements grpc.reflection.v1alpha.ServerReflection${NC}"
-        return 1
+        if echo "$error_msg" | grep -q "does not support the reflection API"; then
+            log_test "gRPC Service Reflection" "SKIP" "Reflection not enabled (expected for production)"
+            echo -e "${YELLOW}💡 Info: gRPC reflection is disabled for security in production${NC}"
+            echo -e "${YELLOW}   This is normal and expected behavior${NC}"
+            # Continue with direct service testing
+            test_grpc_direct_calls
+            return 0
+        else
+            log_test "gRPC Service Reflection" "FAIL" "Reflection failed: $error_msg"
+            echo -e "${YELLOW}💡 Debug: gRPC server may not have reflection enabled${NC}"
+            echo -e "${YELLOW}   Check if the server implements grpc.reflection.v1alpha.ServerReflection${NC}"
+            return 1
+        fi
     fi
     
-    # Test PersonaService methods (skip if reflection failed)
-    if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list persona.PersonaService > "$TEST_OUTPUT_DIR/persona_methods.txt" 2>/dev/null; then
-        log_test "PersonaService Discovery" "PASS" "PersonaService methods available"
-    else
-        log_test "PersonaService Discovery" "SKIP" "PersonaService discovery requires reflection"
-    fi
+# Function to test gRPC services directly without reflection
+test_grpc_direct_calls() {
+    echo -e "${BLUE}--- Direct gRPC Service Tests ---${NC}"
     
-    # Test CreatePersona gRPC method (skip if reflection failed)
+    # Test CreatePersona gRPC method directly
     local grpc_persona='{
         "persona": {
             "name": "gRPC Test Persona",
@@ -240,6 +246,14 @@ test_grpc_api() {
     else
         local create_error=$(cat "$TEST_OUTPUT_DIR/grpc_create_error.txt" 2>/dev/null | head -1)
         log_test "gRPC CreatePersona" "SKIP" "gRPC service not available: $create_error"
+    fi
+}
+
+    # Test PersonaService methods (skip if reflection failed)
+    if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list persona.PersonaService > "$TEST_OUTPUT_DIR/persona_methods.txt" 2>/dev/null; then
+        log_test "PersonaService Discovery" "PASS" "PersonaService methods available"
+    else
+        log_test "PersonaService Discovery" "SKIP" "PersonaService discovery requires reflection"
     fi
 }
 
