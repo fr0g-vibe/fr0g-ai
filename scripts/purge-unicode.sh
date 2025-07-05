@@ -51,9 +51,9 @@ purge_file() {
     local file="$1"
     echo "Purging unicode from: $file"
     
-    # Skip binary files
-    if file "$file" | grep -q "ELF\|executable"; then
-        echo "  Skipping binary file: $file"
+    # Skip actual binary executables (ELF files), but NOT shell scripts
+    if file "$file" | grep -q "ELF.*executable"; then
+        echo "  Skipping binary executable: $file"
         return
     fi
     
