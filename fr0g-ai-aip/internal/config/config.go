@@ -135,8 +135,8 @@ func Load() *Config {
 }
 
 // Validate validates the entire configuration using shared validation
-func (c *Config) Validate() error {
-	var errors sharedconfig.ValidationErrors
+func (c *Config) Validate() sharedconfig.ValidationErrors {
+	var errors []sharedconfig.ValidationError
 	
 	// Validate HTTP port
 	if err := sharedconfig.ValidatePort(c.HTTP.Port, "http.port"); err != nil {
@@ -185,11 +185,7 @@ func (c *Config) Validate() error {
 		}
 	}
 	
-	if len(errors) > 0 {
-		return errors
-	}
-	
-	return nil
+	return sharedconfig.ValidationErrors(errors)
 }
 
 // Helper functions for environment variable parsing

@@ -7,7 +7,6 @@ import (
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
-
 // ChatCompletionRequest represents a chat completion request for validation
 type ChatCompletionRequest struct {
 	Model       string    `json:"model"`
@@ -75,30 +74,27 @@ func ValidateChatCompletionRequest(req *ChatCompletionRequest) error {
 	return nil
 }
 
-// ValidateMessage validates a single chat message
+// ValidateMessage validates a single chat message using shared validation
 func ValidateMessage(role, content string) error {
-	if role == "" {
-		return fmt.Errorf("role is required")
-	}
-	if content == "" {
-		return fmt.Errorf("content is required")
-	}
-	if len(content) > 32000 { // Increased limit for modern models
-		return fmt.Errorf("content too long (max 32000 characters)")
-	}
+	// Use shared validation for role
 	if err := sharedconfig.ValidateRole(role); err != nil {
 		return fmt.Errorf(err.Message)
 	}
 	
-	// Additional content validation
-	if strings.TrimSpace(content) == "" {
-		return fmt.Errorf("content cannot be empty or whitespace only")
+	// Use shared validation for required content
+	if err := sharedconfig.ValidateRequired(content, "content"); err != nil {
+		return fmt.Errorf(err.Message)
+	}
+	
+	// Use shared validation for content length
+	if err := sharedconfig.ValidateLength(content, 1, 32000, "content"); err != nil {
+		return fmt.Errorf(err.Message)
 	}
 	
 	return nil
 }
 
-// ValidateModel checks if the model name is valid
+// ValidateModel checks if the model name is valid using shared validation
 func ValidateModel(model string) error {
 	if err := sharedconfig.ValidateModel(model); err != nil {
 		return fmt.Errorf(err.Message)
@@ -112,24 +108,19 @@ func ValidateModel(model string) error {
 		"mistral-7b", "mixtral-8x7b",
 	}
 	
-	for _, supportedModel := range supportedModels {
-		if model == supportedModel {
-			return nil
-		}
+	if err := sharedconfig.ValidateEnum(model, supportedModels, "model"); err != nil {
+		// Allow custom models - just return nil for unsupported but valid format
+		return nil
 	}
 	
-	// Allow custom models but warn they might not be supported
 	return nil
 }
 
-// ValidatePersonaPrompt validates the persona prompt if provided
+// ValidatePersonaPrompt validates the persona prompt if provided using shared validation
 func ValidatePersonaPrompt(prompt *string) error {
 	if prompt != nil {
-		if len(*prompt) > 8000 { // Increased limit for more detailed personas
-			return fmt.Errorf("persona prompt too long (max 8000 characters)")
-		}
-		if strings.TrimSpace(*prompt) == "" {
-			return fmt.Errorf("persona prompt cannot be empty or whitespace only")
+		if err := sharedconfig.ValidateLength(*prompt, 1, 8000, "persona_prompt"); err != nil {
+			return fmt.Errorf(err.Message)
 		}
 	}
 	return nil

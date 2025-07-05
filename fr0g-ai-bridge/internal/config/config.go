@@ -17,6 +17,30 @@ type Config struct {
 	Monitoring sharedconfig.MonitoringConfig `yaml:"monitoring"`
 }
 
+// Validate validates the configuration using shared validation
+func (c *Config) Validate() sharedconfig.ValidationErrors {
+	var errors []sharedconfig.ValidationError
+	
+	// Validate shared configurations
+	errors = append(errors, c.Server.Validate()...)
+	errors = append(errors, c.Security.Validate()...)
+	errors = append(errors, c.Monitoring.Validate()...)
+	
+	// Validate OpenWebUI configuration
+	if err := sharedconfig.ValidateURL(c.OpenWebUI.BaseURL, "openwebui.base_url"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if c.OpenWebUI.Timeout <= 0 {
+		errors = append(errors, sharedconfig.ValidationError{
+			Field:   "openwebui.timeout",
+			Message: "timeout must be positive",
+		})
+	}
+	
+	return sharedconfig.ValidationErrors(errors)
+}
+
 // LoadConfig loads configuration from file and environment variables
 func LoadConfig(configPath string) (*Config, error) {
 	// Create loader with standard options

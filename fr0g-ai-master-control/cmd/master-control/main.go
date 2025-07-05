@@ -30,6 +30,23 @@ type Config struct {
 	} `yaml:"cognitive"`
 }
 
+// Validate validates the configuration using shared validation
+func (c *Config) Validate() sharedconfig.ValidationErrors {
+	var errors []sharedconfig.ValidationError
+	
+	// Validate shared configurations
+	errors = append(errors, c.Server.Validate()...)
+	errors = append(errors, c.Security.Validate()...)
+	errors = append(errors, c.Monitoring.Validate()...)
+	
+	// Validate learning rate
+	if err := sharedconfig.ValidateRange(c.Learning.Rate, 0.0, 1.0, "learning.rate"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	return sharedconfig.ValidationErrors(errors)
+}
+
 func main() {
 	log.Println("🧠 Starting fr0g-ai-master-control...")
 
@@ -74,7 +91,7 @@ func main() {
 	}
 
 	// Validate configuration
-	if errors := config.Server.Validate(); len(errors) > 0 {
+	if errors := config.Validate(); errors.HasErrors() {
 		log.Printf("Configuration validation failed: %v", errors)
 		// Don't fail on validation errors, use defaults
 	}
