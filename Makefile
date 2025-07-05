@@ -144,6 +144,14 @@ proto:
 # Health check all services
 health:
 	@echo "🏥 Checking all service health..."
+	@chmod +x tests/integration/health_check_test.sh
+	@./tests/integration/health_check_test.sh
+
+# Quick health check (simple curl tests)
+health-quick:
+	@echo "🏥 Quick health check..."
+	@echo "Checking service registry (port 8500)..."
+	@curl -sf http://localhost:8500/health && echo "✅ Registry healthy" || echo "❌ Registry down"
 	@echo "Checking fr0g-ai-aip (port 8080)..."
 	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
 	@echo "Checking fr0g-ai-bridge (port 8082)..."
@@ -197,10 +205,27 @@ docker-up:
 	@echo "🐳 Starting services with Docker Compose..."
 	@if docker-compose up -d >/dev/null 2>&1; then \
 		echo "✅ Services started successfully!"; \
+		echo "⏳ Waiting for services to be ready..."; \
+		sleep 10; \
+		$(MAKE) health; \
 	else \
 		echo "❌ Failed to start services. Check logs with: docker-compose logs"; \
 		exit 1; \
 	fi
+
+docker-up-core:
+	@echo "🐳 Starting core services (Registry + AIP)..."
+	@docker-compose up -d service-registry fr0g-ai-aip
+	@echo "⏳ Waiting for core services to be ready..."
+	@sleep 10
+	@$(MAKE) health-quick
+
+docker-up-all:
+	@echo "🐳 Starting all services..."
+	@docker-compose up -d
+	@echo "⏳ Waiting for all services to be ready..."
+	@sleep 15
+	@$(MAKE) health
 
 docker-down:
 	@echo "🐳 Stopping Docker Compose services..."
@@ -210,6 +235,12 @@ docker-down:
 		echo "❌ Failed to stop services"; \
 		exit 1; \
 	fi
+
+docker-status:
+	@echo "🐳 Docker service status..."
+	@docker-compose ps
+	@echo ""
+	@$(MAKE) health-quick
 
 # Legacy targets for backward compatibility
 build: build-all
