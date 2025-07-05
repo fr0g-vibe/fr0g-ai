@@ -11,6 +11,7 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/middleware"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/registry"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
@@ -21,14 +22,16 @@ type Server struct {
 	config           *config.Config
 	service          *persona.Service
 	communityService *community.Service
+	registryClient   *registry.RegistryClient
 	server           *http.Server
 }
 
 // NewServer creates a new HTTP server instance
-func NewServer(cfg *config.Config, service *persona.Service) *Server {
+func NewServer(cfg *config.Config, service *persona.Service, registryClient *registry.RegistryClient) *Server {
 	s := &Server{
-		config:  cfg,
-		service: service,
+		config:         cfg,
+		service:        service,
+		registryClient: registryClient,
 	}
 	if service != nil {
 		s.communityService = community.NewService(service.GetStorage())
@@ -106,6 +109,13 @@ func (s *Server) Start() error {
 
 // Shutdown gracefully shuts down the server
 func (s *Server) Shutdown(ctx context.Context) error {
+	// Deregister from service registry
+	if s.registryClient != nil {
+		if err := s.registryClient.Shutdown(); err != nil {
+			fmt.Printf("Warning: Failed to deregister from service registry: %v\n", err)
+		}
+	}
+	
 	if s.server == nil {
 		return nil
 	}
@@ -145,16 +155,25 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 		"storage":   s.config.Storage.Type,
 	}
 
-	// Check storage health
-	if personas, err := s.service.ListPersonas(); err != nil {
-		health["status"] = "degraded"
-		health["storage_error"] = err.Error()
-		w.WriteHeader(http.StatusServiceUnavailable)
+	// Check storage health safely
+	var personaCount int
+	if s.service != nil {
+		if personas, err := s.service.ListPersonas(); err != nil {
+			health["status"] = "degraded"
+			health["storage_error"] = err.Error()
+			w.WriteHeader(http.StatusServiceUnavailable)
+			personaCount = 0
+		} else {
+			personaCount = len(personas)
+		}
 	} else {
-		// Add storage stats
-		health["persona_count"] = len(personas)
+		health["status"] = "degraded"
+		health["storage_error"] = "service not initialized"
+		w.WriteHeader(http.StatusServiceUnavailable)
+		personaCount = 0
 	}
 
+	health["persona_count"] = personaCount
 	json.NewEncoder(w).Encode(health)
 }
 
@@ -553,7 +572,7 @@ func (s *Server) getCommunityService() *community.Service {
 }
 
 // StartServerWithConfig starts the HTTP server with full configuration
-func StartServerWithConfig(cfg *config.Config, service *persona.Service) error {
-	server := NewServer(cfg, service)
+func StartServerWithConfig(cfg *config.Config, service *persona.Service, registryClient *registry.RegistryClient) error {
+	server := NewServer(cfg, service, registryClient)
 	return server.Start()
 }
