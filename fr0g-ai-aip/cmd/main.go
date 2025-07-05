@@ -11,36 +11,16 @@ import (
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/api"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	grpcserver "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
-	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	// Load configuration using shared config system
-	loader := sharedconfig.NewLoader(sharedconfig.LoaderOptions{
-		ConfigPath: "",
-		EnvPrefix:  "FR0G_AIP",
-	})
-	
-	// Load environment files
-	if err := loader.LoadEnvFiles(); err != nil {
-		log.Printf("Warning: failed to load env files: %v", err)
-	}
-	
-	// Create default config
-	cfg := &sharedconfig.Config{
-		HTTP: sharedconfig.HTTPConfig{
-			Port: "8080",
-		},
-		GRPC: sharedconfig.GRPCConfig{
-			Port: "9090",
-		},
-	}
-	
-	// Load from file
-	if err := loader.LoadFromFile(cfg); err != nil {
+	// Load configuration using AIP-specific config
+	cfg, err := config.LoadConfig("")
+	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
