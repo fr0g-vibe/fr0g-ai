@@ -296,7 +296,7 @@ func handleGenerateRandomCommunity(config Config) error {
 		return fmt.Errorf("failed to generate community: %v", err)
 	}
 
-	fmt.Printf("✅ Successfully generated community: %s (ID: %s)\n", generatedCommunity.Name, generatedCommunity.Id)
+	fmt.Printf("SUCCESS: Successfully generated community: %s (ID: %s)\n", generatedCommunity.Name, generatedCommunity.Id)
 	fmt.Printf("   Members: %d\n", generatedCommunity.Size)
 	fmt.Printf("   Diversity: %.2f\n", generatedCommunity.Diversity)
 	fmt.Printf("   Cohesion: %.2f\n", generatedCommunity.Cohesion)
@@ -321,11 +321,11 @@ func handleGenerateRandomCommunity(config Config) error {
 			continue
 		}
 
-		fmt.Printf("   • %s (based on %s persona)\n", identity.Name, persona.Name)
+		fmt.Printf("   - %s (based on %s persona)\n", identity.Name, persona.Name)
 		memberCount++
 	}
 
-	fmt.Printf("\n🎯 Use 'fr0g-ai-aip' with REST/gRPC API to explore community details\n")
+	fmt.Printf("\nUse 'fr0g-ai-aip' with REST/gRPC API to explore community details\n")
 	fmt.Printf("   Community ID: %s\n", generatedCommunity.Id)
 
 	return nil
