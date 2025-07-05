@@ -54,8 +54,9 @@ services:
       - SERVICE_ID=aip-001
       - HTTP_PORT=8080
       - GRPC_PORT=9090
-      - FR0G_STORAGE_TYPE=${FR0G_AIP_STORAGE_TYPE:-file}
-      - FR0G_DATA_DIR=${FR0G_AIP_DATA_DIR:-/app/data}
+      - STORAGE_TYPE=file
+      - FR0G_STORAGE_TYPE=file
+      - FR0G_DATA_DIR=/app/data
       - LOG_LEVEL=${LOG_LEVEL:-info}
     volumes:
       - aip_data:/app/data
