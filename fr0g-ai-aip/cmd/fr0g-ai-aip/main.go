@@ -198,13 +198,13 @@ func run() error {
 		app.config.GRPC.Port = *grpcPort
 	}
 
-	// Determine mode - default to server mode if no flags specified
+	// Determine mode - default to both HTTP and gRPC servers if no flags specified
 	if *serverMode || *grpcMode {
 		return app.RunServers(*serverMode, *grpcMode)
 	} else if len(os.Args) == 1 {
-		// No arguments provided, start in server mode by default
-		fmt.Println("No mode specified, starting in HTTP server mode...")
-		return app.RunServers(true, false)
+		// No arguments provided, start both HTTP and gRPC servers by default
+		fmt.Println("No mode specified, starting both HTTP and gRPC servers...")
+		return app.RunServers(true, true)
 	} else {
 		return app.RunCLI()
 	}

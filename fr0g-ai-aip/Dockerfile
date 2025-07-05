@@ -49,5 +49,5 @@ EXPOSE 8080 9090
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Default command
-CMD ["./fr0g-ai-aip"]
+# Default command - start both HTTP and gRPC servers
+CMD ["./fr0g-ai-aip", "--server", "--grpc"]

@@ -79,7 +79,8 @@ check_service_health() {
     if nc -z localhost 9090 2>/dev/null; then
         log_test "gRPC Port Check" "PASS" "Port 9090 is listening"
     else
-        log_test "gRPC Port Check" "FAIL" "Port 9090 not accessible"
+        log_test "gRPC Port Check" "FAIL" "Port 9090 not accessible - check if gRPC server is started"
+        echo -e "${YELLOW}💡 Debug: Check container logs with: docker logs fr0g-ai-fr0g-ai-aip-1${NC}"
         return 1
     fi
     
