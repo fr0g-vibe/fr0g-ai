@@ -87,53 +87,61 @@ tmux send-keys -t $SESSION_NAME:3 "echo 'Port: HTTP :8081'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL ✅ (Learning Rate: 0.100+)'" C-m
 tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD" C-m
 
-# Window 4: Configuration Expert
+# Window 4: fr0g-ai-io (Input/Output Processing)
+tmux new-window -t $SESSION_NAME -n "IO" -c "$PROJECT_ROOT/fr0g-ai-io"
+tmux send-keys -t $SESSION_NAME:4 "echo 'FR0G-AI-IO AGENT'" C-m
+tmux send-keys -t $SESSION_NAME:4 "echo 'Role: Input/Output processing, threat vector handling, external integrations'" C-m
+tmux send-keys -t $SESSION_NAME:4 "echo 'Ports: HTTP :8083, gRPC :9092'" C-m
+tmux send-keys -t $SESSION_NAME:4 "echo 'Status: NEW SERVICE - SMS, Voice, IRC, ESMTP, Discord processors'" C-m
+tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD" C-m
+
+# Window 5: Configuration Expert
 tmux new-window -t $SESSION_NAME -n "Config" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:4 "echo 'CONFIGURATION EXPERT'" C-m
-tmux send-keys -t $SESSION_NAME:4 "echo 'Role: Environment variables, shared config library, validation systems'" C-m
-tmux send-keys -t $SESSION_NAME:4 "echo 'Focus: .env, pkg/config/ - validation, loading, shared types'" C-m
-tmux send-keys -t $SESSION_NAME:4 "echo 'Key Files: .env, pkg/config/*.go'" C-m
-tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD .env.example .env pkg/config/config.go pkg/config/validation.go pkg/config/loader.go pkg/config/examples_test.go pkg/config/README.md" C-m
+tmux send-keys -t $SESSION_NAME:5 "echo 'CONFIGURATION EXPERT'" C-m
+tmux send-keys -t $SESSION_NAME:5 "echo 'Role: Environment variables, shared config library, validation systems'" C-m
+tmux send-keys -t $SESSION_NAME:5 "echo 'Focus: .env, pkg/config/ - validation, loading, shared types'" C-m
+tmux send-keys -t $SESSION_NAME:5 "echo 'Key Files: .env, pkg/config/*.go'" C-m
+tmux send-keys -t $SESSION_NAME:5 "$AIDER_CMD .env.example .env pkg/config/config.go pkg/config/validation.go pkg/config/loader.go pkg/config/examples_test.go pkg/config/README.md" C-m
 
 # ============================================================================
 # ESSENTIAL SUPPORT AGENTS
 # ============================================================================
 
-# Window 5: DevOps & Infrastructure
+# Window 6: DevOps & Infrastructure
 tmux new-window -t $SESSION_NAME -n "DevOps" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:5 "echo 'DEVOPS & INFRASTRUCTURE AGENT'" C-m
-tmux send-keys -t $SESSION_NAME:5 "echo 'Role: Docker, deployment, CI/CD, infrastructure automation'" C-m
-tmux send-keys -t $SESSION_NAME:5 "echo 'Focus: docker-compose.yml, Makefile, .env configuration'" C-m
-tmux send-keys -t $SESSION_NAME:5 "echo 'Services: service-registry:8500, aip:8080/9090, bridge:8082/9091, mcp:8081'" C-m
-tmux send-keys -t $SESSION_NAME:5 "$AIDER_CMD docker-compose.yml Makefile .env.example" C-m
+tmux send-keys -t $SESSION_NAME:6 "echo 'DEVOPS & INFRASTRUCTURE AGENT'" C-m
+tmux send-keys -t $SESSION_NAME:6 "echo 'Role: Docker, deployment, CI/CD, infrastructure automation'" C-m
+tmux send-keys -t $SESSION_NAME:6 "echo 'Focus: docker-compose.yml, Makefile, .env configuration'" C-m
+tmux send-keys -t $SESSION_NAME:6 "echo 'Services: service-registry:8500, aip:8080/9090, bridge:8082/9091, mcp:8081, io:8083/9092'" C-m
+tmux send-keys -t $SESSION_NAME:6 "$AIDER_CMD docker-compose.yml Makefile .env.example" C-m
 
-# Window 6: Build & Test Runner
+# Window 7: Build & Test Runner
 tmux new-window -t $SESSION_NAME -n "Build-Test" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:6 "echo 'BUILD & TEST RUNNER'" C-m
-tmux send-keys -t $SESSION_NAME:6 "echo 'Role: Build automation, test execution, continuous integration'" C-m
-tmux send-keys -t $SESSION_NAME:6 "echo 'Commands: make build-all, make test-all, docker-compose up'" C-m
-tmux send-keys -t $SESSION_NAME:6 "echo ''" C-m
-tmux send-keys -t $SESSION_NAME:6 "echo 'Quick Start: docker-compose up -d'" C-m
-tmux send-keys -t $SESSION_NAME:6 "echo 'Available commands:'" C-m
-tmux send-keys -t $SESSION_NAME:6 "make help" C-m
-
-# Window 7: System Monitor
-tmux new-window -t $SESSION_NAME -n "Monitor" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:7 "echo 'SYSTEM MONITOR'" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Real-time system monitoring, log viewing, service status'" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Commands: docker-compose logs, make health, watch docker ps'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'BUILD & TEST RUNNER'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Build automation, test execution, continuous integration'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Commands: make build-all, make test-all, docker-compose up'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo ''" C-m
-tmux send-keys -t $SESSION_NAME:7 "echo 'Service Status:'" C-m
-tmux send-keys -t $SESSION_NAME:7 "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || echo 'Docker not running - use: docker-compose up -d'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Quick Start: docker-compose up -d'" C-m
+tmux send-keys -t $SESSION_NAME:7 "echo 'Available commands:'" C-m
+tmux send-keys -t $SESSION_NAME:7 "make help" C-m
 
-# Window 8: Interactive Shell
-tmux new-window -t $SESSION_NAME -n "Shell" -c "$PROJECT_ROOT"
-tmux send-keys -t $SESSION_NAME:8 "echo 'INTERACTIVE SHELL'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Role: General purpose shell for ad-hoc commands and exploration'" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Project root: $PROJECT_ROOT'" C-m
+# Window 8: System Monitor
+tmux new-window -t $SESSION_NAME -n "Monitor" -c "$PROJECT_ROOT"
+tmux send-keys -t $SESSION_NAME:8 "echo 'SYSTEM MONITOR'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Role: Real-time system monitoring, log viewing, service status'" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Commands: docker-compose logs, make health, watch docker ps'" C-m
 tmux send-keys -t $SESSION_NAME:8 "echo ''" C-m
-tmux send-keys -t $SESSION_NAME:8 "echo 'Project structure:'" C-m
-tmux send-keys -t $SESSION_NAME:8 "ls -la" C-m
+tmux send-keys -t $SESSION_NAME:8 "echo 'Service Status:'" C-m
+tmux send-keys -t $SESSION_NAME:8 "docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' 2>/dev/null || echo 'Docker not running - use: docker-compose up -d'" C-m
+
+# Window 9: Interactive Shell
+tmux new-window -t $SESSION_NAME -n "Shell" -c "$PROJECT_ROOT"
+tmux send-keys -t $SESSION_NAME:9 "echo 'INTERACTIVE SHELL'" C-m
+tmux send-keys -t $SESSION_NAME:9 "echo 'Role: General purpose shell for ad-hoc commands and exploration'" C-m
+tmux send-keys -t $SESSION_NAME:9 "echo 'Project root: $PROJECT_ROOT'" C-m
+tmux send-keys -t $SESSION_NAME:9 "echo ''" C-m
+tmux send-keys -t $SESSION_NAME:9 "echo 'Project structure:'" C-m
+tmux send-keys -t $SESSION_NAME:9 "ls -la" C-m
 
 # ============================================================================
 # SESSION FINALIZATION
@@ -148,18 +156,19 @@ echo "✅ fr0g-ai Development Environment Created!"
 echo ""
 echo "📋 TMUX SESSION OVERVIEW:"
 echo "Session Name: $SESSION_NAME"
-echo "Total Windows: 9"
+echo "Total Windows: 10"
 echo ""
 echo "AGENT ASSIGNMENTS:"
 echo "  0: Project-Lead      - Overall coordination & architecture"
 echo "  1: AIP               - fr0g-ai-aip (Core AI Service) :8080/:9090"
 echo "  2: Bridge            - fr0g-ai-bridge (Integration) :8082/:9091"
 echo "  3: MCP               - fr0g-ai-master-control (Cognitive Engine) :8081"
-echo "  4: Config            - Configuration & environment management"
-echo "  5: DevOps            - Infrastructure & deployment"
-echo "  6: Build-Test        - Build & test automation"
-echo "  7: Monitor           - System monitoring"
-echo "  8: Shell             - Interactive shell"
+echo "  4: IO                - fr0g-ai-io (I/O Processing) :8083/:9092"
+echo "  5: Config            - Configuration & environment management"
+echo "  6: DevOps            - Infrastructure & deployment"
+echo "  7: Build-Test        - Build & test automation"
+echo "  8: Monitor           - System monitoring"
+echo "  9: Shell             - Interactive shell"
 echo ""
 echo "🚀 USAGE:"
 echo "  tmux attach-session -t $SESSION_NAME"
@@ -179,6 +188,7 @@ echo "  - Service Registry: :8500"
 echo "  - AIP Service: HTTP :8080, gRPC :9090"
 echo "  - Bridge Service: HTTP :8082, gRPC :9091"
 echo "  - Master Control: HTTP :8081"
+echo "  - I/O Service: HTTP :8083, gRPC :9092"
 echo ""
 echo "Quick Start:"
 echo "  1. Edit .env file with your API keys and configuration"
