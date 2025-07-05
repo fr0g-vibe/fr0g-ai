@@ -175,6 +175,46 @@ func (c *Config) Validate() sharedconfig.ValidationErrors {
 		errors = append(errors, *err)
 	}
 	
+	// Validate logging configuration
+	if err := sharedconfig.ValidateLogLevel(c.Logging.Level, "logging.level"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if err := sharedconfig.ValidateLogFormat(c.Logging.Format, "logging.format"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	// Validate TLS configuration
+	if c.HTTP.EnableTLS {
+		if err := sharedconfig.ValidateRequired(c.HTTP.CertFile, "http.cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateRequired(c.HTTP.KeyFile, "http.key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateFilePath(c.HTTP.CertFile, "http.cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateFilePath(c.HTTP.KeyFile, "http.key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
+	if c.GRPC.EnableTLS {
+		if err := sharedconfig.ValidateRequired(c.GRPC.CertFile, "grpc.cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateRequired(c.GRPC.KeyFile, "grpc.key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateFilePath(c.GRPC.CertFile, "grpc.cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateFilePath(c.GRPC.KeyFile, "grpc.key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+	
 	// Validate API key if auth is enabled
 	if c.Security.EnableAuth {
 		if err := sharedconfig.ValidateRequired(c.Security.APIKey, "security.api_key"); err != nil {

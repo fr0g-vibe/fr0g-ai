@@ -295,3 +295,34 @@ func ValidateStringSliceNotEmpty(slice []string, fieldName string) *ValidationEr
 	}
 	return nil
 }
+
+// ValidateFilePath validates that a file path exists and is accessible
+func ValidateFilePath(path string, fieldName string) *ValidationError {
+	if path == "" {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "file path is required",
+		}
+	}
+	
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: fmt.Sprintf("file does not exist: %s", path),
+		}
+	}
+	
+	return nil
+}
+
+// ValidateLogLevel validates log level values
+func ValidateLogLevel(level string, fieldName string) *ValidationError {
+	validLevels := []string{"debug", "info", "warn", "error", "fatal", "panic"}
+	return ValidateEnum(level, validLevels, fieldName)
+}
+
+// ValidateLogFormat validates log format values
+func ValidateLogFormat(format string, fieldName string) *ValidationError {
+	validFormats := []string{"json", "text"}
+	return ValidateEnum(format, validFormats, fieldName)
+}
