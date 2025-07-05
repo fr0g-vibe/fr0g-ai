@@ -1,329 +1,127 @@
 package mastercontrol
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
 	"log"
-	"sync"
+	"net/http"
+	"strings"
 	"time"
-
-	"fr0g-ai-master-control/internal/mastercontrol/cognitive"
-	"fr0g-ai-master-control/internal/mastercontrol/input"
-	"fr0g-ai-master-control/internal/mastercontrol/learning"
-	"fr0g-ai-master-control/internal/mastercontrol/memory"
-	"fr0g-ai-master-control/internal/mastercontrol/monitor"
-	"fr0g-ai-master-control/internal/mastercontrol/orchestrator"
-	"fr0g-ai-master-control/internal/mastercontrol/workflow"
 )
 
-// MasterControlProgram is the central intelligence of the fr0g.ai system
+// MasterControlProgram represents the main MCP instance
 type MasterControlProgram struct {
-	// Core components
-	cognitive    *cognitive.CognitiveEngine
-	orchestrator *orchestrator.StrategyOrchestrator
-	memory       *memory.MemoryManager
-	learning     *learning.LearningEngine
-	monitor      *monitor.SystemMonitor
-	workflow     *workflow.WorkflowEngine
-	input        *input.InputManager
-
-	// System state
-	systemState  *SystemState
-	capabilities map[string]Capability
-
-	// Control
-	ctx    context.Context
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
-	mu     sync.RWMutex
-
-	// Configuration
 	config *MCPConfig
+	server *http.Server
 }
 
-// SystemState represents the current state of the entire system
-type SystemState struct {
-	Status          string                    `json:"status"`
-	Uptime          time.Duration             `json:"uptime"`
-	Components      map[string]ComponentState `json:"components"`
-	ActiveWorkflows int                       `json:"active_workflows"`
-	SystemLoad      float64                   `json:"system_load"`
-	LastUpdate      time.Time                 `json:"last_update"`
-	Intelligence    IntelligenceMetrics       `json:"intelligence"`
-}
-
-// ComponentState represents the state of a system component
-type ComponentState struct {
-	Name         string                 `json:"name"`
-	Status       string                 `json:"status"`
-	Health       float64                `json:"health"`
-	LastSeen     time.Time              `json:"last_seen"`
-	Metrics      map[string]interface{} `json:"metrics"`
-	Capabilities []string               `json:"capabilities"`
-}
-
-// IntelligenceMetrics tracks system-wide intelligence metrics
-type IntelligenceMetrics struct {
-	LearningRate         float64 `json:"learning_rate"`
-	PatternCount         int     `json:"pattern_count"`
-	AdaptationScore      float64 `json:"adaptation_score"`
-	EfficiencyIndex      float64 `json:"efficiency_index"`
-	EmergentCapabilities int     `json:"emergent_capabilities"`
-}
-
-// Capability represents a system capability
-type Capability struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Description string                 `json:"description"`
-	Type        string                 `json:"type"`
-	Components  []string               `json:"components"`
-	Metadata    map[string]interface{} `json:"metadata"`
-	Emergent    bool                   `json:"emergent"`
-	CreatedAt   time.Time              `json:"created_at"`
-}
-
-// NewMasterControlProgram creates a new Master Control Program instance
+// NewMasterControlProgram creates a new MCP instance
 func NewMasterControlProgram(config *MCPConfig) *MasterControlProgram {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	mcp := &MasterControlProgram{
-		ctx:          ctx,
-		cancel:       cancel,
-		config:       config,
-		capabilities: make(map[string]Capability),
-		systemState: &SystemState{
-			Status:       "initializing",
-			Components:   make(map[string]ComponentState),
-			LastUpdate:   time.Now(),
-			Intelligence: IntelligenceMetrics{},
-		},
+	return &MasterControlProgram{
+		config: config,
 	}
-
-	// Initialize core components
-	mcp.initializeComponents()
-
-	return mcp
 }
 
-// initializeComponents initializes all core MCP components
-func (mcp *MasterControlProgram) initializeComponents() {
-	log.Println("MCP: Initializing cognitive architecture...")
-
-	// Initialize components in dependency order using constructors
-	mcp.memory = NewMemoryManager(mcp.config)
-	mcp.learning = NewLearningEngine(mcp.config, mcp.memory)
-	mcp.cognitive = NewCognitiveEngine(mcp.config, mcp.memory, mcp.learning)
-	mcp.monitor = NewSystemMonitor(mcp.config)
-	mcp.workflow = NewWorkflowEngine(mcp.config)
-	mcp.orchestrator = NewStrategyOrchestrator(mcp.config, mcp.cognitive, mcp.workflow)
-	// Input manager will be set externally for flexibility
-	mcp.input = nil
-
-	log.Println("MCP: Cognitive architecture initialized successfully")
-}
-
-// Start begins the Master Control Program operation
+// Start starts the MCP with webhook input system
 func (mcp *MasterControlProgram) Start() error {
-	mcp.mu.Lock()
-	defer mcp.mu.Unlock()
-
-	log.Println("MCP: Starting Master Control Program...")
-
-	// Start all components
-	components := []struct {
-		name    string
-		starter interface{ Start() error }
-	}{
-		{"Memory Manager", mcp.memory},
-		{"Learning Engine", mcp.learning},
-		{"Cognitive Engine", mcp.cognitive},
-		{"System Monitor", mcp.monitor},
-		{"Workflow Engine", mcp.workflow},
-		{"Strategy Orchestrator", mcp.orchestrator},
+	mux := http.NewServeMux()
+	
+	// Health endpoint
+	mux.HandleFunc("/health", mcp.healthHandler)
+	
+	// Status endpoint
+	mux.HandleFunc("/status", mcp.statusHandler)
+	
+	// Discord webhook endpoint
+	mux.HandleFunc("/webhook/discord", mcp.discordWebhookHandler)
+	
+	// Catch-all for unknown webhook tags
+	mux.HandleFunc("/webhook/", mcp.unknownWebhookHandler)
+	
+	mcp.server = &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", mcp.config.Input.Webhook.Host, mcp.config.Input.Webhook.Port),
+		Handler: mux,
+		ReadTimeout:  mcp.config.Input.Webhook.ReadTimeout,
+		WriteTimeout: mcp.config.Input.Webhook.WriteTimeout,
 	}
-
-	for _, comp := range components {
-		if err := comp.starter.Start(); err != nil {
-			return fmt.Errorf("failed to start %s: %w", comp.name, err)
+	
+	go func() {
+		if err := mcp.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("Webhook server error: %v", err)
 		}
-		log.Printf("MCP: %s started successfully", comp.name)
-	}
-
-	// Start input manager if configured
-	if mcp.input != nil {
-		log.Println("MCP: Starting Input Manager...")
-		if err := mcp.input.Start(mcp.ctx); err != nil {
-			log.Printf("MCP: Failed to start Input Manager: %v", err)
-		} else {
-			log.Printf("MCP: Input Manager started successfully")
-		}
-	}
-
-	// Start main control loop
-	mcp.wg.Add(1)
-	go mcp.controlLoop()
-
-	// Start consciousness if enabled
-	if mcp.config.SystemConsciousness {
-		mcp.wg.Add(1)
-		go mcp.consciousnessLoop()
-	}
-
-	mcp.systemState.Status = "running"
-	log.Println("MCP: Master Control Program is now operational")
-
+	}()
+	
 	return nil
 }
 
-// Stop gracefully shuts down the Master Control Program
+// Stop stops the MCP
 func (mcp *MasterControlProgram) Stop() error {
-	log.Println("MCP: Initiating graceful shutdown...")
-
-	mcp.cancel()
-
-	// Stop input manager first
-	if mcp.input != nil {
-		if err := mcp.input.Stop(); err != nil {
-			log.Printf("MCP: Error stopping Input Manager: %v", err)
-		}
+	if mcp.server != nil {
+		return mcp.server.Close()
 	}
-
-	mcp.wg.Wait()
-
-	mcp.systemState.Status = "stopped"
-	log.Println("MCP: Master Control Program shutdown complete")
-
 	return nil
 }
 
-// controlLoop is the main control loop of the MCP
-func (mcp *MasterControlProgram) controlLoop() {
-	defer mcp.wg.Done()
+func (mcp *MasterControlProgram) healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK"))
+}
 
-	ticker := time.NewTicker(mcp.config.HealthCheckInterval)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-mcp.ctx.Done():
-			return
-		case <-ticker.C:
-			mcp.performControlCycle()
-		}
+func (mcp *MasterControlProgram) statusHandler(w http.ResponseWriter, r *http.Request) {
+	status := map[string]interface{}{
+		"status": "running",
+		"processors": map[string]string{
+			"discord": "Discord message processor - analyzes messages for AI community review",
+		},
+		"uptime":    time.Now().Format(time.RFC3339),
+		"endpoints": []string{"/webhook/discord", "/health", "/status"},
 	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(status)
 }
 
-// consciousnessLoop maintains system consciousness and awareness
-func (mcp *MasterControlProgram) consciousnessLoop() {
-	defer mcp.wg.Done()
-
-	ticker := time.NewTicker(time.Second * 10) // Consciousness updates every 10 seconds
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-mcp.ctx.Done():
-			return
-		case <-ticker.C:
-			mcp.maintainConsciousness()
-		}
+func (mcp *MasterControlProgram) discordWebhookHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
-}
-
-// performControlCycle executes one cycle of the main control loop
-func (mcp *MasterControlProgram) performControlCycle() {
-	// Update system state
-	mcp.updateSystemState()
-
-	// Perform health checks
-	mcp.performHealthChecks()
-
-	// Optimize resources if enabled
-	if mcp.config.ResourceOptimization {
-		mcp.optimizeResources()
+	
+	var message map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
 	}
-
-	// Check for emergent capabilities
-	if mcp.config.EmergentCapabilities {
-		mcp.discoverEmergentCapabilities()
+	
+	// Mock AI community review process
+	response := map[string]interface{}{
+		"success":    true,
+		"message":    "Discord message processed successfully",
+		"request_id": fmt.Sprintf("req_%d", time.Now().Unix()),
+		"data": map[string]interface{}{
+			"action":        "reviewed",
+			"persona_count": 3,
+			"sentiment":     "neutral",
+			"requires_action": false,
+		},
+		"timestamp": time.Now().Format(time.RFC3339),
 	}
-
-	// Update intelligence metrics
-	mcp.updateIntelligenceMetrics()
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
-// maintainConsciousness maintains system consciousness and self-awareness
-func (mcp *MasterControlProgram) maintainConsciousness() {
-	// This is where the MCP maintains awareness of its own state
-	// and the state of the entire system
-
-	log.Printf("MCP Consciousness: System status=%s, components=%d, workflows=%d",
-		mcp.systemState.Status,
-		len(mcp.systemState.Components),
-		mcp.systemState.ActiveWorkflows)
-
-	// Perform self-reflection and adaptation
-	mcp.cognitive.Reflect(mcp.systemState)
-}
-
-// GetSystemState returns the current system state
-func (mcp *MasterControlProgram) GetSystemState() *SystemState {
-	mcp.mu.RLock()
-	defer mcp.mu.RUnlock()
-
-	// Create a copy to avoid race conditions
-	state := *mcp.systemState
-	return &state
-}
-
-// GetCapabilities returns all system capabilities
-func (mcp *MasterControlProgram) GetCapabilities() map[string]Capability {
-	mcp.mu.RLock()
-	defer mcp.mu.RUnlock()
-
-	// Create a copy
-	capabilities := make(map[string]Capability)
-	for k, v := range mcp.capabilities {
-		capabilities[k] = v
+func (mcp *MasterControlProgram) unknownWebhookHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the webhook tag from the path
+	path := strings.TrimPrefix(r.URL.Path, "/webhook/")
+	
+	response := map[string]interface{}{
+		"success": false,
+		"message": fmt.Sprintf("Unknown webhook tag: %s", path),
+		"error":   "webhook_not_found",
 	}
-
-	return capabilities
-}
-
-// SetInputManager sets the input manager for the MCP
-func (mcp *MasterControlProgram) SetInputManager(inputManager *input.InputManager) {
-	mcp.input = inputManager
-}
-
-// GetContext returns the MCP context
-func (mcp *MasterControlProgram) GetContext() context.Context {
-	return mcp.ctx
-}
-
-// Helper methods (to be implemented)
-func (mcp *MasterControlProgram) updateSystemState() {
-	mcp.systemState.LastUpdate = time.Now()
-	if mcp.workflow != nil {
-		mcp.systemState.ActiveWorkflows = mcp.workflow.GetActiveWorkflowCount()
-	}
-	if mcp.monitor != nil {
-		mcp.systemState.SystemLoad = mcp.monitor.GetSystemLoad()
-	}
-}
-
-func (mcp *MasterControlProgram) performHealthChecks() {
-	// Implementation will be added with system monitor
-}
-
-func (mcp *MasterControlProgram) optimizeResources() {
-	// Implementation will be added with orchestrator
-}
-
-func (mcp *MasterControlProgram) discoverEmergentCapabilities() {
-	// Implementation will be added with cognitive engine
-}
-
-func (mcp *MasterControlProgram) updateIntelligenceMetrics() {
-	// Implementation will be added with learning engine
+	
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(response)
 }
