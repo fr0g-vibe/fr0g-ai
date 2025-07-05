@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"fr0g-ai-bridge/internal/client"
-	"fr0g-ai-bridge/internal/config"
-	"fr0g-ai-bridge/internal/models"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/client"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/models"
 )
 
 // RESTServer handles REST API requests
@@ -449,6 +449,17 @@ func (s *RESTServer) isValidAPIKey(apiKey string) bool {
 	
 	for _, validKey := range s.config.Security.AllowedAPIKeys {
 		if apiKey == validKey {
+			return true
+		}
+	}
+	return false
+}
+
+// isValidRole checks if a role is valid
+func isValidRole(role string) bool {
+	validRoles := []string{"user", "assistant", "system", "function"}
+	for _, validRole := range validRoles {
+		if role == validRole {
 			return true
 		}
 	}
