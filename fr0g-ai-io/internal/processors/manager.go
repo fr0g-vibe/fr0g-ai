@@ -1,6 +1,7 @@
 package processors
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -58,6 +59,16 @@ func (m *Manager) RegisterProcessor(processor InputProcessor) {
 // GetProcessors returns all registered processors
 func (m *Manager) GetProcessors() map[string]InputProcessor {
 	return m.processors
+}
+
+// Start starts the processor manager
+func (m *Manager) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop stops the processor manager
+func (m *Manager) Stop() error {
+	return nil
 }
 
 // GetStatus returns the status of all processors

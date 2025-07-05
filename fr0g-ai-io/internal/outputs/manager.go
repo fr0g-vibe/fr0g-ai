@@ -1,6 +1,7 @@
 package outputs
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -27,6 +28,16 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 	mgr.processors["sms"] = smsProcessor
 
 	return mgr, nil
+}
+
+// Start starts the output manager
+func (m *Manager) Start(ctx context.Context) error {
+	return nil
+}
+
+// Stop stops the output manager
+func (m *Manager) Stop() error {
+	return nil
 }
 
 // ExecuteCommand executes an output command using the appropriate processor
