@@ -195,9 +195,11 @@ run-aip-test:
 validate-production:
 	@echo "🔒 Validating production build security for all services..."
 	@cd fr0g-ai-aip && $(MAKE) validate-production
-	@cd fr0g-ai-bridge && $(MAKE) validate-production || echo "Bridge validation not implemented"
-	@cd fr0g-ai-io && $(MAKE) validate-production || echo "IO validation not implemented"
-	@echo "✅ Production validation completed"
+	@cd fr0g-ai-bridge && $(MAKE) validate-production
+	@cd fr0g-ai-io && $(MAKE) validate-production
+	@cd fr0g-ai-master-control && $(MAKE) validate-production
+	@cd fr0g-ai-registry && $(MAKE) validate-production
+	@echo "✅ Production validation completed for all services"
 
 # Global environment setup
 setup-dev-env:
