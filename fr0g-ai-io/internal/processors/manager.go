@@ -29,8 +29,8 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 	}
 
 	// Initialize ESMTP processor if configured
-	if cfg.ESMTP != nil && cfg.ESMTP.Enabled {
-		esmtpProcessor := esmtp.NewProcessor(cfg.ESMTP)
+	if cfg.ESMTP.Enabled {
+		esmtpProcessor := esmtp.NewProcessor(&cfg.ESMTP)
 		mgr.processors["esmtp"] = esmtpProcessor
 	}
 
@@ -48,7 +48,7 @@ func (m *Manager) ProcessEvent(event *InputEvent) (*InputEventResponse, error) {
 			EventID:     event.ID,
 			Processed:   false,
 			Actions:     []OutputAction{},
-			Metadata:    map[string]string{"error": "no processor found for type: " + event.Type},
+			Metadata:    map[string]interface{}{"error": "no processor found for type: " + event.Type},
 			ProcessedAt: time.Now(),
 		}, nil
 	}
