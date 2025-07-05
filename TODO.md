@@ -50,7 +50,8 @@ When starting new AI coding sessions, always include these files:
 - **⚠️ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
 - **⚠️ VERIFY BEFORE EXECUTION**: Double-check all system commands before suggesting them
 - **⚠️ NO FORCE OPERATIONS**: Never suggest rm -rf, mv without confirmation, or other destructive file operations
-- **⚠️ BACKUP BEFORE CHANGES**: Always suggest backing up important files before major modifications
+- **⚠️ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
+- **⚠️ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
 
 ### SEARCH/REPLACE BLOCK RULES - PROJECT-WIDE
 - **QUADRUPLE BACKTICKS**: Always use ```` as fences, never triple backticks ```

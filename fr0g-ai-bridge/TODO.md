@@ -72,6 +72,8 @@
 - **⚠️ NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, or force push without explicit approval
 - **⚠️ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
 - **⚠️ VERIFY BEFORE EXECUTION**: Double-check all system commands before suggesting them
+- **⚠️ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
+- **⚠️ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
 
 ### CENTRALIZED CONFIGURATION RULES - BRIDGE COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
