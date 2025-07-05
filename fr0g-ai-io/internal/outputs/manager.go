@@ -9,6 +9,7 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/discord"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/irc"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/sms"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/smtp"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/voice"
 )
@@ -42,7 +43,9 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 	voiceProcessor := voice.NewProcessor(cfg)
 	mgr.processors["voice"] = voiceProcessor
 
-	// SMTP processor will be added when the package is created
+	// Initialize SMTP processor
+	smtpProcessor := smtp.NewProcessor(cfg)
+	mgr.processors["smtp"] = smtpProcessor
 
 	return mgr, nil
 }
