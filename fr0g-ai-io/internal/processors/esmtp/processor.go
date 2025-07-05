@@ -1,7 +1,6 @@
 package esmtp
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
@@ -246,12 +245,15 @@ func (p *Processor) ProcessMessage(msg EmailMessage) (*EmailMessage, error) {
 	msg.Analysis = analysis
 	msg.ThreatLevel = p.calculateThreatLevel(analysis)
 
-	// Store message in history
+	// Store message in history (use default limit if not configured)
+	maxHistory := 1000
 	if p.config.MaxHistorySize > 0 {
-		p.emailHistory = append(p.emailHistory, msg)
-		if len(p.emailHistory) > p.config.MaxHistorySize {
-			p.emailHistory = p.emailHistory[1:]
-		}
+		maxHistory = p.config.MaxHistorySize
+	}
+	
+	p.emailHistory = append(p.emailHistory, msg)
+	if len(p.emailHistory) > maxHistory {
+		p.emailHistory = p.emailHistory[1:]
 	}
 
 	log.Printf("Processed email from %s: threat_level=%s, confidence=%.2f",
@@ -612,6 +614,6 @@ func (p *Processor) GetStats() map[string]interface{} {
 		"unique_senders":      len(p.senderInfo),
 		"threat_counts":       threatCounts,
 		"is_running":          p.isRunning,
-		"smtp_server_enabled": p.config.SMTPServerEnabled,
+		"smtp_server_enabled": p.config.Enabled,
 	}
 }

@@ -3,7 +3,6 @@ package smtp
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net/smtp"
 	"strings"
 	"time"
@@ -12,15 +11,36 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
 )
 
+// SMTPConfig represents SMTP configuration
+type SMTPConfig struct {
+	Enabled            bool   `yaml:"enabled" json:"enabled"`
+	Host               string `yaml:"host" json:"host"`
+	Port               int    `yaml:"port" json:"port"`
+	Username           string `yaml:"username" json:"username"`
+	Password           string `yaml:"password" json:"password"`
+	From               string `yaml:"from" json:"from"`
+	TLS                bool   `yaml:"tls" json:"tls"`
+	InsecureSkipVerify bool   `yaml:"insecure_skip_verify" json:"insecure_skip_verify"`
+}
+
 // Processor handles SMTP email output
 type Processor struct {
-	config *sharedconfig.SMTPConfig
+	config *SMTPConfig
 }
 
 // NewProcessor creates a new SMTP output processor
 func NewProcessor(cfg *sharedconfig.Config) *Processor {
+	// Create default SMTP config if not provided
+	smtpConfig := &SMTPConfig{
+		Enabled:            false,
+		Host:               "localhost",
+		Port:               587,
+		TLS:                true,
+		InsecureSkipVerify: false,
+	}
+	
 	return &Processor{
-		config: cfg.SMTP,
+		config: smtpConfig,
 	}
 }
 
@@ -40,13 +60,11 @@ func (p *Processor) Process(command *types.OutputCommand) (*types.OutputResult, 
 
 	if !p.IsEnabled() {
 		return &types.OutputResult{
-			CommandID:      command.ID,
-			Success:        false,
-			ErrorMessage:   "SMTP processor is disabled",
-			Metadata:       map[string]string{"error": "processor_disabled"},
-			CompletedAt:    time.Now(),
-			AttemptCount:   1,
-			ProcessingTime: time.Since(startTime),
+			CommandID:    command.ID,
+			Success:      false,
+			ErrorMessage: "SMTP processor is disabled",
+			Metadata:     map[string]string{"error": "processor_disabled"},
+			CompletedAt:  time.Now(),
 		}, nil
 	}
 
@@ -59,23 +77,19 @@ func (p *Processor) Process(command *types.OutputCommand) (*types.OutputResult, 
 	err := p.sendEmail(to, subject, body)
 	if err != nil {
 		return &types.OutputResult{
-			CommandID:      command.ID,
-			Success:        false,
-			ErrorMessage:   fmt.Sprintf("Failed to send email: %v", err),
-			Metadata:       map[string]string{"error": "send_failed", "target": to},
-			CompletedAt:    time.Now(),
-			AttemptCount:   1,
-			ProcessingTime: time.Since(startTime),
+			CommandID:    command.ID,
+			Success:      false,
+			ErrorMessage: fmt.Sprintf("Failed to send email: %v", err),
+			Metadata:     map[string]string{"error": "send_failed", "target": to},
+			CompletedAt:  time.Now(),
 		}, nil
 	}
 
 	return &types.OutputResult{
-		CommandID:      command.ID,
-		Success:        true,
-		Metadata:       map[string]string{"target": to, "subject": subject},
-		CompletedAt:    time.Now(),
-		AttemptCount:   1,
-		ProcessingTime: time.Since(startTime),
+		CommandID:   command.ID,
+		Success:     true,
+		Metadata:    map[string]string{"target": to, "subject": subject},
+		CompletedAt: time.Now(),
 	}, nil
 }
 
@@ -174,9 +188,7 @@ func (p *Processor) formatMessage(to, subject, body string) string {
 // extractSubject extracts subject from command metadata or uses default
 func (p *Processor) extractSubject(command *types.OutputCommand) string {
 	if subject, exists := command.Metadata["subject"]; exists {
-		if subjectStr, ok := subject.(string); ok {
-			return subjectStr
-		}
+		return subject
 	}
 
 	// Default subject based on command type
