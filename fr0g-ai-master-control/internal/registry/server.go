@@ -12,6 +12,35 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// RegistryConfig holds configuration for the service registry
+type RegistryConfig struct {
+	Port           int
+	Host           string
+	HealthInterval time.Duration
+	ServiceTTL     time.Duration
+	EnableHTTPAPI  bool
+}
+
+// ServiceRegistry wraps the Server to match the expected API
+type ServiceRegistry struct {
+	server *Server
+	config *RegistryConfig
+}
+
+// NewServiceRegistry creates a new service registry with the expected API
+func NewServiceRegistry(config *RegistryConfig) *ServiceRegistry {
+	return &ServiceRegistry{
+		server: NewServer(),
+		config: config,
+	}
+}
+
+// Start starts the service registry server
+func (sr *ServiceRegistry) Start(ctx context.Context) error {
+	addr := fmt.Sprintf("%s:%d", sr.config.Host, sr.config.Port)
+	return sr.server.Start(ctx, addr)
+}
+
 // ServiceInfo represents a registered service
 type ServiceInfo struct {
 	ID          string            `json:"id"`

@@ -62,6 +62,8 @@ build-all: init-submodules deps
 	@cd fr0g-ai-bridge && (make build-with-grpc || make build || go build -o bin/fr0g-ai-bridge ./cmd/fr0g-ai-bridge || echo "❌ Bridge build failed")
 	@echo "Building fr0g-ai-master-control..."
 	@cd fr0g-ai-master-control && (make build || go build -o bin/fr0g-ai-master-control ./cmd/master-control || echo "❌ Master-control build failed")
+	@echo "Building registry server..."
+	@cd fr0g-ai-master-control && (make build-registry || go build -o bin/registry-server ./cmd/registry || echo "❌ Registry build failed")
 	@echo "✅ Build process completed"
 
 # Build bridge only
@@ -172,6 +174,7 @@ fmt:
 # Health check all services
 health:
 	@echo "🏥 Checking service health..."
+	@curl -sf http://localhost:8500/health && echo "✅ Service registry healthy" || echo "❌ Service registry down"
 	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
 	@curl -sf http://localhost:8082/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
 	@curl -sf http://localhost:8081/health && echo "✅ Master-control service healthy" || echo "❌ Master-control service down"
