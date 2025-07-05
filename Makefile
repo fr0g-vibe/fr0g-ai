@@ -69,6 +69,11 @@ build: proto
 	@echo "Building fr0g-ai-bridge..."
 	cd fr0g-ai-bridge && go build -o bin/fr0g-ai-bridge cmd/fr0g-ai-bridge/main.go
 
+# Build AIP only
+build-aip: proto-aip
+	@echo "Building fr0g-ai-aip..."
+	cd fr0g-ai-aip && go build -o bin/fr0g-ai-aip ./main.go
+
 # Run the bridge service
 run: run-bridge
 
@@ -111,10 +116,15 @@ proto:
 	@echo "Generating protobuf code for fr0g-ai-bridge..."
 	cd fr0g-ai-bridge && protoc --go_out=. --go-grpc_out=. proto/bridge.proto
 
+# Generate protobuf code for AIP
+proto-aip:
+	@echo "Generating protobuf code for fr0g-ai-aip..."
+	cd fr0g-ai-aip && protoc --proto_path=internal/grpc/proto --go_out=internal/grpc/pb --go_opt=paths=source_relative --go-grpc_out=internal/grpc/pb --go-grpc_opt=paths=source_relative internal/grpc/proto/persona.proto
+
 # Install dependencies for all projects
 deps: init-submodules
 	@echo "Generating protobuf files for fr0g-ai-aip..."
-	cd fr0g-ai-aip && make proto-if-needed || make proto || true
+	make proto-aip || true
 	@echo "Installing dependencies for fr0g-ai-aip..."
 	cd fr0g-ai-aip && go mod tidy && go mod download
 	@echo "Generating protobuf files for fr0g-ai-bridge..."
