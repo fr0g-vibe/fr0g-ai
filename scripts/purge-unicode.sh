@@ -27,6 +27,23 @@ declare -A UNICODE_MAP=(
     ["⏳"]="WAITING"
     ["🐳"]="DOCKER"
     ["🧹"]="CLEANING"
+    ["📝"]="NOTES"
+    ["📊"]="METRICS"
+    ["🌐"]="NETWORK"
+    ["🔧"]="CONFIG"
+    ["📈"]="STATS"
+    ["🎨"]="FORMAT"
+    ["⚠️"]="WARNING"
+    ["ℹ️"]="INFO"
+    ["🚨"]="ALERT"
+    ["📋"]="LIST"
+    ["🔄"]="REFRESH"
+    ["💾"]="SAVE"
+    ["🗂️"]="FILES"
+    ["🎯"]="TARGET"
+    ["🔗"]="LINK"
+    ["📤"]="SEND"
+    ["📥"]="RECEIVE"
 )
 
 # Function to purge unicode from a file
@@ -80,17 +97,18 @@ files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exe
 filtered_files=""
 while IFS= read -r file; do
     if [ -f "$file" ]; then
-        # Skip binary files
-        if file "$file" | grep -q "ELF\|executable\|binary"; then
-            echo "  Skipping binary file: $file"
+        # Skip actual binary files (ELF executables, not shell scripts)
+        if file "$file" | grep -q "ELF.*executable"; then
+            echo "  Skipping binary executable: $file"
             continue
         fi
         
-        # Skip files in bin directories
-        if [[ "$file" == */bin/* ]]; then
-            echo "  Skipping bin directory file: $file"
+        # Skip files in bin directories that are actual binaries
+        if [[ "$file" == */bin/* ]] && file "$file" | grep -q "ELF.*executable"; then
+            echo "  Skipping binary in bin directory: $file"
             continue
         fi
+        
         
         # Add to filtered list
         filtered_files="$filtered_files$file"$'\n'
