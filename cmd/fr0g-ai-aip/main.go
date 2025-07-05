@@ -11,22 +11,27 @@ import (
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/api"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	grpcserver "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	// Load configuration
-	cfg := config.Load()
+	// Load configuration using shared config system
+	cfg := sharedconfig.LoadConfig()
+
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("Configuration validation failed: %v", err)
+	}
 
 	// Start gRPC server
 	grpcServer := grpc.NewServer()
 	grpcPersonaServer := grpcserver.NewServer()
 	pb.RegisterPersonaServiceServer(grpcServer, grpcPersonaServer)
 
-	grpcPort := cfg.GetString("GRPC_PORT", "9091")
+	grpcPort := cfg.GRPC.Port
 	grpcListener, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
 		log.Fatalf("Failed to listen on gRPC port %s: %v", grpcPort, err)
@@ -41,7 +46,7 @@ func main() {
 
 	// Start REST API server
 	restServer := api.NewServer(cfg, nil)
-	restPort := cfg.GetString("REST_PORT", "8080")
+	restPort := cfg.HTTP.Port
 	
 	httpServer := &http.Server{
 		Addr:    ":" + restPort,
