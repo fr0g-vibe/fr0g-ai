@@ -23,7 +23,7 @@ func NewMemoryManager(config *MCPConfig) *memory.MemoryManager {
 		ImportanceThreshold: 0.5,
 		CompressionEnabled:  true,
 	}
-	
+
 	return memory.NewMemoryManager(memConfig)
 }
 
@@ -34,7 +34,7 @@ func NewLearningEngine(config *MCPConfig, mem *memory.MemoryManager) *learning.L
 		AdaptationSpeed: 0.1,
 		UpdateInterval:  time.Minute * 5,
 	}
-	
+
 	return learning.NewLearningEngine(learningConfig, mem)
 }
 
@@ -46,11 +46,11 @@ func NewCognitiveEngine(config *MCPConfig, mem *memory.MemoryManager, learn *lea
 		ReflectionEnabled:          config.SystemConsciousness,
 		AwarenessUpdateInterval:    time.Second * 30,
 		PatternConfidenceThreshold: 0.7,
-		MaxPatterns:               1000,
-		MaxInsights:               500,
-		MaxReflections:            100,
+		MaxPatterns:                1000,
+		MaxInsights:                500,
+		MaxReflections:             100,
 	}
-	
+
 	return cognitive.NewCognitiveEngine(cogConfig, mem, learn)
 }
 
@@ -65,7 +65,7 @@ func NewWorkflowEngine(config *MCPConfig) *workflow.WorkflowEngine {
 		MaxConcurrentWorkflows: config.MaxConcurrentWorkflows,
 		WorkflowTimeout:        time.Minute * 30,
 	}
-	
+
 	return workflow.NewWorkflowEngine(workflowConfig)
 }
 
@@ -75,6 +75,6 @@ func NewStrategyOrchestrator(config *MCPConfig, cog *cognitive.CognitiveEngine, 
 		ResourceOptimization: config.ResourceOptimization,
 		PredictiveManagement: config.PredictiveManagement,
 	}
-	
+
 	return orchestrator.NewStrategyOrchestrator(orchConfig, cog, wf)
 }
