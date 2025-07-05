@@ -69,10 +69,20 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 		return fmt.Errorf("failed to listen: %v", err)
 	}
 
-	// Configure gRPC server options
+	// Configure gRPC server options with proper defaults
+	maxRecvSize := cfg.GRPC.MaxRecvMsgSize
+	if maxRecvSize <= 0 {
+		maxRecvSize = 4 * 1024 * 1024 // 4MB default
+	}
+	
+	maxSendSize := cfg.GRPC.MaxSendMsgSize
+	if maxSendSize <= 0 {
+		maxSendSize = 4 * 1024 * 1024 // 4MB default
+	}
+	
 	opts := []grpc.ServerOption{
-		grpc.MaxRecvMsgSize(cfg.GRPC.MaxRecvMsgSize),
-		grpc.MaxSendMsgSize(cfg.GRPC.MaxSendMsgSize),
+		grpc.MaxRecvMsgSize(maxRecvSize),
+		grpc.MaxSendMsgSize(maxSendSize),
 	}
 
 	s := grpc.NewServer(opts...)

@@ -411,6 +411,7 @@ func GetDefaults() *Config {
 			EnableReflection: enableReflection,
 			MaxRecvMsgSize:   4 * 1024 * 1024,  // 4MB
 			MaxSendMsgSize:   4 * 1024 * 1024,  // 4MB
+			ConnectionTimeout: 30 * time.Second,
 		},
 		SMS: SMSConfig{
 			Enabled:            true,
