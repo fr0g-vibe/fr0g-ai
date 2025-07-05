@@ -253,7 +253,7 @@ func (s *Server) registerServiceHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) deregisterServiceHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPUT {
+	if r.Method != "PUT" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
