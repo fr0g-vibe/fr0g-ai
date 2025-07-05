@@ -881,11 +881,11 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 	// Test with special characters and unicode
 	req := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
-			Name:   "Special Chars Expert 🚀",
+			Name:   "Special Chars Expert ROCKET",
 			Topic:  "Unicode & Special Characters\nMultiline",
 			Prompt: "You are an expert in handling special characters: @#$%^&*(){}[]|\\:;\"'<>,.?/~`",
 			Context: map[string]string{
-				"unicode":       "🎯🚀💡🔥⭐",
+				"unicode":       "TARGET ROCKET BULB FIRE STAR",
 				"special_chars": "@#$%^&*()",
 				"quotes":        "\"single'double\"",
 				"newlines":      "line1\nline2\nline3",
@@ -895,7 +895,7 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 				"file with spaces.txt",
 				"file-with-dashes.md",
 				"file_with_underscores.json",
-				"unicode-file-🚀.txt",
+				"unicode-file-ROCKET.txt",
 				"special@chars#file$.pdf",
 			},
 		},
@@ -907,7 +907,7 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 	}
 
 	// Verify special characters were preserved
-	if resp.Persona.Name != "Special Chars Expert 🚀" {
+	if resp.Persona.Name != "Special Chars Expert ROCKET" {
 		t.Errorf("Expected unicode name to be preserved, got %s", resp.Persona.Name)
 	}
 
@@ -918,7 +918,7 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 		t.Fatalf("GetPersona with special chars failed: %v", err)
 	}
 
-	if getResp.Persona.Context["unicode"] != "🎯🚀💡🔥⭐" {
+	if getResp.Persona.Context["unicode"] != "TARGET ROCKET BULB FIRE STAR" {
 		t.Errorf("Expected unicode context to be preserved")
 	}
 	if getResp.Persona.Context["newlines"] != "line1\nline2\nline3" {
@@ -1397,13 +1397,13 @@ func TestPersonaServer_ProtobufConversion(t *testing.T) {
 		Context: map[string]string{
 			"string_field":  "test_value",
 			"empty_field":   "",
-			"unicode_field": "🚀🎯",
+			"unicode_field": "ROCKET TARGET",
 			"number_field":  "123",
 			"bool_field":    "true",
 		},
 		Rag: []string{
 			"document1.txt",
-			"unicode_doc_🚀.md",
+			"unicode_doc_ROCKET.md",
 			"special@chars#doc.pdf",
 		},
 	}

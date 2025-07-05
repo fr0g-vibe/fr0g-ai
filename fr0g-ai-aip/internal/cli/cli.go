@@ -303,7 +303,7 @@ func handleGenerateRandomCommunity(config Config) error {
 	fmt.Printf("   Type: %s\n", generatedCommunity.Type)
 
 	// Show some member details
-	fmt.Println("\n📊 Community Members:")
+	fmt.Println("\nCommunity Members:")
 	memberCount := 0
 	for _, memberId := range generatedCommunity.MemberIds {
 		if memberCount >= 5 { // Show first 5 members

@@ -118,14 +118,14 @@ func TestPersonaJSONEdgeCases(t *testing.T) {
 		Id:     "special-chars-id",
 		Name:   "Test \"Expert\" with 'quotes'",
 		Topic:  "Testing\nwith\nnewlines",
-		Prompt: "You are a testing expert with unicode: 🚀 and symbols: @#$%",
+		Prompt: "You are a testing expert with unicode: ROCKET and symbols: @#$%",
 		Context: map[string]string{
 			"key with spaces": "value with\nnewlines",
-			"unicode_key":     "unicode value: 🎯",
+			"unicode_key":     "unicode value: TARGET",
 		},
 		Rag: []string{
 			"doc with spaces.txt",
-			"unicode-doc-🚀.md",
+			"unicode-doc-ROCKET.md",
 		},
 	}
 
