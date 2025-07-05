@@ -43,7 +43,7 @@ RUN mkdir -p /app/config /app/logs && chown -R appuser:appuser /app
 USER appuser
 
 # Expose ports
-EXPOSE 8082 9091
+EXPOSE 8082 9092
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
