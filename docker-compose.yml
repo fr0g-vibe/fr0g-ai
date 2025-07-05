@@ -17,28 +17,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Master Control Program
-  fr0g-ai-master-control:
-    build:
-      context: .
-      dockerfile: fr0g-ai-master-control/Dockerfile
-    ports:
-      - "8081:8081"
-    environment:
-      - REGISTRY_URL=http://service-registry:8500
-      - SERVICE_NAME=fr0g-ai-master-control
-      - SERVICE_ID=mcp-001
-      - SERVICE_PORT=8081
-      - STORAGE_TYPE=file
-    depends_on:
-      - service-registry
-    networks:
-      - fr0g-ai-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # AI Identity & Persona Service
   fr0g-ai-aip:
@@ -116,7 +94,7 @@ services:
       - SERVICE_ID=io-001
       - HTTP_PORT=8083
       - GRPC_PORT=9092
-      - MCP_GRPC_ENDPOINT=fr0g-ai-master-control:8081
+      - MCP_GRPC_ENDPOINT=service-registry:8500
       - LOG_LEVEL=${LOG_LEVEL:-info}
       # SMS Configuration
       - SMS_ENABLED=${SMS_ENABLED:-true}
@@ -144,7 +122,6 @@ services:
       - ./logs:/app/logs
     depends_on:
       - service-registry
-      - fr0g-ai-master-control
     networks:
       - fr0g-ai-network
     healthcheck:
