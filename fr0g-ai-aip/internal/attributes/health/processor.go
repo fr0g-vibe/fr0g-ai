@@ -52,113 +52,35 @@ func (p *Processor) ValidateHealth(health *pb.Health) []config.ValidationError {
 		}
 	}
 
-	// Validate fitness level
-	if health.FitnessLevel != "" {
-		validLevels := []string{
-			"sedentary", "lightly-active", "moderately-active", 
-			"very-active", "extremely-active", "athlete",
-		}
-		if !p.isValidOption(health.FitnessLevel, validLevels) {
-			errors = append(errors, config.ValidationError{
-				Field:   "fitness_level",
-				Message: "invalid fitness level",
-			})
-		}
-	}
-
-	// Validate exercise frequency
-	if health.ExerciseFrequency != "" {
-		validFrequencies := []string{
-			"never", "rarely", "weekly", "few-times-week", 
-			"daily", "multiple-daily", "professional",
-		}
-		if !p.isValidOption(health.ExerciseFrequency, validFrequencies) {
-			errors = append(errors, config.ValidationError{
-				Field:   "exercise_frequency",
-				Message: "invalid exercise frequency",
-			})
-		}
-	}
-
-	// Validate diet type
-	if health.DietType != "" {
-		validDiets := []string{
-			"omnivore", "vegetarian", "vegan", "pescatarian",
-			"keto", "paleo", "mediterranean", "low-carb",
-			"low-fat", "intermittent-fasting", "raw", "other",
-		}
-		if !p.isValidOption(health.DietType, validDiets) {
-			errors = append(errors, config.ValidationError{
-				Field:   "diet_type",
-				Message: "invalid diet type",
-			})
-		}
-	}
-
-	// Validate sleep quality
-	if health.SleepQuality != "" {
-		validQualities := []string{
-			"excellent", "good", "fair", "poor", "very-poor",
-			"insomnia", "sleep-disorder", "irregular",
-		}
-		if !p.isValidOption(health.SleepQuality, validQualities) {
-			errors = append(errors, config.ValidationError{
-				Field:   "sleep_quality",
-				Message: "invalid sleep quality",
-			})
-		}
-	}
-
-	// Validate stress level
-	if health.StressLevel != "" {
-		validLevels := []string{
-			"very-low", "low", "moderate", "high", "very-high",
-			"chronic", "managed", "overwhelming",
-		}
-		if !p.isValidOption(health.StressLevel, validLevels) {
-			errors = append(errors, config.ValidationError{
-				Field:   "stress_level",
-				Message: "invalid stress level",
-			})
-		}
-	}
-
-	// Validate substance use
-	if health.SubstanceUse != "" {
-		validUse := []string{
-			"none", "social-drinking", "regular-drinking", "heavy-drinking",
-			"social-smoking", "regular-smoking", "heavy-smoking",
-			"recreational-drugs", "prescription-drugs", "recovering",
-		}
-		if !p.isValidOption(health.SubstanceUse, validUse) {
-			errors = append(errors, config.ValidationError{
-				Field:   "substance_use",
-				Message: "invalid substance use",
-			})
-		}
-	}
-
-	// Validate medical conditions list
-	if len(health.MedicalConditions) > 20 {
+	// Validate disabilities list
+	if len(health.Disabilities) > 10 {
 		errors = append(errors, config.ValidationError{
-			Field:   "medical_conditions",
-			Message: "too many medical conditions specified (max 20)",
+			Field:   "disabilities",
+			Message: "too many disabilities listed (maximum 10)",
+		})
+	}
+
+	// Validate chronic conditions list
+	if len(health.ChronicConditions) > 15 {
+		errors = append(errors, config.ValidationError{
+			Field:   "chronic_conditions",
+			Message: "too many chronic conditions listed (maximum 15)",
+		})
+	}
+
+	// Validate addictions list
+	if len(health.Addictions) > 10 {
+		errors = append(errors, config.ValidationError{
+			Field:   "addictions",
+			Message: "too many addictions listed (maximum 10)",
 		})
 	}
 
 	// Validate medications list
-	if len(health.Medications) > 25 {
+	if len(health.Medications) > 20 {
 		errors = append(errors, config.ValidationError{
 			Field:   "medications",
-			Message: "too many medications specified (max 25)",
-		})
-	}
-
-	// Validate allergies list
-	if len(health.Allergies) > 15 {
-		errors = append(errors, config.ValidationError{
-			Field:   "allergies",
-			Message: "too many allergies specified (max 15)",
+			Message: "too many medications listed (maximum 20)",
 		})
 	}
 
@@ -178,17 +100,12 @@ func (p *Processor) ProcessHealth(health *pb.Health) (*pb.Health, error) {
 
 	// Create processed copy
 	processed := &pb.Health{
-		PhysicalHealth:      p.normalizeString(health.PhysicalHealth),
-		MentalHealth:        p.normalizeString(health.MentalHealth),
-		FitnessLevel:        p.normalizeString(health.FitnessLevel),
-		ExerciseFrequency:   p.normalizeString(health.ExerciseFrequency),
-		DietType:            p.normalizeString(health.DietType),
-		SleepQuality:        p.normalizeString(health.SleepQuality),
-		StressLevel:         p.normalizeString(health.StressLevel),
-		SubstanceUse:        p.normalizeString(health.SubstanceUse),
-		MedicalConditions:   p.normalizeStringSlice(health.MedicalConditions),
-		Medications:         p.normalizeStringSlice(health.Medications),
-		Allergies:           p.normalizeStringSlice(health.Allergies),
+		PhysicalHealth:    p.normalizeString(health.PhysicalHealth),
+		MentalHealth:      p.normalizeString(health.MentalHealth),
+		Disabilities:      p.normalizeAndDeduplicateList(health.Disabilities),
+		ChronicConditions: p.normalizeAndDeduplicateList(health.ChronicConditions),
+		Addictions:        p.normalizeAndDeduplicateList(health.Addictions),
+		Medications:       p.normalizeAndDeduplicateList(health.Medications),
 	}
 
 	return processed, nil
@@ -252,14 +169,19 @@ func (p *Processor) normalizeString(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
-func (p *Processor) normalizeStringSlice(slice []string) []string {
-	var normalized []string
-	for _, s := range slice {
-		if trimmed := strings.TrimSpace(s); trimmed != "" {
-			normalized = append(normalized, strings.ToLower(trimmed))
+func (p *Processor) normalizeAndDeduplicateList(list []string) []string {
+	seen := make(map[string]bool)
+	var result []string
+	
+	for _, item := range list {
+		normalized := strings.TrimSpace(item)
+		if normalized != "" && !seen[normalized] {
+			seen[normalized] = true
+			result = append(result, normalized)
 		}
 	}
-	return normalized
+	
+	return result
 }
 
 func (p *Processor) getOverallHealth(health *pb.Health) string {

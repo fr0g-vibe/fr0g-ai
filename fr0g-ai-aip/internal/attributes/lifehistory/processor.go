@@ -102,15 +102,15 @@ func (p *Processor) validateLifeEvent(event *pb.LifeEvent, fieldPrefix string) [
 	}
 
 	// Validate event type
-	if event.EventType != "" {
+	if event.Type != "" {
 		validTypes := []string{
 			"birth", "death", "marriage", "divorce", "graduation", "job-change",
 			"relocation", "illness", "accident", "achievement", "loss", "trauma",
 			"milestone", "relationship", "family", "career", "education", "health",
 		}
-		if !p.isValidOption(event.EventType, validTypes) {
+		if !p.isValidOption(event.Type, validTypes) {
 			errors = append(errors, config.ValidationError{
-				Field:   fieldPrefix + ".event_type",
+				Field:   fieldPrefix + ".type",
 				Message: "invalid event type",
 			})
 		}
@@ -166,10 +166,10 @@ func (p *Processor) validateEducation(education *pb.Education, fieldPrefix strin
 	}
 
 	// Validate field of study length
-	if len(education.FieldOfStudy) > 100 {
+	if len(education.Field) > 100 {
 		errors = append(errors, config.ValidationError{
-			Field:   fieldPrefix + ".field_of_study",
-			Message: "field of study too long (max 100 characters)",
+			Field:   fieldPrefix + ".field",
+			Message: "field too long (max 100 characters)",
 		})
 	}
 
@@ -197,10 +197,10 @@ func (p *Processor) validateCareer(career *pb.Career, fieldPrefix string) []conf
 	}
 
 	// Validate job title length
-	if len(career.JobTitle) > 100 {
+	if len(career.Title) > 100 {
 		errors = append(errors, config.ValidationError{
-			Field:   fieldPrefix + ".job_title",
-			Message: "job title too long (max 100 characters)",
+			Field:   fieldPrefix + ".title",
+			Message: "title too long (max 100 characters)",
 		})
 	}
 
@@ -229,13 +229,8 @@ func (p *Processor) validateCareer(career *pb.Career, fieldPrefix string) []conf
 		}
 	}
 
-	// Validate description length
-	if len(career.Description) > 500 {
-		errors = append(errors, config.ValidationError{
-			Field:   fieldPrefix + ".description",
-			Message: "description too long (max 500 characters)",
-		})
-	}
+	// Note: Career protobuf doesn't have description field
+	// Only validate existing fields: title, industry, company, dates, salary
 
 	return errors
 }
@@ -269,11 +264,11 @@ func (p *Processor) processMajorEvents(events []*pb.LifeEvent) []*pb.LifeEvent {
 	for _, event := range events {
 		if event != nil {
 			processedEvent := &pb.LifeEvent{
-				EventType:   p.normalizeString(event.EventType),
+				Type:        p.normalizeString(event.Type),
 				Description: strings.TrimSpace(event.Description),
+				Age:         event.Age,
+				Date:        event.Date,
 				Impact:      p.normalizeString(event.Impact),
-				AgeAtEvent:  event.AgeAtEvent,
-				Year:        event.Year,
 			}
 			processed = append(processed, processedEvent)
 		}
@@ -287,13 +282,11 @@ func (p *Processor) processEducationHistory(education []*pb.Education) []*pb.Edu
 	for _, edu := range education {
 		if edu != nil {
 			processedEdu := &pb.Education{
-				Level:        p.normalizeString(edu.Level),
-				FieldOfStudy: strings.TrimSpace(edu.FieldOfStudy),
-				Institution:  strings.TrimSpace(edu.Institution),
-				StartYear:    edu.StartYear,
-				EndYear:      edu.EndYear,
-				Completed:    edu.Completed,
-				Gpa:          edu.Gpa,
+				Level:       p.normalizeString(edu.Level),
+				Field:       strings.TrimSpace(edu.Field),
+				Institution: strings.TrimSpace(edu.Institution),
+				Graduation:  edu.Graduation,
+				Performance: p.normalizeString(edu.Performance),
 			}
 			processed = append(processed, processedEdu)
 		}
@@ -307,13 +300,13 @@ func (p *Processor) processCareerHistory(careers []*pb.Career) []*pb.Career {
 	for _, career := range careers {
 		if career != nil {
 			processedCareer := &pb.Career{
-				JobTitle:    strings.TrimSpace(career.JobTitle),
-				Company:     strings.TrimSpace(career.Company),
-				Industry:    p.normalizeString(career.Industry),
-				StartYear:   career.StartYear,
-				EndYear:     career.EndYear,
-				Description: strings.TrimSpace(career.Description),
-				IsCurrent:   career.IsCurrent,
+				Title:     strings.TrimSpace(career.Title),
+				Industry:  strings.TrimSpace(career.Industry),
+				Company:   strings.TrimSpace(career.Company),
+				StartDate: career.StartDate,
+				EndDate:   career.EndDate,
+				IsCurrent: career.IsCurrent,
+				Salary:    strings.TrimSpace(career.Salary),
 			}
 			processed = append(processed, processedCareer)
 		}
