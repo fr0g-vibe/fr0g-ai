@@ -10,6 +10,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/queue"
 	"google.golang.org/grpc"
@@ -21,6 +22,7 @@ type Server struct {
 	httpServer     *http.Server
 	grpcServer     *grpc.Server
 	processorMgr   *processors.Manager
+	outputMgr      *outputs.Manager
 	queueMgr       *queue.Manager
 	mu             sync.RWMutex
 	isRunning      bool
@@ -32,6 +34,12 @@ func NewServer(cfg *sharedconfig.Config) (*Server, error) {
 	processorMgr, err := processors.NewManager(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create processor manager: %w", err)
+	}
+
+	// Create output manager
+	outputMgr, err := outputs.NewManager(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create output manager: %w", err)
 	}
 
 	// Create queue manager
@@ -57,6 +65,7 @@ func NewServer(cfg *sharedconfig.Config) (*Server, error) {
 		httpServer:   httpServer,
 		grpcServer:   grpcServer,
 		processorMgr: processorMgr,
+		outputMgr:    outputMgr,
 		queueMgr:     queueMgr,
 	}
 
@@ -89,6 +98,11 @@ func (s *Server) Start(ctx context.Context) error {
 	// Start processor manager
 	if err := s.processorMgr.Start(ctx); err != nil {
 		return fmt.Errorf("failed to start processor manager: %w", err)
+	}
+
+	// Start output manager
+	if err := s.outputMgr.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start output manager: %w", err)
 	}
 
 	// Start HTTP server
@@ -133,6 +147,11 @@ func (s *Server) Stop() error {
 		log.Printf("Error stopping processor manager: %v", err)
 	}
 
+	// Stop output manager
+	if err := s.outputMgr.Stop(); err != nil {
+		log.Printf("Error stopping output manager: %v", err)
+	}
+
 	// Stop queue manager
 	if err := s.queueMgr.Stop(); err != nil {
 		log.Printf("Error stopping queue manager: %v", err)
@@ -165,6 +184,11 @@ func (s *Server) setupHTTPRoutes(mux *http.ServeMux) {
 	// Queue status endpoints
 	mux.HandleFunc("/queue/status", s.queueStatusHandler)
 	mux.HandleFunc("/queue/stats", s.queueStatsHandler)
+
+	// Output endpoints
+	mux.HandleFunc("/outputs", s.outputsHandler)
+	mux.HandleFunc("/send", s.sendHandler)
+	mux.HandleFunc("/broadcast", s.broadcastHandler)
 
 	// Webhook endpoints for external services
 	mux.HandleFunc("/webhook/sms", s.smsWebhookHandler)
@@ -202,6 +226,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 		"timestamp":  time.Now().UTC(),
 		"is_running": isRunning,
 		"processors": s.processorMgr.GetStatus(),
+		"outputs":    s.outputMgr.GetStatus(),
 		"queue":      s.queueMgr.GetStatus(),
 	}
 
@@ -283,5 +308,37 @@ func (s *Server) discordWebhookHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) genericWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: Handle generic webhook
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
+}
+
+func (s *Server) outputsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	status := s.outputMgr.GetStatus()
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"outputs": %v}`, status)
+}
+
+func (s *Server) sendHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// TODO: Parse request body and send message
+	http.Error(w, "Not implemented", http.StatusNotImplemented)
+}
+
+func (s *Server) broadcastHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// TODO: Parse request body and broadcast message
 	http.Error(w, "Not implemented", http.StatusNotImplemented)
 }
