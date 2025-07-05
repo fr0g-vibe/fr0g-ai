@@ -178,14 +178,11 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	health["persona_count"] = personaCount
 	
-	// Add gRPC reflection status for debugging
-	enableReflection := false
-	if s.config != nil && s.config.GRPC.EnableReflection {
-		enableReflection = true
-	}
+	// Add gRPC reflection status for debugging - check environment variable at runtime
+	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
 	
-	// Also check environment variable directly
-	if os.Getenv("GRPC_ENABLE_REFLECTION") == "true" {
+	// Also check config if environment variable is not set
+	if !enableReflection && s.config != nil && s.config.GRPC.EnableReflection {
 		enableReflection = true
 	}
 	

@@ -387,7 +387,7 @@ func (c *Config) Validate() error {
 
 // GetDefaults returns default configuration values
 func GetDefaults() *Config {
-	// Read reflection setting from environment
+	// Read reflection setting from environment at runtime
 	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
 	
 	// Debug output for environment variables

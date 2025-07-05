@@ -81,13 +81,17 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 	personaServer := NewPersonaServer(cfg, service)
 	pb.RegisterPersonaServiceServer(s, personaServer)
 
-	// Conditionally enable gRPC reflection
-	enableReflection := cfg.GRPC.EnableReflection
+	// Conditionally enable gRPC reflection - check environment variable at runtime
+	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
 	
-	// Also check environment variable directly
-	if os.Getenv("GRPC_ENABLE_REFLECTION") == "true" {
+	// Also check config if environment variable is not set
+	if !enableReflection && cfg.GRPC.EnableReflection {
 		enableReflection = true
 	}
+	
+	fmt.Printf("DEBUG: Environment GRPC_ENABLE_REFLECTION=%s\n", os.Getenv("GRPC_ENABLE_REFLECTION"))
+	fmt.Printf("DEBUG: Config EnableReflection=%t\n", cfg.GRPC.EnableReflection)
+	fmt.Printf("DEBUG: Final enableReflection=%t\n", enableReflection)
 	
 	if enableReflection {
 		fmt.Println("⚠️  gRPC reflection ENABLED - DO NOT use in production!")
