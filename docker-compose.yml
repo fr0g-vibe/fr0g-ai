@@ -36,6 +36,8 @@ services:
       - FR0G_STORAGE_TYPE=file
       - FR0G_DATA_DIR=/app/data
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - GRPC_ENABLE_REFLECTION=${GRPC_ENABLE_REFLECTION:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
     volumes:
       - aip_data:/app/data
       - ./logs:/app/logs
