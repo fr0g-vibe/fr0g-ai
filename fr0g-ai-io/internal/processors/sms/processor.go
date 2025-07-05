@@ -461,13 +461,13 @@ func (p *Processor) calculateOverallConfidence(analysis *ThreatAnalysis) float64
 
 // calculateThreatLevel determines threat level based on analysis
 func (p *Processor) calculateThreatLevel(analysis *ThreatAnalysis) ThreatLevel {
-	if analysis.Confidence >= 0.8 {
+	if analysis.Confidence >= 0.7 {
 		return ThreatLevelCritical
-	} else if analysis.Confidence >= 0.6 {
+	} else if analysis.Confidence >= 0.5 {
 		return ThreatLevelHigh
-	} else if analysis.Confidence >= 0.4 {
+	} else if analysis.Confidence >= 0.3 {
 		return ThreatLevelMedium
-	} else if analysis.Confidence >= 0.2 {
+	} else if analysis.Confidence >= 0.15 {
 		return ThreatLevelLow
 	}
 	return ThreatLevelNone
