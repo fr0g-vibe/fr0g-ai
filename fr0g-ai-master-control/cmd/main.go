@@ -17,8 +17,28 @@ func main() {
 	log.Println("==================================")
 	
 	// Load configuration using shared config system
-	cfg, err := sharedconfig.LoadConfig("")
-	if err != nil {
+	loader := sharedconfig.NewLoader(sharedconfig.LoaderOptions{
+		ConfigPath: "",
+		EnvPrefix:  "FR0G_MCP",
+	})
+	
+	// Load environment files
+	if err := loader.LoadEnvFiles(); err != nil {
+		log.Printf("Warning: failed to load env files: %v", err)
+	}
+	
+	// Create default config
+	cfg := &sharedconfig.Config{
+		HTTP: sharedconfig.HTTPConfig{
+			Port: "8081",
+		},
+		GRPC: sharedconfig.GRPCConfig{
+			Port: "9091",
+		},
+	}
+	
+	// Load from file
+	if err := loader.LoadFromFile(cfg); err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 	

@@ -112,49 +112,6 @@ func (l *Loader) GetEnvString(key, defaultValue string) string {
 	return defaultValue
 }
 
-// LoadConfig is a convenience function that loads configuration using default options
-func LoadConfig(configPath string) (*Config, error) {
-	loader := NewLoader(LoaderOptions{
-		ConfigPath: configPath,
-		EnvPrefix:  "",
-	})
-	
-	// Load environment files
-	if err := loader.LoadEnvFiles(); err != nil {
-		fmt.Printf("Warning: failed to load env files: %v\n", err)
-	}
-	
-	// Create default config
-	cfg := &Config{
-		HTTP: HTTPConfig{
-			Port: "8080",
-			Host: "0.0.0.0",
-		},
-		GRPC: GRPCConfig{
-			Port: "9090",
-			Host: "0.0.0.0",
-		},
-		Logging: LoggingConfig{
-			Level:  "info",
-			Format: "json",
-		},
-	}
-	
-	// Load from file
-	if err := loader.LoadFromFile(cfg); err != nil {
-		return nil, err
-	}
-	
-	// Override with environment variables
-	cfg.HTTP.Port = loader.GetEnvString("HTTP_PORT", cfg.HTTP.Port)
-	cfg.HTTP.Host = loader.GetEnvString("HTTP_HOST", cfg.HTTP.Host)
-	cfg.GRPC.Port = loader.GetEnvString("GRPC_PORT", cfg.GRPC.Port)
-	cfg.GRPC.Host = loader.GetEnvString("GRPC_HOST", cfg.GRPC.Host)
-	cfg.Logging.Level = loader.GetEnvString("LOG_LEVEL", cfg.Logging.Level)
-	cfg.Logging.Format = loader.GetEnvString("LOG_FORMAT", cfg.Logging.Format)
-	
-	return cfg, nil
-}
 
 // GetEnvInt gets integer from environment with optional prefix
 func (l *Loader) GetEnvInt(key string, defaultValue int) int {
