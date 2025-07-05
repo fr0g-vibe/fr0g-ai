@@ -13,7 +13,7 @@
 //
 //	storage := storage.NewMemoryStorage()
 //	service := persona.NewService(storage)
-//	
+//
 //	p := &types.Persona{
 //		Name:   "Go Expert",
 //		Topic:  "Golang Programming",
@@ -23,7 +23,7 @@
 //			"specialty":  "backend development",
 //		},
 //	}
-//	
+//
 //	err := service.CreatePersona(p)
 //	if err != nil {
 //		log.Fatal(err)
@@ -42,8 +42,6 @@ import (
 // Persona is a type alias for backward compatibility.
 // Use types.Persona directly in new code.
 type Persona = types.Persona
-
-
 
 // Global service instance for backward compatibility
 var defaultService *Service

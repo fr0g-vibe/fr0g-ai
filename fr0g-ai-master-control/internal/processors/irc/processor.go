@@ -29,12 +29,12 @@ type Processor struct {
 
 // IRCConnection represents a connection to an IRC server
 type IRCConnection struct {
-	Server     string
-	Conn       net.Conn
-	Connected  bool
-	LastPing   time.Time
-	Channels   []string
-	mu         sync.RWMutex
+	Server    string
+	Conn      net.Conn
+	Connected bool
+	LastPing  time.Time
+	Channels  []string
+	mu        sync.RWMutex
 }
 
 // IRCMessage represents an IRC message
@@ -83,17 +83,17 @@ func (t ThreatLevel) String() string {
 
 // ThreatAnalysis contains detailed threat analysis results
 type ThreatAnalysis struct {
-	ThreatTypes        []string  `json:"threat_types"`
-	Confidence         float64   `json:"confidence"`
-	SpamScore          float64   `json:"spam_score"`
-	PhishingScore      float64   `json:"phishing_score"`
-	MalwareScore       float64   `json:"malware_score"`
-	BotScore           float64   `json:"bot_score"`
-	FloodScore         float64   `json:"flood_score"`
-	SocialEngScore     float64   `json:"social_eng_score"`
-	Indicators         []string  `json:"indicators"`
-	Recommendations    []string  `json:"recommendations"`
-	ProcessedAt        time.Time `json:"processed_at"`
+	ThreatTypes     []string  `json:"threat_types"`
+	Confidence      float64   `json:"confidence"`
+	SpamScore       float64   `json:"spam_score"`
+	PhishingScore   float64   `json:"phishing_score"`
+	MalwareScore    float64   `json:"malware_score"`
+	BotScore        float64   `json:"bot_score"`
+	FloodScore      float64   `json:"flood_score"`
+	SocialEngScore  float64   `json:"social_eng_score"`
+	Indicators      []string  `json:"indicators"`
+	Recommendations []string  `json:"recommendations"`
+	ProcessedAt     time.Time `json:"processed_at"`
 }
 
 // UserInfo tracks information about IRC users
@@ -224,10 +224,10 @@ func (p *Processor) connectToServer(ctx context.Context, server string) {
 				time.Sleep(time.Duration(p.config.ReconnectInterval) * time.Second)
 				continue
 			}
-			
+
 			// Handle messages from this connection
 			p.handleConnection(ctx, server)
-			
+
 			// Reconnect after disconnect
 			time.Sleep(time.Duration(p.config.ReconnectInterval) * time.Second)
 		}
@@ -306,7 +306,7 @@ func (p *Processor) handleConnection(ctx context.Context, server string) {
 
 			data := string(buffer[:n])
 			lines := strings.Split(strings.TrimSpace(data), "\n")
-			
+
 			for _, line := range lines {
 				if line != "" {
 					p.processIRCLine(server, line)
@@ -343,7 +343,7 @@ func (p *Processor) processIRCLine(server, line string) {
 			log.Printf("Error processing IRC message: %v", err)
 			return
 		}
-		
+
 		// Log high-threat messages
 		if processedMsg.ThreatLevel >= ThreatLevelHigh {
 			log.Printf("High-threat IRC message detected: server=%s, channel=%s, nick=%s, threat=%s",
@@ -356,7 +356,7 @@ func (p *Processor) processIRCLine(server, line string) {
 func (p *Processor) parseIRCMessage(server, line string) *IRCMessage {
 	// Basic IRC message parsing
 	// Format: :nick!user@host COMMAND target :message
-	
+
 	if !strings.HasPrefix(line, ":") {
 		return nil
 	}
@@ -370,7 +370,7 @@ func (p *Processor) parseIRCMessage(server, line string) *IRCMessage {
 	hostmask := parts[0]
 	nickParts := strings.SplitN(hostmask, "!", 2)
 	nick := nickParts[0]
-	
+
 	var user, host string
 	if len(nickParts) > 1 {
 		userHost := strings.SplitN(nickParts[1], "@", 2)
@@ -382,7 +382,7 @@ func (p *Processor) parseIRCMessage(server, line string) *IRCMessage {
 
 	command := parts[1]
 	target := parts[2]
-	
+
 	var message string
 	if len(parts) > 3 && strings.HasPrefix(parts[3], ":") {
 		message = parts[3][1:]
@@ -697,7 +697,7 @@ func (p *Processor) generateRecommendations(analysis *ThreatAnalysis) []string {
 // updateUserInfo updates tracking information for users
 func (p *Processor) updateUserInfo(nick, user, host string) {
 	key := fmt.Sprintf("%s!%s@%s", nick, user, host)
-	
+
 	info, exists := p.userHistory[key]
 	if !exists {
 		info = &UserInfo{

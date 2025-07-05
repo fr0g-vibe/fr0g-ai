@@ -26,17 +26,17 @@ type Processor struct {
 
 // VoiceCall represents a voice call with analysis
 type VoiceCall struct {
-	ID              string                 `json:"id"`
-	CallerID        string                 `json:"caller_id"`
-	RecipientID     string                 `json:"recipient_id"`
-	StartTime       time.Time              `json:"start_time"`
-	EndTime         time.Time              `json:"end_time"`
-	Duration        time.Duration          `json:"duration"`
-	Transcript      string                 `json:"transcript"`
-	ThreatLevel     ThreatLevel            `json:"threat_level"`
-	Analysis        *ThreatAnalysis        `json:"analysis,omitempty"`
-	AudioFile       string                 `json:"audio_file,omitempty"`
-	Metadata        map[string]interface{} `json:"metadata,omitempty"`
+	ID          string                 `json:"id"`
+	CallerID    string                 `json:"caller_id"`
+	RecipientID string                 `json:"recipient_id"`
+	StartTime   time.Time              `json:"start_time"`
+	EndTime     time.Time              `json:"end_time"`
+	Duration    time.Duration          `json:"duration"`
+	Transcript  string                 `json:"transcript"`
+	ThreatLevel ThreatLevel            `json:"threat_level"`
+	Analysis    *ThreatAnalysis        `json:"analysis,omitempty"`
+	AudioFile   string                 `json:"audio_file,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // ThreatLevel represents the severity of detected threats
@@ -69,40 +69,40 @@ func (t ThreatLevel) String() string {
 
 // ThreatAnalysis contains detailed voice threat analysis results
 type ThreatAnalysis struct {
-	ThreatTypes        []string  `json:"threat_types"`
-	Confidence         float64   `json:"confidence"`
-	ScamScore          float64   `json:"scam_score"`
-	PhishingScore      float64   `json:"phishing_score"`
-	SocialEngScore     float64   `json:"social_eng_score"`
-	RobocallScore      float64   `json:"robocall_score"`
-	EmotionalManipScore float64  `json:"emotional_manip_score"`
-	Indicators         []string  `json:"indicators"`
-	Recommendations    []string  `json:"recommendations"`
-	SpeechPatterns     []string  `json:"speech_patterns"`
-	ProcessedAt        time.Time `json:"processed_at"`
+	ThreatTypes         []string  `json:"threat_types"`
+	Confidence          float64   `json:"confidence"`
+	ScamScore           float64   `json:"scam_score"`
+	PhishingScore       float64   `json:"phishing_score"`
+	SocialEngScore      float64   `json:"social_eng_score"`
+	RobocallScore       float64   `json:"robocall_score"`
+	EmotionalManipScore float64   `json:"emotional_manip_score"`
+	Indicators          []string  `json:"indicators"`
+	Recommendations     []string  `json:"recommendations"`
+	SpeechPatterns      []string  `json:"speech_patterns"`
+	ProcessedAt         time.Time `json:"processed_at"`
 }
 
 // CallerInfo tracks information about phone numbers
 type CallerInfo struct {
-	CallerID      string    `json:"caller_id"`
-	FirstSeen     time.Time `json:"first_seen"`
-	LastSeen      time.Time `json:"last_seen"`
-	CallCount     int       `json:"call_count"`
-	ThreatCount   int       `json:"threat_count"`
-	IsBlacklisted bool      `json:"is_blacklisted"`
-	IsWhitelisted bool      `json:"is_whitelisted"`
-	Reputation    float64   `json:"reputation"` // 0.0-1.0, higher is better
+	CallerID      string        `json:"caller_id"`
+	FirstSeen     time.Time     `json:"first_seen"`
+	LastSeen      time.Time     `json:"last_seen"`
+	CallCount     int           `json:"call_count"`
+	ThreatCount   int           `json:"threat_count"`
+	IsBlacklisted bool          `json:"is_blacklisted"`
+	IsWhitelisted bool          `json:"is_whitelisted"`
+	Reputation    float64       `json:"reputation"` // 0.0-1.0, higher is better
 	AvgCallLength time.Duration `json:"avg_call_length"`
 }
 
 // NewProcessor creates a new voice processor instance
 func NewProcessor(cfg *config.VoiceConfig) *Processor {
 	p := &Processor{
-		config:          cfg,
-		threatPatterns:  make(map[string]*regexp.Regexp),
-		callHistory:     make([]VoiceCall, 0),
-		callerInfo:      make(map[string]*CallerInfo),
-		stopChan:        make(chan struct{}),
+		config:         cfg,
+		threatPatterns: make(map[string]*regexp.Regexp),
+		callHistory:    make([]VoiceCall, 0),
+		callerInfo:     make(map[string]*CallerInfo),
+		stopChan:       make(chan struct{}),
 	}
 
 	p.initializeThreatPatterns()
@@ -114,16 +114,16 @@ func NewProcessor(cfg *config.VoiceConfig) *Processor {
 // initializeThreatPatterns sets up regex patterns for voice threat detection
 func (p *Processor) initializeThreatPatterns() {
 	patterns := map[string]string{
-		"irs_scam":         `(?i)(irs|internal revenue|tax|refund|arrest|warrant)`,
-		"tech_support":     `(?i)(microsoft|windows|computer|virus|infected|technical support)`,
-		"bank_fraud":       `(?i)(bank|account|suspended|verify|security|fraud department)`,
-		"social_security":  `(?i)(social security|ssn|benefits|suspended|medicare)`,
-		"credit_card":      `(?i)(credit card|debt|consolidation|lower interest|pre-approved)`,
-		"lottery_scam":     `(?i)(lottery|winner|prize|congratulations|claim|sweepstakes)`,
-		"charity_scam":     `(?i)(charity|donation|veterans|police|firefighters|urgent)`,
-		"utility_scam":     `(?i)(electric|gas|water|utility|disconnect|payment|overdue)`,
-		"insurance_scam":   `(?i)(insurance|policy|premium|coverage|expired|renewal)`,
-		"investment_scam":  `(?i)(investment|stocks|crypto|bitcoin|guaranteed return)`,
+		"irs_scam":        `(?i)(irs|internal revenue|tax|refund|arrest|warrant)`,
+		"tech_support":    `(?i)(microsoft|windows|computer|virus|infected|technical support)`,
+		"bank_fraud":      `(?i)(bank|account|suspended|verify|security|fraud department)`,
+		"social_security": `(?i)(social security|ssn|benefits|suspended|medicare)`,
+		"credit_card":     `(?i)(credit card|debt|consolidation|lower interest|pre-approved)`,
+		"lottery_scam":    `(?i)(lottery|winner|prize|congratulations|claim|sweepstakes)`,
+		"charity_scam":    `(?i)(charity|donation|veterans|police|firefighters|urgent)`,
+		"utility_scam":    `(?i)(electric|gas|water|utility|disconnect|payment|overdue)`,
+		"insurance_scam":  `(?i)(insurance|policy|premium|coverage|expired|renewal)`,
+		"investment_scam": `(?i)(investment|stocks|crypto|bitcoin|guaranteed return)`,
 	}
 
 	for name, pattern := range patterns {
@@ -478,7 +478,7 @@ func (p *Processor) analyzeSpeechPatterns(transcript string) []string {
 				wordCount[cleanWord]++
 			}
 		}
-		
+
 		for word, count := range wordCount {
 			if count > 2 && len(word) > 2 { // Reduced threshold from 3 to 2
 				patterns = append(patterns, fmt.Sprintf("repetitive_word_%s", word))
@@ -543,7 +543,7 @@ func (p *Processor) updateCallerInfo(callerID string, duration time.Duration) {
 
 	info.LastSeen = time.Now()
 	info.CallCount++
-	
+
 	// Update average call length
 	if info.CallCount == 1 {
 		info.AvgCallLength = duration
@@ -580,14 +580,14 @@ func (p *Processor) checkForNewCalls() {
 // startSpeechToTextService starts speech-to-text processing
 func (p *Processor) startSpeechToTextService(ctx context.Context) {
 	log.Println("Starting speech-to-text service...")
-	
+
 	// TODO: Implement speech-to-text integration
 	// This would involve:
 	// 1. Integration with speech recognition APIs (Google, AWS, Azure)
 	// 2. Real-time audio stream processing
 	// 3. Transcript generation and formatting
 	// 4. Integration with threat analysis pipeline
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -604,14 +604,14 @@ func (p *Processor) startSpeechToTextService(ctx context.Context) {
 // startCallRecordingService starts call recording service
 func (p *Processor) startCallRecordingService(ctx context.Context) {
 	log.Println("Starting call recording service...")
-	
+
 	// TODO: Implement call recording
 	// This would involve:
 	// 1. Audio capture from telephony system
 	// 2. Audio file storage and management
 	// 3. Compliance with recording laws
 	// 4. Integration with analysis pipeline
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -632,7 +632,7 @@ func (p *Processor) GetStats() map[string]interface{} {
 
 	threatCounts := make(map[string]int)
 	totalDuration := time.Duration(0)
-	
+
 	for _, call := range p.callHistory {
 		threatCounts[call.ThreatLevel.String()]++
 		totalDuration += call.Duration

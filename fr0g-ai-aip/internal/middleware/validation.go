@@ -26,11 +26,11 @@ func (ve ValidationErrors) Error() string {
 	if len(ve.Errors) == 0 {
 		return "validation failed"
 	}
-	
+
 	if len(ve.Errors) == 1 {
 		return fmt.Sprintf("validation failed: %s: %s", ve.Errors[0].Field, ve.Errors[0].Message)
 	}
-	
+
 	return fmt.Sprintf("validation failed with %d errors", len(ve.Errors))
 }
 
@@ -112,7 +112,7 @@ func ValidationMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			if err := ValidatePersona(&p); err != nil {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
-				
+
 				// Handle both ValidationErrors and regular errors
 				if validationErrors, ok := err.(sharedconfig.ValidationErrors); ok {
 					json.NewEncoder(w).Encode(map[string]interface{}{

@@ -10,7 +10,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-
 // LoaderOptions configures how configuration is loaded
 type LoaderOptions struct {
 	ConfigPath   string
@@ -56,10 +55,10 @@ func (l *Loader) LoadEnvFile(filename string) error {
 
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
-		
+
 		// Remove quotes if present
 		if (strings.HasPrefix(value, "\"") && strings.HasSuffix(value, "\"")) ||
-		   (strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
+			(strings.HasPrefix(value, "'") && strings.HasSuffix(value, "'")) {
 			value = value[1 : len(value)-1]
 		}
 
@@ -111,7 +110,6 @@ func (l *Loader) GetEnvString(key, defaultValue string) string {
 	}
 	return defaultValue
 }
-
 
 // GetEnvInt gets integer from environment with optional prefix
 func (l *Loader) GetEnvInt(key string, defaultValue int) int {

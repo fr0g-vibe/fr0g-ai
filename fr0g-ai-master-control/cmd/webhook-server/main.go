@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/mux"
 	"fr0g-ai-master-control/internal/mastercontrol/input"
+	"github.com/gorilla/mux"
 )
 
 // MockAIClient implements a mock AI client for testing
@@ -32,7 +32,7 @@ func (m *MockAIClient) CreateCommunity(ctx context.Context, topic string, person
 func (m *MockAIClient) SubmitForReview(ctx context.Context, communityID string, content string) (*input.CommunityReview, error) {
 	// Mock threat analysis based on content keywords
 	score := 0.3 // Default low threat
-	
+
 	// Simple keyword-based threat detection for demo
 	threatKeywords := []string{
 		"urgent", "click here", "verify", "suspended", "bitcoin", "giveaway",
@@ -40,23 +40,23 @@ func (m *MockAIClient) SubmitForReview(ctx context.Context, communityID string, 
 		"malware", "virus", "crack", "download", "free money", "investment",
 		"cryptocurrency", "phishing", "scam", "fraud", "suspicious",
 	}
-	
+
 	contentLower := strings.ToLower(content)
 	for _, keyword := range threatKeywords {
 		if strings.Contains(contentLower, keyword) {
 			score += 0.15
 		}
 	}
-	
+
 	if score > 1.0 {
 		score = 0.95
 	}
-	
+
 	now := time.Now()
 	return &input.CommunityReview{
-		ReviewID:    fmt.Sprintf("review_%d", time.Now().UnixNano()),
-		Topic:       "threat_analysis",
-		Content:     content,
+		ReviewID: fmt.Sprintf("review_%d", time.Now().UnixNano()),
+		Topic:    "threat_analysis",
+		Content:  content,
 		Consensus: &input.Consensus{
 			OverallScore:    score,
 			Agreement:       0.85,
@@ -93,7 +93,7 @@ func getThreatLevel(score float64) string {
 func main() {
 	// Create mock AI client
 	aiClient := &MockAIClient{}
-	
+
 	// Create processors with default configs
 	ircConfig := &input.IRCConfig{
 		Server:            "irc.example.com",
@@ -104,7 +104,7 @@ func main() {
 		TrustedNicks:      []string{"trusted_admin"},
 		IgnoredNicks:      []string{"bot", "system"},
 	}
-	
+
 	smsConfig := &input.SMSConfig{
 		Provider:          "twilio",
 		CommunityTopic:    "sms_threat_analysis",
@@ -113,7 +113,7 @@ func main() {
 		TrustedNumbers:    []string{"+15554567890"},
 		BlockedNumbers:    []string{"+15559999999"},
 	}
-	
+
 	voiceConfig := &input.VoiceConfig{
 		Provider:          "twilio",
 		CommunityTopic:    "voice_threat_analysis",
@@ -122,7 +122,7 @@ func main() {
 		TrustedNumbers:    []string{"+15554567890"},
 		BlockedNumbers:    []string{"+15559999999"},
 	}
-	
+
 	esmtpConfig := &input.ESMTPConfig{
 		Server:            "mail.example.com",
 		Port:              587,
@@ -132,7 +132,7 @@ func main() {
 		TrustedDomains:    []string{"github.com", "company.com"},
 		BlockedDomains:    []string{"fake-bank.com", "malicious-site.com"},
 	}
-	
+
 	sdcardConfig := &input.SDCardConfig{
 		MountPath:         "/media",
 		WatchDirectories:  []string{"/media", "/mnt"},
@@ -149,30 +149,30 @@ func main() {
 		HashFiles:         true,
 		ExtractMetadata:   true,
 	}
-	
+
 	// Create processors
 	ircProcessor, _ := input.NewIRCProcessor(ircConfig, aiClient)
 	smsProcessor, _ := input.NewSMSProcessor(smsConfig, aiClient)
 	voiceProcessor, _ := input.NewVoiceProcessor(voiceConfig, aiClient)
 	esmtpProcessor, _ := input.NewESMTPProcessor(esmtpConfig, aiClient)
 	sdcardProcessor, _ := input.NewSDCardProcessor(sdcardConfig, aiClient)
-	
+
 	// Create router
 	router := mux.NewRouter()
-	
+
 	// Health check endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	}).Methods("GET")
-	
+
 	// Webhook endpoints
 	router.HandleFunc("/webhook/irc", createWebhookHandler(ircProcessor)).Methods("POST")
 	router.HandleFunc("/webhook/sms", createWebhookHandler(smsProcessor)).Methods("POST")
 	router.HandleFunc("/webhook/voice", createWebhookHandler(voiceProcessor)).Methods("POST")
 	router.HandleFunc("/webhook/esmtp", createWebhookHandler(esmtpProcessor)).Methods("POST")
 	router.HandleFunc("/webhook/sdcard", createWebhookHandler(sdcardProcessor)).Methods("POST")
-	
+
 	// Start server
 	server := &http.Server{
 		Addr:         ":8080",
@@ -180,7 +180,7 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 	}
-	
+
 	// Start server in goroutine
 	go func() {
 		log.Printf("Webhook server starting on :8080")
@@ -191,21 +191,21 @@ func main() {
 		log.Printf("  POST /webhook/voice")
 		log.Printf("  POST /webhook/esmtp")
 		log.Printf("  POST /webhook/sdcard")
-		
+
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server failed to start: %v", err)
 		}
 	}()
-	
+
 	// Wait for interrupt signal
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
-	
+
 	log.Println("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	if err := server.Shutdown(ctx); err != nil {
 		log.Printf("Server shutdown error: %v", err)
 	}
@@ -220,7 +220,7 @@ func createWebhookHandler(processor input.WebhookProcessor) http.HandlerFunc {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-		
+
 		// Create webhook request
 		webhookReq := &input.WebhookRequest{
 			ID:        fmt.Sprintf("req_%d", time.Now().UnixNano()),
@@ -231,14 +231,14 @@ func createWebhookHandler(processor input.WebhookProcessor) http.HandlerFunc {
 			Body:      requestBody,
 			Metadata:  make(map[string]interface{}),
 		}
-		
+
 		// Copy headers
 		for key, values := range r.Header {
 			if len(values) > 0 {
 				webhookReq.Headers[key] = values[0]
 			}
 		}
-		
+
 		// Process webhook
 		response, err := processor.ProcessWebhook(r.Context(), webhookReq)
 		if err != nil {
@@ -246,7 +246,7 @@ func createWebhookHandler(processor input.WebhookProcessor) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		
+
 		// Return response
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {

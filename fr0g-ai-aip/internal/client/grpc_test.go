@@ -11,11 +11,11 @@ func TestNewGRPCClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create gRPC client: %v", err)
 	}
-	
+
 	if client == nil {
 		t.Error("Expected client to be created")
 	}
-	
+
 	// Close the connection
 	client.Close()
 }
@@ -32,14 +32,14 @@ func TestGRPCClient_Methods(t *testing.T) {
 		t.Fatalf("Failed to create gRPC client: %v", err)
 	}
 	defer client.Close()
-	
+
 	// Test method signatures exist
 	p := &types.Persona{
 		Name:   "Test",
-		Topic:  "Testing", 
+		Topic:  "Testing",
 		Prompt: "Test prompt",
 	}
-	
+
 	// These will fail at runtime without a server, but we're just testing the interface
 	_ = client.Create(p)
 	_, _ = client.Get("test-id")

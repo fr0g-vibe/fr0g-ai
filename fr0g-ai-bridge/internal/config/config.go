@@ -20,24 +20,24 @@ type Config struct {
 // Validate validates the configuration using shared validation
 func (c *Config) Validate() sharedconfig.ValidationErrors {
 	var errors []sharedconfig.ValidationError
-	
+
 	// Validate shared configurations
 	errors = append(errors, c.Server.Validate()...)
 	errors = append(errors, c.Security.Validate()...)
 	errors = append(errors, c.Monitoring.Validate()...)
-	
+
 	// Validate OpenWebUI configuration
 	if err := sharedconfig.ValidateURL(c.OpenWebUI.BaseURL, "openwebui.base_url"); err != nil {
 		errors = append(errors, *err)
 	}
-	
+
 	if c.OpenWebUI.Timeout <= 0 {
 		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "openwebui.timeout",
 			Message: "timeout must be positive",
 		})
 	}
-	
+
 	return sharedconfig.ValidationErrors(errors)
 }
 
@@ -53,7 +53,7 @@ func LoadConfig(configPath string) (*Config, error) {
 			"../../.env", // For when running from fr0g-ai-bridge subdirectory
 		},
 	})
-	
+
 	// Load environment files
 	if err := loader.LoadEnvFiles(); err != nil {
 		fmt.Printf("Warning: failed to load env files: %v\n", err)
@@ -74,14 +74,14 @@ func LoadConfig(configPath string) (*Config, error) {
 			Format: "json",
 		},
 		Security: sharedconfig.SecurityConfig{
-			EnableCORS:           true,
-			AllowedOrigins:       []string{"*"},
-			RateLimitRPM:         60,
-			RequireAPIKey:        false,
-			EnableReflection:     true,
+			EnableCORS:       true,
+			AllowedOrigins:   []string{"*"},
+			RateLimitRPM:     60,
+			RequireAPIKey:    false,
+			EnableReflection: true,
 		},
 		Monitoring: sharedconfig.MonitoringConfig{
-			EnableMetrics:        true,
+			EnableMetrics:       true,
 			MetricsPort:         8082,
 			HealthCheckInterval: 30,
 			EnableTracing:       false,

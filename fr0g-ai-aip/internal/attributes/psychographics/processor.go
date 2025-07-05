@@ -33,7 +33,7 @@ func (p *Processor) ValidatePsychographics(psycho *pb.Psychographics) []config.V
 	// Validate cognitive style
 	if psycho.CognitiveStyle != "" {
 		validStyles := []string{
-			"analytical", "intuitive", "systematic", "creative", 
+			"analytical", "intuitive", "systematic", "creative",
 			"logical", "holistic", "detail-oriented", "big-picture",
 		}
 		if !p.isValidOption(psycho.CognitiveStyle, validStyles) {
@@ -264,7 +264,7 @@ func (p *Processor) normalizeStringSlice(slice []string) []string {
 // GetValueCategories categorizes values into broader themes
 func (p *Processor) GetValueCategories(values []string) map[string][]string {
 	categories := make(map[string][]string)
-	
+
 	valueCategories := map[string]string{
 		"family":        "relationships",
 		"friendship":    "relationships",

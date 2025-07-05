@@ -22,11 +22,10 @@ type WebhookManager struct {
 	cancel     context.CancelFunc
 }
 
-
 // NewWebhookManager creates a new webhook manager
 func NewWebhookManager(config *WebhookConfig) *WebhookManager {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	wm := &WebhookManager{
 		mux:        http.NewServeMux(),
 		processors: make(map[string]WebhookProcessor),
@@ -34,23 +33,23 @@ func NewWebhookManager(config *WebhookConfig) *WebhookManager {
 		ctx:        ctx,
 		cancel:     cancel,
 	}
-	
+
 	wm.setupRoutes()
 	wm.setupServer()
-	
+
 	return wm
 }
 
 // Start begins webhook manager operation
 func (wm *WebhookManager) Start() error {
 	log.Printf("Webhook Manager: Starting webhook server on %s:%d", wm.config.Host, wm.config.Port)
-	
+
 	go func() {
 		if err := wm.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("Webhook Manager: Server error: %v", err)
 		}
 	}()
-	
+
 	log.Println("Webhook Manager: Webhook server started successfully")
 	return nil
 }
@@ -58,16 +57,16 @@ func (wm *WebhookManager) Start() error {
 // Stop gracefully stops the webhook manager
 func (wm *WebhookManager) Stop() error {
 	log.Println("Webhook Manager: Stopping webhook server...")
-	
+
 	wm.cancel()
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	
+
 	if err := wm.server.Shutdown(ctx); err != nil {
 		return fmt.Errorf("webhook server shutdown error: %w", err)
 	}
-	
+
 	log.Println("Webhook Manager: Webhook server stopped")
 	return nil
 }
@@ -76,15 +75,15 @@ func (wm *WebhookManager) Stop() error {
 func (wm *WebhookManager) RegisterProcessor(processor WebhookProcessor) error {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
-	
+
 	tag := processor.GetTag()
 	if _, exists := wm.processors[tag]; exists {
 		return fmt.Errorf("processor for tag '%s' already registered", tag)
 	}
-	
+
 	wm.processors[tag] = processor
 	log.Printf("Webhook Manager: Registered processor for tag '%s': %s", tag, processor.GetDescription())
-	
+
 	return nil
 }
 
@@ -92,7 +91,7 @@ func (wm *WebhookManager) RegisterProcessor(processor WebhookProcessor) error {
 func (wm *WebhookManager) UnregisterProcessor(tag string) {
 	wm.mu.Lock()
 	defer wm.mu.Unlock()
-	
+
 	delete(wm.processors, tag)
 	log.Printf("Webhook Manager: Unregistered processor for tag '%s'", tag)
 }
@@ -101,12 +100,12 @@ func (wm *WebhookManager) UnregisterProcessor(tag string) {
 func (wm *WebhookManager) GetRegisteredProcessors() map[string]string {
 	wm.mu.RLock()
 	defer wm.mu.RUnlock()
-	
+
 	processors := make(map[string]string)
 	for tag, processor := range wm.processors {
 		processors[tag] = processor.GetDescription()
 	}
-	
+
 	return processors
 }
 
@@ -114,10 +113,10 @@ func (wm *WebhookManager) GetRegisteredProcessors() map[string]string {
 func (wm *WebhookManager) setupRoutes() {
 	// Generic webhook endpoint with tag parameter
 	wm.mux.HandleFunc("/webhook/", wm.handleWebhook)
-	
+
 	// Health check endpoint
 	wm.mux.HandleFunc("/health", wm.handleHealth)
-	
+
 	// Status endpoint
 	wm.mux.HandleFunc("/status", wm.handleStatus)
 }
@@ -126,7 +125,7 @@ func (wm *WebhookManager) setupRoutes() {
 func (wm *WebhookManager) setupServer() {
 	// Wrap mux with middleware
 	handler := wm.requestSizeMiddleware(wm.corsMiddleware(wm.loggingMiddleware(wm.mux)))
-	
+
 	wm.server = &http.Server{
 		Addr:         fmt.Sprintf("%s:%d", wm.config.Host, wm.config.Port),
 		Handler:      handler,
@@ -143,19 +142,19 @@ func (wm *WebhookManager) handleWebhook(w http.ResponseWriter, r *http.Request) 
 		wm.writeErrorResponse(w, http.StatusBadRequest, "Invalid webhook path", "")
 		return
 	}
-	
+
 	tag := path[9:] // Remove "/webhook/" prefix
 	if tag == "" {
 		wm.writeErrorResponse(w, http.StatusBadRequest, "Missing webhook tag", "")
 		return
 	}
-	
+
 	// Only allow POST requests
 	if r.Method != "POST" {
 		wm.writeErrorResponse(w, http.StatusMethodNotAllowed, "Only POST method allowed", "")
 		return
 	}
-	
+
 	// Create webhook request
 	webhookReq := &WebhookRequest{
 		ID:        generateRequestID(),
@@ -165,7 +164,7 @@ func (wm *WebhookManager) handleWebhook(w http.ResponseWriter, r *http.Request) 
 		Headers:   extractHeaders(r),
 		Metadata:  make(map[string]interface{}),
 	}
-	
+
 	// Parse request body
 	var body interface{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -173,33 +172,33 @@ func (wm *WebhookManager) handleWebhook(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	webhookReq.Body = body
-	
+
 	// Find processor for tag
 	wm.mu.RLock()
 	processor, exists := wm.processors[tag]
 	wm.mu.RUnlock()
-	
+
 	if !exists {
 		wm.writeErrorResponse(w, http.StatusNotFound, fmt.Sprintf("No processor found for tag '%s'", tag), webhookReq.ID)
 		return
 	}
-	
+
 	// Process webhook
 	ctx, cancel := context.WithTimeout(wm.ctx, 30*time.Second)
 	defer cancel()
-	
+
 	response, err := processor.ProcessWebhook(ctx, webhookReq)
 	if err != nil {
 		log.Printf("Webhook Manager: Error processing webhook for tag '%s': %v", tag, err)
 		wm.writeErrorResponse(w, http.StatusInternalServerError, "Processing error", webhookReq.ID)
 		return
 	}
-	
+
 	// Write successful response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
-	
+
 	if wm.config.EnableLogging {
 		log.Printf("Webhook Manager: Successfully processed webhook for tag '%s', request ID: %s", tag, webhookReq.ID)
 	}
@@ -211,13 +210,13 @@ func (wm *WebhookManager) handleHealth(w http.ResponseWriter, r *http.Request) {
 		wm.writeErrorResponse(w, http.StatusMethodNotAllowed, "Only GET method allowed", "")
 		return
 	}
-	
+
 	health := map[string]interface{}{
 		"status":     "healthy",
 		"timestamp":  time.Now(),
 		"processors": len(wm.processors),
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(health)
@@ -229,9 +228,9 @@ func (wm *WebhookManager) handleStatus(w http.ResponseWriter, r *http.Request) {
 		wm.writeErrorResponse(w, http.StatusMethodNotAllowed, "Only GET method allowed", "")
 		return
 	}
-	
+
 	processors := wm.GetRegisteredProcessors()
-	
+
 	status := map[string]interface{}{
 		"webhook_manager": "running",
 		"processors":      processors,
@@ -242,7 +241,7 @@ func (wm *WebhookManager) handleStatus(w http.ResponseWriter, r *http.Request) {
 			"max_request_size": wm.config.MaxRequestSize,
 		},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(status)
@@ -256,7 +255,7 @@ func (wm *WebhookManager) writeErrorResponse(w http.ResponseWriter, statusCode i
 		RequestID: requestID,
 		Timestamp: time.Now(),
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(response)
@@ -283,16 +282,16 @@ func (wm *WebhookManager) corsMiddleware(next http.Handler) http.Handler {
 		if len(wm.config.AllowedOrigins) > 0 && wm.config.AllowedOrigins[0] != "*" {
 			origin = wm.config.AllowedOrigins[0]
 		}
-		
+
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		
+
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }

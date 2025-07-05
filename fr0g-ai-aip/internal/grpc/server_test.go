@@ -23,48 +23,48 @@ const bufSize = 1024 * 1024
 func setupTestServer(t *testing.T) (pb.PersonaServiceClient, func()) {
 	lis := bufconn.Listen(bufSize)
 	s := grpc.NewServer()
-	
+
 	// Set up clean storage for each test
 	memStorage := storage.NewMemoryStorage()
 	service := persona.NewService(memStorage)
-	
+
 	// Create PersonaServer with proper service instance
 	personaServer := &PersonaServer{
 		service: service,
 	}
-	
+
 	pb.RegisterPersonaServiceServer(s, personaServer)
-	
+
 	go func() {
 		if err := s.Serve(lis); err != nil {
 			t.Logf("Server exited with error: %v", err)
 		}
 	}()
-	
+
 	bufDialer := func(context.Context, string) (net.Conn, error) {
 		return lis.Dial()
 	}
-	
-	conn, err := grpc.DialContext(context.Background(), "bufnet", 
-		grpc.WithContextDialer(bufDialer), 
+
+	conn, err := grpc.DialContext(context.Background(), "bufnet",
+		grpc.WithContextDialer(bufDialer),
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Fatalf("Failed to dial bufnet: %v", err)
 	}
-	
+
 	cleanup := func() {
 		conn.Close()
 		s.Stop()
 		lis.Close()
 	}
-	
+
 	return pb.NewPersonaServiceClient(conn), cleanup
 }
 
 func TestPersonaServer_CreatePersona(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	req := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
 			Name:   "Test Persona",
@@ -76,12 +76,12 @@ func TestPersonaServer_CreatePersona(t *testing.T) {
 			Rag: []string{"doc1", "doc2"},
 		},
 	}
-	
+
 	resp, err := client.CreatePersona(context.Background(), req)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	if resp.Persona.Name != "Test Persona" {
 		t.Errorf("Expected name 'Test Persona', got %s", resp.Persona.Name)
 	}
@@ -99,16 +99,16 @@ func TestPersonaServer_CreatePersona(t *testing.T) {
 func TestPersonaServer_CreatePersona_NilPersona(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	req := &pb.CreatePersonaRequest{
 		Persona: nil,
 	}
-	
+
 	_, err := client.CreatePersona(context.Background(), req)
 	if err == nil {
 		t.Error("Expected error for nil persona")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -121,7 +121,7 @@ func TestPersonaServer_CreatePersona_NilPersona(t *testing.T) {
 func TestPersonaServer_CreatePersona_ValidationErrors(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	testCases := []struct {
 		name    string
 		persona *pb.Persona
@@ -179,18 +179,18 @@ func TestPersonaServer_CreatePersona_ValidationErrors(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			req := &pb.CreatePersonaRequest{
 				Persona: tc.persona,
 			}
-			
+
 			_, err := client.CreatePersona(context.Background(), req)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("CreatePersona() error = %v, wantErr %v", err, tc.wantErr)
 			}
-			
+
 			if err != nil {
 				st, ok := status.FromError(err)
 				if !ok {
@@ -207,7 +207,7 @@ func TestPersonaServer_CreatePersona_ValidationErrors(t *testing.T) {
 func TestPersonaServer_GetPersona(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// First create a persona
 	createReq := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
@@ -219,22 +219,22 @@ func TestPersonaServer_GetPersona(t *testing.T) {
 			},
 		},
 	}
-	
+
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	// Now get it
 	getReq := &pb.GetPersonaRequest{
 		Id: createResp.Persona.Id,
 	}
-	
+
 	getResp, err := client.GetPersona(context.Background(), getReq)
 	if err != nil {
 		t.Fatalf("GetPersona failed: %v", err)
 	}
-	
+
 	if getResp.Persona.Name != "Get Test" {
 		t.Errorf("Expected name 'Get Test', got %s", getResp.Persona.Name)
 	}
@@ -246,16 +246,16 @@ func TestPersonaServer_GetPersona(t *testing.T) {
 func TestPersonaServer_GetPersona_NotFound(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	getReq := &pb.GetPersonaRequest{
 		Id: "nonexistent",
 	}
-	
+
 	_, err := client.GetPersona(context.Background(), getReq)
 	if err == nil {
 		t.Error("Expected error for nonexistent persona")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -268,13 +268,13 @@ func TestPersonaServer_GetPersona_NotFound(t *testing.T) {
 func TestPersonaServer_ListPersonas(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Create two personas
 	personas := []*pb.Persona{
 		{Name: "Persona 1", Topic: "Topic 1", Prompt: "Prompt 1"},
 		{Name: "Persona 2", Topic: "Topic 2", Prompt: "Prompt 2"},
 	}
-	
+
 	var createdIds []string
 	for _, p := range personas {
 		req := &pb.CreatePersonaRequest{Persona: p}
@@ -284,24 +284,24 @@ func TestPersonaServer_ListPersonas(t *testing.T) {
 		}
 		createdIds = append(createdIds, resp.Persona.Id)
 	}
-	
+
 	// List all personas
 	listReq := &pb.ListPersonasRequest{}
 	listResp, err := client.ListPersonas(context.Background(), listReq)
 	if err != nil {
 		t.Fatalf("ListPersonas failed: %v", err)
 	}
-	
+
 	if len(listResp.Personas) != 2 {
 		t.Errorf("Expected 2 personas, got %d", len(listResp.Personas))
 	}
-	
+
 	// Verify the personas are correct
 	foundNames := make(map[string]bool)
 	for _, p := range listResp.Personas {
 		foundNames[p.Name] = true
 	}
-	
+
 	if !foundNames["Persona 1"] || !foundNames["Persona 2"] {
 		t.Error("Expected to find both created personas")
 	}
@@ -310,7 +310,7 @@ func TestPersonaServer_ListPersonas(t *testing.T) {
 func TestPersonaServer_UpdatePersona(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Create a persona
 	createReq := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
@@ -319,12 +319,12 @@ func TestPersonaServer_UpdatePersona(t *testing.T) {
 			Prompt: "Original Prompt",
 		},
 	}
-	
+
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	// Update it
 	updateReq := &pb.UpdatePersonaRequest{
 		Id: createResp.Persona.Id,
@@ -337,12 +337,12 @@ func TestPersonaServer_UpdatePersona(t *testing.T) {
 			},
 		},
 	}
-	
+
 	updateResp, err := client.UpdatePersona(context.Background(), updateReq)
 	if err != nil {
 		t.Fatalf("UpdatePersona failed: %v", err)
 	}
-	
+
 	if updateResp.Persona.Name != "Updated Name" {
 		t.Errorf("Expected name 'Updated Name', got %s", updateResp.Persona.Name)
 	}
@@ -357,7 +357,7 @@ func TestPersonaServer_UpdatePersona(t *testing.T) {
 func TestPersonaServer_UpdatePersona_NotFound(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	updateReq := &pb.UpdatePersonaRequest{
 		Id: "nonexistent",
 		Persona: &pb.Persona{
@@ -366,12 +366,12 @@ func TestPersonaServer_UpdatePersona_NotFound(t *testing.T) {
 			Prompt: "Updated Prompt",
 		},
 	}
-	
+
 	_, err := client.UpdatePersona(context.Background(), updateReq)
 	if err == nil {
 		t.Error("Expected error for nonexistent persona")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -385,17 +385,17 @@ func TestPersonaServer_UpdatePersona_NotFound(t *testing.T) {
 func TestPersonaServer_UpdatePersona_NilPersona(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	updateReq := &pb.UpdatePersonaRequest{
 		Id:      "test-id",
 		Persona: nil,
 	}
-	
+
 	_, err := client.UpdatePersona(context.Background(), updateReq)
 	if err == nil {
 		t.Error("Expected error for nil persona")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -408,7 +408,7 @@ func TestPersonaServer_UpdatePersona_NilPersona(t *testing.T) {
 func TestPersonaServer_UpdatePersona_ValidationErrors(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Create a persona first
 	createReq := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
@@ -417,12 +417,12 @@ func TestPersonaServer_UpdatePersona_ValidationErrors(t *testing.T) {
 			Prompt: "Original Prompt",
 		},
 	}
-	
+
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	testCases := []struct {
 		name    string
 		persona *pb.Persona
@@ -480,14 +480,14 @@ func TestPersonaServer_UpdatePersona_ValidationErrors(t *testing.T) {
 			wantErr: true, // Server validates these fields on update
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			updateReq := &pb.UpdatePersonaRequest{
 				Id:      createResp.Persona.Id,
 				Persona: tc.persona,
 			}
-			
+
 			_, err := client.UpdatePersona(context.Background(), updateReq)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("UpdatePersona() error = %v, wantErr %v", err, tc.wantErr)
@@ -499,7 +499,7 @@ func TestPersonaServer_UpdatePersona_ValidationErrors(t *testing.T) {
 func TestPersonaServer_DeletePersona(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Create a persona
 	createReq := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
@@ -508,32 +508,32 @@ func TestPersonaServer_DeletePersona(t *testing.T) {
 			Prompt: "Will be deleted",
 		},
 	}
-	
+
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	// Delete it
 	deleteReq := &pb.DeletePersonaRequest{
 		Id: createResp.Persona.Id,
 	}
-	
+
 	_, err = client.DeletePersona(context.Background(), deleteReq)
 	if err != nil {
 		t.Fatalf("DeletePersona failed: %v", err)
 	}
-	
+
 	// Verify it's gone
 	getReq := &pb.GetPersonaRequest{
 		Id: createResp.Persona.Id,
 	}
-	
+
 	_, err = client.GetPersona(context.Background(), getReq)
 	if err == nil {
 		t.Error("Expected error when getting deleted persona")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -546,16 +546,16 @@ func TestPersonaServer_DeletePersona(t *testing.T) {
 func TestPersonaServer_DeletePersona_NotFound(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	deleteReq := &pb.DeletePersonaRequest{
 		Id: "nonexistent",
 	}
-	
+
 	_, err := client.DeletePersona(context.Background(), deleteReq)
 	if err == nil {
 		t.Error("Expected error for nonexistent persona")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -568,7 +568,7 @@ func TestPersonaServer_DeletePersona_NotFound(t *testing.T) {
 func TestPersonaServer_ComplexPersonaOperations(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test persona with complex context and RAG
 	complexPersona := &pb.Persona{
 		Name:   "Complex Expert",
@@ -586,17 +586,17 @@ func TestPersonaServer_ComplexPersonaOperations(t *testing.T) {
 			"network effects",
 		},
 	}
-	
+
 	// Create complex persona
 	createReq := &pb.CreatePersonaRequest{
 		Persona: complexPersona,
 	}
-	
+
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	// Verify complex fields
 	if len(createResp.Persona.Context) != 3 {
 		t.Errorf("Expected 3 context items, got %d", len(createResp.Persona.Context))
@@ -604,31 +604,31 @@ func TestPersonaServer_ComplexPersonaOperations(t *testing.T) {
 	if len(createResp.Persona.Rag) != 4 {
 		t.Errorf("Expected 4 RAG items, got %d", len(createResp.Persona.Rag))
 	}
-	
+
 	// Get and verify
 	getReq := &pb.GetPersonaRequest{
 		Id: createResp.Persona.Id,
 	}
-	
+
 	getResp, err := client.GetPersona(context.Background(), getReq)
 	if err != nil {
 		t.Fatalf("GetPersona failed: %v", err)
 	}
-	
+
 	// Verify context preservation
 	for k, v := range complexPersona.Context {
 		if getResp.Persona.Context[k] != v {
 			t.Errorf("Expected context[%s] = %s, got %s", k, v, getResp.Persona.Context[k])
 		}
 	}
-	
+
 	// Verify RAG preservation
 	for i, v := range complexPersona.Rag {
 		if getResp.Persona.Rag[i] != v {
 			t.Errorf("Expected RAG[%d] = %s, got %s", i, v, getResp.Persona.Rag[i])
 		}
 	}
-	
+
 	// Update with modified context and RAG
 	updatedPersona := &pb.Persona{
 		Name:   "Updated Complex Expert",
@@ -648,17 +648,17 @@ func TestPersonaServer_ComplexPersonaOperations(t *testing.T) {
 			"new research papers",
 		},
 	}
-	
+
 	updateReq := &pb.UpdatePersonaRequest{
 		Id:      createResp.Persona.Id,
 		Persona: updatedPersona,
 	}
-	
+
 	updateResp, err := client.UpdatePersona(context.Background(), updateReq)
 	if err != nil {
 		t.Fatalf("UpdatePersona failed: %v", err)
 	}
-	
+
 	// Verify updates
 	if updateResp.Persona.Name != "Updated Complex Expert" {
 		t.Errorf("Expected updated name, got %s", updateResp.Persona.Name)
@@ -677,14 +677,14 @@ func TestPersonaServer_ComplexPersonaOperations(t *testing.T) {
 func TestPersonaServer_EmptyListPersonas(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test empty list
 	listReq := &pb.ListPersonasRequest{}
 	listResp, err := client.ListPersonas(context.Background(), listReq)
 	if err != nil {
 		t.Fatalf("ListPersonas failed: %v", err)
 	}
-	
+
 	if len(listResp.Personas) != 0 {
 		t.Errorf("Expected empty list, got %d personas", len(listResp.Personas))
 	}
@@ -693,11 +693,11 @@ func TestPersonaServer_EmptyListPersonas(t *testing.T) {
 func TestPersonaServer_ContextCancellation(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test with cancelled context
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
-	
+
 	req := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
 			Name:   "Test Persona",
@@ -705,12 +705,12 @@ func TestPersonaServer_ContextCancellation(t *testing.T) {
 			Prompt: "Test prompt",
 		},
 	}
-	
+
 	_, err := client.CreatePersona(ctx, req)
 	if err == nil {
 		t.Error("Expected error for cancelled context")
 	}
-	
+
 	st, ok := status.FromError(err)
 	if !ok {
 		t.Error("Expected gRPC status error")
@@ -723,11 +723,11 @@ func TestPersonaServer_ContextCancellation(t *testing.T) {
 func TestPersonaServer_ConcurrentOperations(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test concurrent persona creation
 	numGoroutines := 10
 	done := make(chan string, numGoroutines)
-	
+
 	for i := 0; i < numGoroutines; i++ {
 		go func(id int) {
 			req := &pb.CreatePersonaRequest{
@@ -737,18 +737,18 @@ func TestPersonaServer_ConcurrentOperations(t *testing.T) {
 					Prompt: "You are a concurrency expert.",
 				},
 			}
-			
+
 			resp, err := client.CreatePersona(context.Background(), req)
 			if err != nil {
 				t.Errorf("Concurrent CreatePersona failed: %v", err)
 				done <- ""
 				return
 			}
-			
+
 			done <- resp.Persona.Id
 		}(i)
 	}
-	
+
 	// Collect all created IDs
 	var createdIds []string
 	for i := 0; i < numGoroutines; i++ {
@@ -757,18 +757,18 @@ func TestPersonaServer_ConcurrentOperations(t *testing.T) {
 			createdIds = append(createdIds, id)
 		}
 	}
-	
+
 	// Verify all personas were created
 	listReq := &pb.ListPersonasRequest{}
 	listResp, err := client.ListPersonas(context.Background(), listReq)
 	if err != nil {
 		t.Fatalf("ListPersonas failed: %v", err)
 	}
-	
+
 	if len(listResp.Personas) != len(createdIds) {
 		t.Errorf("Expected %d personas, got %d", len(createdIds), len(listResp.Personas))
 	}
-	
+
 	// Test concurrent reads
 	readDone := make(chan bool, len(createdIds))
 	for _, id := range createdIds {
@@ -781,7 +781,7 @@ func TestPersonaServer_ConcurrentOperations(t *testing.T) {
 			readDone <- true
 		}(id)
 	}
-	
+
 	// Wait for all reads
 	for i := 0; i < len(createdIds); i++ {
 		<-readDone
@@ -791,14 +791,14 @@ func TestPersonaServer_ConcurrentOperations(t *testing.T) {
 func TestPersonaServer_EdgeCases(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test with empty string ID for Get
 	getReq := &pb.GetPersonaRequest{Id: ""}
 	_, err := client.GetPersona(context.Background(), getReq)
 	if err == nil {
 		t.Error("Expected error for empty ID")
 	}
-	
+
 	// Test with empty string ID for Update
 	updateReq := &pb.UpdatePersonaRequest{
 		Id: "",
@@ -812,7 +812,7 @@ func TestPersonaServer_EdgeCases(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error for empty ID in update")
 	}
-	
+
 	// Test with empty string ID for Delete
 	deleteReq := &pb.DeletePersonaRequest{Id: ""}
 	_, err = client.DeletePersona(context.Background(), deleteReq)
@@ -824,18 +824,18 @@ func TestPersonaServer_EdgeCases(t *testing.T) {
 func TestPersonaServer_LargeDataHandling(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test with large context and RAG data
 	largeContext := make(map[string]string)
 	for i := 0; i < 100; i++ {
 		largeContext[fmt.Sprintf("key_%d", i)] = fmt.Sprintf("value_%d_with_some_longer_content", i)
 	}
-	
+
 	largeRAG := make([]string, 100)
 	for i := 0; i < 100; i++ {
 		largeRAG[i] = fmt.Sprintf("document_%d_with_some_longer_filename.txt", i)
 	}
-	
+
 	req := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
 			Name:    "Large Data Expert",
@@ -845,12 +845,12 @@ func TestPersonaServer_LargeDataHandling(t *testing.T) {
 			Rag:     largeRAG,
 		},
 	}
-	
+
 	resp, err := client.CreatePersona(context.Background(), req)
 	if err != nil {
 		t.Fatalf("CreatePersona with large data failed: %v", err)
 	}
-	
+
 	// Verify large data was preserved
 	if len(resp.Persona.Context) != 100 {
 		t.Errorf("Expected 100 context items, got %d", len(resp.Persona.Context))
@@ -858,14 +858,14 @@ func TestPersonaServer_LargeDataHandling(t *testing.T) {
 	if len(resp.Persona.Rag) != 100 {
 		t.Errorf("Expected 100 RAG items, got %d", len(resp.Persona.Rag))
 	}
-	
+
 	// Test retrieval of large data
 	getReq := &pb.GetPersonaRequest{Id: resp.Persona.Id}
 	getResp, err := client.GetPersona(context.Background(), getReq)
 	if err != nil {
 		t.Fatalf("GetPersona with large data failed: %v", err)
 	}
-	
+
 	if len(getResp.Persona.Context) != 100 {
 		t.Errorf("Expected 100 context items on retrieval, got %d", len(getResp.Persona.Context))
 	}
@@ -877,7 +877,7 @@ func TestPersonaServer_LargeDataHandling(t *testing.T) {
 func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test with special characters and unicode
 	req := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
@@ -885,11 +885,11 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 			Topic:  "Unicode & Special Characters\nMultiline",
 			Prompt: "You are an expert in handling special characters: @#$%^&*(){}[]|\\:;\"'<>,.?/~`",
 			Context: map[string]string{
-				"unicode":        "🎯🚀💡🔥⭐",
-				"special_chars":  "@#$%^&*()",
-				"quotes":         "\"single'double\"",
-				"newlines":       "line1\nline2\nline3",
-				"tabs":           "col1\tcol2\tcol3",
+				"unicode":       "🎯🚀💡🔥⭐",
+				"special_chars": "@#$%^&*()",
+				"quotes":        "\"single'double\"",
+				"newlines":      "line1\nline2\nline3",
+				"tabs":          "col1\tcol2\tcol3",
 			},
 			Rag: []string{
 				"file with spaces.txt",
@@ -900,24 +900,24 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 			},
 		},
 	}
-	
+
 	resp, err := client.CreatePersona(context.Background(), req)
 	if err != nil {
 		t.Fatalf("CreatePersona with special chars failed: %v", err)
 	}
-	
+
 	// Verify special characters were preserved
 	if resp.Persona.Name != "Special Chars Expert 🚀" {
 		t.Errorf("Expected unicode name to be preserved, got %s", resp.Persona.Name)
 	}
-	
+
 	// Test retrieval preserves special characters
 	getReq := &pb.GetPersonaRequest{Id: resp.Persona.Id}
 	getResp, err := client.GetPersona(context.Background(), getReq)
 	if err != nil {
 		t.Fatalf("GetPersona with special chars failed: %v", err)
 	}
-	
+
 	if getResp.Persona.Context["unicode"] != "🎯🚀💡🔥⭐" {
 		t.Errorf("Expected unicode context to be preserved")
 	}
@@ -929,12 +929,12 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 func TestPersonaServer_ErrorStatusCodes(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test various error scenarios and their status codes
 	testCases := []struct {
-		name           string
-		operation      func() error
-		expectedCode   codes.Code
+		name         string
+		operation    func() error
+		expectedCode codes.Code
 	}{
 		{
 			name: "Create with nil persona",
@@ -969,7 +969,7 @@ func TestPersonaServer_ErrorStatusCodes(t *testing.T) {
 			expectedCode: codes.NotFound,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.operation()
@@ -977,13 +977,13 @@ func TestPersonaServer_ErrorStatusCodes(t *testing.T) {
 				t.Error("Expected error but got none")
 				return
 			}
-			
+
 			st, ok := status.FromError(err)
 			if !ok {
 				t.Error("Expected gRPC status error")
 				return
 			}
-			
+
 			if st.Code() != tc.expectedCode {
 				t.Errorf("Expected status code %v, got %v", tc.expectedCode, st.Code())
 			}
@@ -994,28 +994,28 @@ func TestPersonaServer_ErrorStatusCodes(t *testing.T) {
 func TestPersonaServer_RequestValidation(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test nil request handling - some operations handle nil gracefully
 	_, err := client.CreatePersona(context.Background(), nil)
 	if err == nil {
 		t.Error("Expected error for nil CreatePersonaRequest")
 	}
-	
+
 	_, err = client.GetPersona(context.Background(), nil)
 	if err == nil {
 		t.Error("Expected error for nil GetPersonaRequest")
 	}
-	
+
 	_, err = client.UpdatePersona(context.Background(), nil)
 	if err == nil {
 		t.Error("Expected error for nil UpdatePersonaRequest")
 	}
-	
+
 	_, err = client.DeletePersona(context.Background(), nil)
 	if err == nil {
 		t.Error("Expected error for nil DeletePersonaRequest")
 	}
-	
+
 	// ListPersonas handles nil request gracefully
 	_, err = client.ListPersonas(context.Background(), nil)
 	if err != nil {
@@ -1026,7 +1026,7 @@ func TestPersonaServer_RequestValidation(t *testing.T) {
 func TestPersonaServer_EmptyStringValidation(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test operations with empty string IDs
 	testCases := []struct {
 		name      string
@@ -1045,7 +1045,7 @@ func TestPersonaServer_EmptyStringValidation(t *testing.T) {
 			name: "Update with empty ID",
 			operation: func() error {
 				_, err := client.UpdatePersona(context.Background(), &pb.UpdatePersonaRequest{
-					Id: "",
+					Id:      "",
 					Persona: &pb.Persona{Name: "Test", Topic: "Test", Prompt: "Test"},
 				})
 				return err
@@ -1061,7 +1061,7 @@ func TestPersonaServer_EmptyStringValidation(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.operation()
@@ -1075,16 +1075,16 @@ func TestPersonaServer_EmptyStringValidation(t *testing.T) {
 func TestPersonaServer_FullWorkflow(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test a complete workflow with multiple personas
 	personas := []*pb.Persona{
 		{Name: "Workflow Expert 1", Topic: "Workflow", Prompt: "Expert 1"},
 		{Name: "Workflow Expert 2", Topic: "Workflow", Prompt: "Expert 2"},
 		{Name: "Workflow Expert 3", Topic: "Workflow", Prompt: "Expert 3"},
 	}
-	
+
 	var createdIds []string
-	
+
 	// Create all personas
 	for i, p := range personas {
 		req := &pb.CreatePersonaRequest{Persona: p}
@@ -1094,7 +1094,7 @@ func TestPersonaServer_FullWorkflow(t *testing.T) {
 		}
 		createdIds = append(createdIds, resp.Persona.Id)
 	}
-	
+
 	// List and verify count
 	listResp, err := client.ListPersonas(context.Background(), &pb.ListPersonasRequest{})
 	if err != nil {
@@ -1103,7 +1103,7 @@ func TestPersonaServer_FullWorkflow(t *testing.T) {
 	if len(listResp.Personas) != 3 {
 		t.Errorf("Expected 3 personas, got %d", len(listResp.Personas))
 	}
-	
+
 	// Update middle persona
 	updateReq := &pb.UpdatePersonaRequest{
 		Id: createdIds[1],
@@ -1117,7 +1117,7 @@ func TestPersonaServer_FullWorkflow(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to update persona: %v", err)
 	}
-	
+
 	// Verify update
 	getResp, err := client.GetPersona(context.Background(), &pb.GetPersonaRequest{Id: createdIds[1]})
 	if err != nil {
@@ -1126,19 +1126,19 @@ func TestPersonaServer_FullWorkflow(t *testing.T) {
 	if getResp.Persona.Name != "Updated Workflow Expert 2" {
 		t.Errorf("Expected updated name, got %s", getResp.Persona.Name)
 	}
-	
+
 	// Delete first persona
 	_, err = client.DeletePersona(context.Background(), &pb.DeletePersonaRequest{Id: createdIds[0]})
 	if err != nil {
 		t.Fatalf("Failed to delete persona: %v", err)
 	}
-	
+
 	// Verify deletion
 	_, err = client.GetPersona(context.Background(), &pb.GetPersonaRequest{Id: createdIds[0]})
 	if err == nil {
 		t.Error("Expected error when getting deleted persona")
 	}
-	
+
 	// Final list should have 2 personas
 	finalListResp, err := client.ListPersonas(context.Background(), &pb.ListPersonasRequest{})
 	if err != nil {
@@ -1152,7 +1152,7 @@ func TestPersonaServer_FullWorkflow(t *testing.T) {
 func TestPersonaServer_ContextAndRAGHandling(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test persona with various context and RAG configurations
 	testCases := []struct {
 		name    string
@@ -1189,7 +1189,7 @@ func TestPersonaServer_ContextAndRAGHandling(t *testing.T) {
 			},
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Create
@@ -1198,13 +1198,13 @@ func TestPersonaServer_ContextAndRAGHandling(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create persona: %v", err)
 			}
-			
+
 			// Get and verify
 			getResp, err := client.GetPersona(context.Background(), &pb.GetPersonaRequest{Id: createResp.Persona.Id})
 			if err != nil {
 				t.Fatalf("Failed to get persona: %v", err)
 			}
-			
+
 			// Verify context handling
 			expectedContextLen := 0
 			if tc.persona.Context != nil {
@@ -1217,7 +1217,7 @@ func TestPersonaServer_ContextAndRAGHandling(t *testing.T) {
 			if actualContextLen != expectedContextLen {
 				t.Errorf("Expected context length %d, got %d", expectedContextLen, actualContextLen)
 			}
-			
+
 			// Verify RAG handling
 			expectedRAGLen := 0
 			if tc.persona.Rag != nil {
@@ -1237,7 +1237,7 @@ func TestPersonaServer_ContextAndRAGHandling(t *testing.T) {
 func TestPersonaServer_ValidationErrorPaths(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test all validation error paths in CreatePersona
 	// The server validates and rejects whitespace-only fields
 	validationTests := []struct {
@@ -1252,7 +1252,7 @@ func TestPersonaServer_ValidationErrorPaths(t *testing.T) {
 		{"newline characters in topic", &pb.Persona{Name: "Test", Topic: "\n\n", Prompt: "Test"}, true},
 		{"mixed whitespace in prompt", &pb.Persona{Name: "Test", Topic: "Test", Prompt: " \t\n "}, true},
 	}
-	
+
 	for _, tt := range validationTests {
 		t.Run(tt.name, func(t *testing.T) {
 			req := &pb.CreatePersonaRequest{Persona: tt.persona}
@@ -1267,7 +1267,7 @@ func TestPersonaServer_ValidationErrorPaths(t *testing.T) {
 func TestPersonaServer_UpdateValidationErrorPaths(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Create a valid persona first
 	createReq := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
@@ -1276,12 +1276,12 @@ func TestPersonaServer_UpdateValidationErrorPaths(t *testing.T) {
 			Prompt: "Original Prompt",
 		},
 	}
-	
+
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	// Test validation in UpdatePersona
 	// The server validates and rejects whitespace-only fields
 	validationTests := []struct {
@@ -1295,7 +1295,7 @@ func TestPersonaServer_UpdateValidationErrorPaths(t *testing.T) {
 		{"tab characters", &pb.Persona{Name: "\t", Topic: "\t", Prompt: "\t"}, true},
 		{"newline characters", &pb.Persona{Name: "\n", Topic: "\n", Prompt: "\n"}, true},
 	}
-	
+
 	for _, tt := range validationTests {
 		t.Run(tt.name, func(t *testing.T) {
 			updateReq := &pb.UpdatePersonaRequest{
@@ -1314,7 +1314,7 @@ func TestPersonaServer_ServerStructMethods(t *testing.T) {
 	// This test is redundant with other tests that already cover nil request handling
 	// through the gRPC client. The direct server struct testing is covered by
 	// the setupTestServer tests which properly initialize the server.
-	// 
+	//
 	// Removing this test to avoid the nil pointer dereference issue and
 	// because the functionality is already well covered by other tests.
 	t.Skip("Functionality covered by other gRPC tests with proper server setup")
@@ -1323,7 +1323,7 @@ func TestPersonaServer_ServerStructMethods(t *testing.T) {
 func TestPersonaServer_ErrorMessageContent(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test that error messages contain useful information
 	testCases := []struct {
 		name      string
@@ -1363,7 +1363,7 @@ func TestPersonaServer_ErrorMessageContent(t *testing.T) {
 			wantMsg: "persona not found",
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.operation()
@@ -1371,13 +1371,13 @@ func TestPersonaServer_ErrorMessageContent(t *testing.T) {
 				t.Error("Expected error but got none")
 				return
 			}
-			
+
 			st, ok := status.FromError(err)
 			if !ok {
 				t.Error("Expected gRPC status error")
 				return
 			}
-			
+
 			if st.Message() == "" {
 				t.Error("Expected non-empty error message")
 			}
@@ -1388,7 +1388,7 @@ func TestPersonaServer_ErrorMessageContent(t *testing.T) {
 func TestPersonaServer_ProtobufConversion(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
-	
+
 	// Test that protobuf conversion handles all field types correctly
 	complexPersona := &pb.Persona{
 		Name:   "Conversion Test",
@@ -1407,27 +1407,27 @@ func TestPersonaServer_ProtobufConversion(t *testing.T) {
 			"special@chars#doc.pdf",
 		},
 	}
-	
+
 	// Create and verify all fields are preserved
 	createReq := &pb.CreatePersonaRequest{Persona: complexPersona}
 	createResp, err := client.CreatePersona(context.Background(), createReq)
 	if err != nil {
 		t.Fatalf("CreatePersona failed: %v", err)
 	}
-	
+
 	// Get and verify conversion back
 	getResp, err := client.GetPersona(context.Background(), &pb.GetPersonaRequest{Id: createResp.Persona.Id})
 	if err != nil {
 		t.Fatalf("GetPersona failed: %v", err)
 	}
-	
+
 	// Verify all context fields
 	for k, v := range complexPersona.Context {
 		if getResp.Persona.Context[k] != v {
 			t.Errorf("Context field %s: expected %s, got %s", k, v, getResp.Persona.Context[k])
 		}
 	}
-	
+
 	// Verify all RAG fields
 	for i, v := range complexPersona.Rag {
 		if i >= len(getResp.Persona.Rag) {
@@ -1443,7 +1443,7 @@ func TestPersonaServer_ProtobufConversion(t *testing.T) {
 func TestStartGRPCServer(t *testing.T) {
 	// Test the StartGRPCServer function to improve coverage
 	// We'll test that it can start and stop gracefully
-	
+
 	// Use a random available port
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
@@ -1451,45 +1451,45 @@ func TestStartGRPCServer(t *testing.T) {
 	}
 	port := listener.Addr().(*net.TCPAddr).Port
 	listener.Close()
-	
+
 	// Start the server in a goroutine
 	done := make(chan error, 1)
 	go func() {
 		err := StartGRPCServer(fmt.Sprintf("%d", port))
 		done <- err
 	}()
-	
+
 	// Give the server a moment to start
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// Try to connect to verify the server is running
-	conn, err := grpc.Dial(fmt.Sprintf("localhost:%d", port), 
+	conn, err := grpc.Dial(fmt.Sprintf("localhost:%d", port),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithTimeout(time.Second))
 	if err != nil {
 		t.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
-	
+
 	// Create a client and test a simple operation
 	client := pb.NewPersonaServiceClient(conn)
-	
+
 	// Test that the server is responding
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	
+
 	listResp, err := client.ListPersonas(ctx, &pb.ListPersonasRequest{})
 	if err != nil {
 		t.Fatalf("Failed to call ListPersonas: %v", err)
 	}
-	
+
 	// Should return empty list initially
 	if len(listResp.Personas) != 0 {
 		t.Errorf("Expected empty list, got %d personas", len(listResp.Personas))
 	}
-	
+
 	// Clean up
 	conn.Close()
-	
+
 	// Note: We can't easily test server shutdown without modifying the StartGRPCServer function
 	// to accept a context or shutdown channel, but we've covered the startup path which was
 	// the missing coverage.

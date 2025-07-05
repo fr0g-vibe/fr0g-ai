@@ -46,7 +46,7 @@ func (p *Processor) ValidateDemographics(demo *pb.Demographics) []config.Validat
 	// Validate education level
 	if demo.Education != "" {
 		validEducation := []string{
-			"elementary", "high-school", "some-college", "bachelor", 
+			"elementary", "high-school", "some-college", "bachelor",
 			"master", "doctorate", "professional", "other",
 		}
 		if !p.isValidOption(demo.Education, validEducation) {
@@ -198,7 +198,7 @@ func (p *Processor) GetAgeGroup(age int32) string {
 func (p *Processor) GetGenerationCohort(age int32) string {
 	// Approximate birth year based on current age (2024)
 	birthYear := 2024 - int(age)
-	
+
 	switch {
 	case birthYear >= 2010:
 		return "gen-alpha"
@@ -260,22 +260,22 @@ func (p *Processor) GetDemographicProfile(demo *pb.Demographics) map[string]inte
 
 func (p *Processor) getLocationProfile(location *pb.Location) map[string]interface{} {
 	profile := make(map[string]interface{})
-	
+
 	if location.Country != "" {
 		profile["country"] = location.Country
 	}
-	
+
 	if location.Region != "" {
 		profile["region"] = location.Region
 	}
-	
+
 	if location.City != "" {
 		profile["city"] = location.City
 	}
-	
+
 	if location.UrbanRural != "" {
 		profile["urban_rural"] = location.UrbanRural
 	}
-	
+
 	return profile
 }

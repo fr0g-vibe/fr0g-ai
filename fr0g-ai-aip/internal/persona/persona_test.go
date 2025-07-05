@@ -131,7 +131,6 @@ func TestServiceUpdatePersona(t *testing.T) {
 	}
 }
 
-
 func TestServiceValidation(t *testing.T) {
 	service := NewService(storage.NewMemoryStorage())
 
@@ -186,7 +185,6 @@ func TestServiceErrorHandling(t *testing.T) {
 	}
 }
 
-
 func TestServiceWithComplexPersona(t *testing.T) {
 	service := NewService(storage.NewMemoryStorage())
 
@@ -224,7 +222,6 @@ func TestServiceWithComplexPersona(t *testing.T) {
 		t.Errorf("Expected 3 RAG items, got %d", len(retrieved.Rag))
 	}
 }
-
 
 func TestServiceConcurrentOperations(t *testing.T) {
 	service := NewService(storage.NewMemoryStorage())

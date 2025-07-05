@@ -14,7 +14,7 @@ func TestStorageIntegration(t *testing.T) {
 	storages := map[string]Storage{
 		"memory": NewMemoryStorage(),
 	}
-	
+
 	// Add file storage
 	tmpDir := t.TempDir()
 	fileStorage, err := NewFileStorage(tmpDir)
@@ -22,7 +22,7 @@ func TestStorageIntegration(t *testing.T) {
 		t.Fatalf("Failed to create file storage: %v", err)
 	}
 	storages["file"] = fileStorage
-	
+
 	for name, storage := range storages {
 		t.Run(name, func(t *testing.T) {
 			testStorageOperations(t, storage)
@@ -37,7 +37,7 @@ func testStorageOperations(t *testing.T, storage Storage) {
 		{Name: "Expert 2", Topic: "Topic 2", Prompt: "Prompt 2"},
 		{Name: "Expert 3", Topic: "Topic 3", Prompt: "Prompt 3"},
 	}
-	
+
 	// Create multiple personas
 	for _, p := range personas {
 		err := storage.Create(p)
@@ -48,7 +48,7 @@ func testStorageOperations(t *testing.T, storage Storage) {
 			t.Errorf("Expected ID to be generated for persona %s", p.Name)
 		}
 	}
-	
+
 	// List and verify count
 	list, err := storage.List()
 	if err != nil {
@@ -57,7 +57,7 @@ func testStorageOperations(t *testing.T, storage Storage) {
 	if len(list) != len(personas) {
 		t.Errorf("Expected %d personas, got %d", len(personas), len(list))
 	}
-	
+
 	// Get each persona and verify
 	for _, p := range personas {
 		retrieved, err := storage.Get(p.Id)
@@ -68,14 +68,14 @@ func testStorageOperations(t *testing.T, storage Storage) {
 			t.Errorf("Expected name %s, got %s", p.Name, retrieved.Name)
 		}
 	}
-	
+
 	// Update first persona
 	personas[0].Name = "Updated Expert 1"
 	err = storage.Update(personas[0].Id, *personas[0])
 	if err != nil {
 		t.Fatalf("Failed to update persona: %v", err)
 	}
-	
+
 	// Verify update
 	updated, err := storage.Get(personas[0].Id)
 	if err != nil {
@@ -84,19 +84,19 @@ func testStorageOperations(t *testing.T, storage Storage) {
 	if updated.Name != "Updated Expert 1" {
 		t.Errorf("Expected updated name 'Updated Expert 1', got %s", updated.Name)
 	}
-	
+
 	// Delete second persona
 	err = storage.Delete(personas[1].Id)
 	if err != nil {
 		t.Fatalf("Failed to delete persona: %v", err)
 	}
-	
+
 	// Verify deletion
 	_, err = storage.Get(personas[1].Id)
 	if err == nil {
 		t.Error("Expected error when getting deleted persona")
 	}
-	
+
 	// Verify final count
 	finalList, err := storage.List()
 	if err != nil {
@@ -110,30 +110,30 @@ func testStorageOperations(t *testing.T, storage Storage) {
 func TestFileStorageCorruption(t *testing.T) {
 	tmpDir := t.TempDir()
 	storage, _ := NewFileStorage(tmpDir)
-	
+
 	// Create a valid persona
 	p := &types.Persona{Name: "Valid", Topic: "Valid", Prompt: "Valid"}
 	storage.Create(p)
-	
+
 	// Create a corrupted file manually
 	corruptedPath := filepath.Join(tmpDir, "corrupted.json")
 	os.WriteFile(corruptedPath, []byte("{invalid json"), 0644)
-	
+
 	// Create a non-JSON file
 	nonJSONPath := filepath.Join(tmpDir, "notjson.txt")
 	os.WriteFile(nonJSONPath, []byte("not json"), 0644)
-	
+
 	// List should still work and return only valid personas
 	list, err := storage.List()
 	if err != nil {
 		t.Fatalf("List failed: %v", err)
 	}
-	
+
 	// Should only have the one valid persona
 	if len(list) != 1 {
 		t.Errorf("Expected 1 valid persona, got %d", len(list))
 	}
-	
+
 	if list[0].Name != "Valid" {
 		t.Errorf("Expected valid persona name 'Valid', got %s", list[0].Name)
 	}
@@ -141,36 +141,36 @@ func TestFileStorageCorruption(t *testing.T) {
 
 func TestMemoryStorageConcurrency(t *testing.T) {
 	storage := NewMemoryStorage()
-	
+
 	// Test concurrent operations
 	numGoroutines := 50
 	numOperations := 10
-	
+
 	done := make(chan bool, numGoroutines)
-	
+
 	for i := 0; i < numGoroutines; i++ {
 		go func(id int) {
 			defer func() { done <- true }()
-			
+
 			for j := 0; j < numOperations; j++ {
 				p := &types.Persona{
 					Name:   fmt.Sprintf("Concurrent %d-%d", id, j),
 					Topic:  "Concurrency",
 					Prompt: "Concurrent test",
 				}
-				
+
 				// Create
 				if err := storage.Create(p); err != nil {
 					t.Errorf("Concurrent create failed: %v", err)
 					return
 				}
-				
+
 				// Read
 				if _, err := storage.Get(p.Id); err != nil {
 					t.Errorf("Concurrent get failed: %v", err)
 					return
 				}
-				
+
 				// Update
 				p.Name = fmt.Sprintf("Updated %d-%d", id, j)
 				if err := storage.Update(p.Id, *p); err != nil {
@@ -180,18 +180,18 @@ func TestMemoryStorageConcurrency(t *testing.T) {
 			}
 		}(i)
 	}
-	
+
 	// Wait for all goroutines
 	for i := 0; i < numGoroutines; i++ {
 		<-done
 	}
-	
+
 	// Verify final state
 	list, err := storage.List()
 	if err != nil {
 		t.Fatalf("Final list failed: %v", err)
 	}
-	
+
 	expectedCount := numGoroutines * numOperations
 	if len(list) != expectedCount {
 		t.Errorf("Expected %d personas after concurrent operations, got %d", expectedCount, len(list))

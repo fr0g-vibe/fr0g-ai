@@ -138,7 +138,7 @@ func handleGenerateIdentities(config Config) error {
 
 	// Generate diverse identities
 	identities := generateSampleIdentities(personas)
-	
+
 	created := 0
 	for _, identity := range identities {
 		if err := service.CreateIdentity(&identity); err != nil {
@@ -168,7 +168,7 @@ func handleGenerateRandomCommunity(config Config) error {
 		fmt.Println("  -location <city>      Location constraint (optional)")
 		fmt.Println("  -age-range <min>-<max> Age range for members (optional)")
 	}
-	
+
 	size := fs.Int("size", 0, "Number of identities to generate (required)")
 	name := fs.String("name", "", "Community name (optional)")
 	communityType := fs.String("type", "demographic", "Community type")
@@ -221,10 +221,10 @@ func handleGenerateRandomCommunity(config Config) error {
 			max, err2 := strconv.Atoi(strings.TrimSpace(parts[1]))
 			if err1 == nil && err2 == nil && min <= max {
 				ageDistribution = types.AgeDistribution{
-					Mean:    float64(min+max) / 2,
-					StdDev:  float64(max-min) / 4, // Reasonable spread
-					MinAge:  min,
-					MaxAge:  max,
+					Mean:     float64(min+max) / 2,
+					StdDev:   float64(max-min) / 4, // Reasonable spread
+					MinAge:   min,
+					MaxAge:   max,
 					Skewness: 0,
 				}
 			}
@@ -232,10 +232,10 @@ func handleGenerateRandomCommunity(config Config) error {
 	} else {
 		// Default age distribution
 		ageDistribution = types.AgeDistribution{
-			Mean:    35,
-			StdDev:  12,
-			MinAge:  18,
-			MaxAge:  75,
+			Mean:     35,
+			StdDev:   12,
+			MinAge:   18,
+			MaxAge:   75,
 			Skewness: 0,
 		}
 	}
@@ -265,10 +265,10 @@ func handleGenerateRandomCommunity(config Config) error {
 		PersonaWeights:     personaWeights,
 		AgeDistribution:    ageDistribution,
 		LocationConstraint: locationConstraint,
-		PoliticalSpread:    0.8,  // High political diversity
-		InterestSpread:     0.9,  // High interest diversity
-		SocioeconomicRange: 0.7,  // Moderate socioeconomic diversity
-		ActivityLevel:      0.6,  // Moderate activity level
+		PoliticalSpread:    0.8, // High political diversity
+		InterestSpread:     0.9, // High interest diversity
+		SocioeconomicRange: 0.7, // Moderate socioeconomic diversity
+		ActivityLevel:      0.6, // Moderate activity level
 	}
 
 	fmt.Printf("Generating random community '%s' with %d members...\n", *name, *size)
@@ -310,17 +310,17 @@ func handleGenerateRandomCommunity(config Config) error {
 			fmt.Printf("   ... and %d more members\n", len(generatedCommunity.MemberIds)-5)
 			break
 		}
-		
+
 		identity, err := service.GetIdentity(memberId)
 		if err != nil {
 			continue
 		}
-		
+
 		persona, err := service.GetPersona(identity.PersonaId)
 		if err != nil {
 			continue
 		}
-		
+
 		fmt.Printf("   • %s (based on %s persona)\n", identity.Name, persona.Name)
 		memberCount++
 	}
@@ -480,7 +480,7 @@ func generateSampleIdentities(personas []types.Persona) []types.Identity {
 	// Create identities by cycling through personas
 	for i, data := range sampleData {
 		persona := personas[i%len(personas)]
-		
+
 		identity := types.Identity{
 			PersonaId:   persona.Id,
 			Name:        data.name,

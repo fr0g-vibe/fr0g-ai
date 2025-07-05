@@ -1,8 +1,8 @@
 package types
 
 import (
-	"time"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
+	"time"
 )
 
 // Persona represents an AI persona with specific expertise
@@ -13,7 +13,7 @@ type Persona struct {
 	Prompt  string            `json:"prompt"`
 	Context map[string]string `json:"context"`
 	Rag     []string          `json:"rag"`
-	
+
 	// Additional fields not in proto
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

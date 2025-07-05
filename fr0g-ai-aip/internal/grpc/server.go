@@ -31,14 +31,14 @@ func StartGRPCServer(port string) error {
 	}
 
 	s := grpc.NewServer()
-	
+
 	// Create a default service for the standalone server
 	memStorage := storage.NewMemoryStorage()
 	service := persona.NewService(memStorage)
 	personaServer := &PersonaServer{
 		service: service,
 	}
-	
+
 	pb.RegisterPersonaServiceServer(s, personaServer)
 
 	fmt.Printf("gRPC server listening on port %s\n", port)
@@ -97,7 +97,7 @@ func (s *PersonaServer) CreatePersona(ctx context.Context, req *pb.CreatePersona
 
 	// Convert proto to internal type
 	p := types.ProtoToPersona(req.Persona)
-	
+
 	err := s.service.CreatePersona(p)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create persona: %v", err)
@@ -208,7 +208,7 @@ func (s *PersonaServer) CreateIdentity(ctx context.Context, req *pb.CreateIdenti
 
 	// Convert proto to internal type
 	identity := types.ProtoToIdentity(req.Identity)
-	
+
 	err := s.service.CreateIdentity(identity)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "failed to create identity: %v", err)
@@ -315,4 +315,3 @@ func (s *PersonaServer) DeleteIdentity(ctx context.Context, req *pb.DeleteIdenti
 
 	return &pb.DeleteIdentityResponse{}, nil
 }
-

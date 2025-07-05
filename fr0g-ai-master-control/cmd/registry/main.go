@@ -30,7 +30,7 @@ func main() {
 
 	// Create and start registry
 	serviceRegistry := registry.NewServiceRegistry(config)
-	
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

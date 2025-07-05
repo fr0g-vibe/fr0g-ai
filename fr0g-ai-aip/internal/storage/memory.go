@@ -270,7 +270,7 @@ func (m *MemoryStorage) CreateCommunity(c *types.Community) error {
 	if c.Id == "" {
 		c.Id = generateID()
 	}
-	
+
 	// Initialize empty slices if nil
 	if c.MemberIds == nil {
 		c.MemberIds = []string{}

@@ -156,10 +156,10 @@ func TestValidateModel(t *testing.T) {
 
 func TestValidatePersonaPrompt(t *testing.T) {
 	tests := []struct {
-		name   string
-		prompt *string
+		name    string
+		prompt  *string
 		wantErr bool
-		errMsg string
+		errMsg  string
 	}{
 		{"nil prompt", nil, false, ""},
 		{"valid prompt", func() *string { s := "You are a helpful assistant"; return &s }(), false, ""},

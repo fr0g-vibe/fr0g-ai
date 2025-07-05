@@ -56,7 +56,7 @@ func NewPatternRecognition() *PatternRecognition {
 func (pr *PatternRecognition) AddDataPoint(streamID, streamType string, value interface{}, metadata map[string]interface{}) {
 	pr.mu.Lock()
 	defer pr.mu.Unlock()
-	
+
 	stream, exists := pr.dataStreams[streamID]
 	if !exists {
 		stream = &DataStream{
@@ -66,16 +66,16 @@ func (pr *PatternRecognition) AddDataPoint(streamID, streamType string, value in
 		}
 		pr.dataStreams[streamID] = stream
 	}
-	
+
 	dataPoint := DataPoint{
 		Timestamp: time.Now(),
 		Value:     value,
 		Metadata:  metadata,
 	}
-	
+
 	stream.Data = append(stream.Data, dataPoint)
 	stream.LastUpdate = time.Now()
-	
+
 	// Simple pattern recognition - detect frequent values
 	pr.analyzeStream(stream)
 }
@@ -91,17 +91,17 @@ func (pr *PatternRecognition) GetPatternCount() int {
 func (pr *PatternRecognition) GetTopPatterns(n int) []*RecognizedPattern {
 	pr.mu.RLock()
 	defer pr.mu.RUnlock()
-	
+
 	patterns := make([]*RecognizedPattern, 0, len(pr.patterns))
 	for _, pattern := range pr.patterns {
 		patterns = append(patterns, pattern)
 	}
-	
+
 	// Simple sorting by confidence
 	if n > len(patterns) {
 		n = len(patterns)
 	}
-	
+
 	return patterns[:n]
 }
 
@@ -110,19 +110,19 @@ func (pr *PatternRecognition) analyzeStream(stream *DataStream) {
 	if len(stream.Data) < 3 {
 		return
 	}
-	
+
 	// Simple frequency-based pattern detection
 	valueFreq := make(map[string]int)
 	for _, point := range stream.Data {
 		key := fmt.Sprintf("%v", point.Value)
 		valueFreq[key]++
 	}
-	
+
 	// Create patterns for frequent values
 	for value, freq := range valueFreq {
 		if freq >= 2 { // Minimum frequency threshold
 			patternID := fmt.Sprintf("freq_%s_%s", stream.ID, value)
-			
+
 			if _, exists := pr.patterns[patternID]; !exists {
 				pattern := &RecognizedPattern{
 					ID:          patternID,
@@ -145,7 +145,7 @@ func (pr *PatternRecognition) analyzeStream(stream *DataStream) {
 					},
 					Strength: float64(freq) / float64(len(stream.Data)),
 				}
-				
+
 				pr.patterns[patternID] = pattern
 			}
 		}

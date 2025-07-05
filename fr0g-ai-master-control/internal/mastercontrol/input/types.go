@@ -35,13 +35,13 @@ type WebhookResponse struct {
 
 // WebhookConfig holds webhook manager configuration
 type WebhookConfig struct {
-	Port            int           `yaml:"port"`
-	Host            string        `yaml:"host"`
-	ReadTimeout     time.Duration `yaml:"read_timeout"`
-	WriteTimeout    time.Duration `yaml:"write_timeout"`
-	MaxRequestSize  int64         `yaml:"max_request_size"`
-	EnableLogging   bool          `yaml:"enable_logging"`
-	AllowedOrigins  []string      `yaml:"allowed_origins"`
+	Port           int           `yaml:"port"`
+	Host           string        `yaml:"host"`
+	ReadTimeout    time.Duration `yaml:"read_timeout"`
+	WriteTimeout   time.Duration `yaml:"write_timeout"`
+	MaxRequestSize int64         `yaml:"max_request_size"`
+	EnableLogging  bool          `yaml:"enable_logging"`
+	AllowedOrigins []string      `yaml:"allowed_origins"`
 }
 
 // AIPersonaCommunityClient defines the interface for AI persona community interactions
@@ -54,11 +54,11 @@ type AIPersonaCommunityClient interface {
 
 // Community represents an AI persona community
 type Community struct {
-	ID          string       `json:"id"`
-	Topic       string       `json:"topic"`
-	Members     []PersonaInfo `json:"members"`
-	CreatedAt   time.Time    `json:"created_at"`
-	Status      string       `json:"status"`
+	ID        string        `json:"id"`
+	Topic     string        `json:"topic"`
+	Members   []PersonaInfo `json:"members"`
+	CreatedAt time.Time     `json:"created_at"`
+	Status    string        `json:"status"`
 }
 
 // PersonaInfo represents information about an AI persona

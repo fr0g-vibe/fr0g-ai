@@ -33,11 +33,11 @@ type SampleWorkflow struct {
 	Description string                 `json:"description"`
 	Steps       []WorkflowStep         `json:"steps"`
 	Status      string                 `json:"status"`
-	Progress    float64               `json:"progress"`
+	Progress    float64                `json:"progress"`
 	Metadata    map[string]interface{} `json:"metadata"`
-	CreatedAt   time.Time             `json:"created_at"`
-	StartedAt   *time.Time            `json:"started_at,omitempty"`
-	CompletedAt *time.Time            `json:"completed_at,omitempty"`
+	CreatedAt   time.Time              `json:"created_at"`
+	StartedAt   *time.Time             `json:"started_at,omitempty"`
+	CompletedAt *time.Time             `json:"completed_at,omitempty"`
 }
 
 // WorkflowStep represents a single step in a workflow
@@ -46,15 +46,15 @@ type WorkflowStep struct {
 	Name        string                 `json:"name"`
 	Description string                 `json:"description"`
 	Status      string                 `json:"status"`
-	Duration    time.Duration         `json:"duration"`
+	Duration    time.Duration          `json:"duration"`
 	Output      map[string]interface{} `json:"output"`
-	Error       string                `json:"error,omitempty"`
+	Error       string                 `json:"error,omitempty"`
 }
 
 // NewWorkflowEngine creates a new workflow engine
 func NewWorkflowEngine(config *WorkflowConfig) *WorkflowEngine {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	return &WorkflowEngine{
 		config:             config,
 		activeWorkflows:    make(map[string]*SampleWorkflow),
@@ -67,7 +67,7 @@ func NewWorkflowEngine(config *WorkflowConfig) *WorkflowEngine {
 // Start begins workflow engine operation
 func (we *WorkflowEngine) Start() error {
 	log.Println("Workflow Engine: Starting workflow processes...")
-	
+
 	// Set default values if not configured
 	if we.config.WorkflowInterval == 0 {
 		we.config.WorkflowInterval = 2 * time.Minute
@@ -75,10 +75,10 @@ func (we *WorkflowEngine) Start() error {
 	if we.config.MaxConcurrentWorkflows == 0 {
 		we.config.MaxConcurrentWorkflows = 3
 	}
-	
+
 	// Always start workflows for demo
 	go we.workflowManagementLoop()
-	
+
 	return nil
 }
 
@@ -113,8 +113,8 @@ func (we *WorkflowEngine) CreateSampleWorkflows() []interface{} {
 			Status:      "ready",
 			Progress:    0.0,
 			Metadata: map[string]interface{}{
-				"type":     "cognitive",
-				"priority": "high",
+				"type":      "cognitive",
+				"priority":  "high",
 				"automated": true,
 			},
 			Steps: []WorkflowStep{
@@ -152,8 +152,8 @@ func (we *WorkflowEngine) CreateSampleWorkflows() []interface{} {
 			Status:      "ready",
 			Progress:    0.0,
 			Metadata: map[string]interface{}{
-				"type":     "optimization",
-				"priority": "medium",
+				"type":      "optimization",
+				"priority":  "medium",
 				"automated": true,
 			},
 			Steps: []WorkflowStep{
@@ -179,26 +179,26 @@ func (we *WorkflowEngine) CreateSampleWorkflows() []interface{} {
 			CreatedAt: time.Now(),
 		},
 	}
-	
+
 	// Convert to []interface{} for interface compatibility
 	result := make([]interface{}, len(workflows))
 	for i, workflow := range workflows {
 		result[i] = workflow
 	}
-	
+
 	return result
 }
 
 // ExecuteSampleWorkflow executes a sample workflow to demonstrate capabilities
 func (we *WorkflowEngine) ExecuteSampleWorkflow(ctx context.Context, workflow *SampleWorkflow) error {
 	log.Printf("Workflow Engine: Starting workflow '%s'", workflow.Name)
-	
+
 	workflow.Status = "running"
 	startTime := time.Now()
 	workflow.StartedAt = &startTime
-	
+
 	totalSteps := len(workflow.Steps)
-	
+
 	for i, step := range workflow.Steps {
 		select {
 		case <-ctx.Done():
@@ -207,13 +207,13 @@ func (we *WorkflowEngine) ExecuteSampleWorkflow(ctx context.Context, workflow *S
 		default:
 			// Execute step
 			log.Printf("Workflow Engine: Executing step '%s'", step.Name)
-			
+
 			step.Status = "running"
 			stepStart := time.Now()
-			
+
 			// Simulate step execution
 			time.Sleep(time.Millisecond * 500) // Simulate work
-			
+
 			step.Duration = time.Since(stepStart)
 			step.Status = "completed"
 			step.Output = map[string]interface{}{
@@ -221,22 +221,22 @@ func (we *WorkflowEngine) ExecuteSampleWorkflow(ctx context.Context, workflow *S
 				"success":        true,
 				"step_id":        step.ID,
 			}
-			
+
 			workflow.Steps[i] = step
 			workflow.Progress = float64(i+1) / float64(totalSteps)
-			
+
 			log.Printf("Workflow Engine: Step '%s' completed in %v", step.Name, step.Duration)
 		}
 	}
-	
+
 	workflow.Status = "completed"
 	completedTime := time.Now()
 	workflow.CompletedAt = &completedTime
 	workflow.Progress = 1.0
-	
-	log.Printf("Workflow Engine: Workflow '%s' completed successfully in %v", 
+
+	log.Printf("Workflow Engine: Workflow '%s' completed successfully in %v",
 		workflow.Name, completedTime.Sub(*workflow.StartedAt))
-	
+
 	return nil
 }
 
@@ -244,10 +244,10 @@ func (we *WorkflowEngine) ExecuteSampleWorkflow(ctx context.Context, workflow *S
 func (we *WorkflowEngine) workflowManagementLoop() {
 	ticker := time.NewTicker(we.config.WorkflowInterval)
 	defer ticker.Stop()
-	
+
 	// Start initial workflows
 	we.startSampleWorkflows()
-	
+
 	for {
 		select {
 		case <-we.ctx.Done():
@@ -261,7 +261,7 @@ func (we *WorkflowEngine) workflowManagementLoop() {
 // startSampleWorkflows starts the initial set of sample workflows
 func (we *WorkflowEngine) startSampleWorkflows() {
 	workflows := we.CreateSampleWorkflows()
-	
+
 	for _, workflow := range workflows {
 		if len(we.activeWorkflows) < we.config.MaxConcurrentWorkflows {
 			if sampleWorkflow, ok := workflow.(*SampleWorkflow); ok {
@@ -276,7 +276,7 @@ func (we *WorkflowEngine) startWorkflow(workflow *SampleWorkflow) {
 	we.mu.Lock()
 	we.activeWorkflows[workflow.ID] = workflow
 	we.mu.Unlock()
-	
+
 	go func() {
 		defer func() {
 			we.mu.Lock()
@@ -284,7 +284,7 @@ func (we *WorkflowEngine) startWorkflow(workflow *SampleWorkflow) {
 			we.completedWorkflows = append(we.completedWorkflows, workflow.ID)
 			we.mu.Unlock()
 		}()
-		
+
 		if err := we.ExecuteSampleWorkflow(we.ctx, workflow); err != nil {
 			log.Printf("Workflow Engine: Workflow %s failed: %v", workflow.Name, err)
 		}
@@ -296,11 +296,11 @@ func (we *WorkflowEngine) manageContinuousWorkflows() {
 	we.mu.Lock()
 	activeCount := len(we.activeWorkflows)
 	we.mu.Unlock()
-	
+
 	// Start new workflows if we have capacity
 	if activeCount < we.config.MaxConcurrentWorkflows {
 		workflows := we.CreateSampleWorkflows()
-		
+
 		for _, workflow := range workflows {
 			if len(we.activeWorkflows) < we.config.MaxConcurrentWorkflows {
 				if sampleWorkflow, ok := workflow.(*SampleWorkflow); ok {

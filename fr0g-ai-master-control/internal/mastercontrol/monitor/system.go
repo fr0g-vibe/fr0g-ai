@@ -10,52 +10,52 @@ import (
 
 // SystemMonitor handles system monitoring for the MCP
 type SystemMonitor struct {
-	metrics    *SystemMetrics
-	mu         sync.RWMutex
-	ctx        context.Context
-	cancel     context.CancelFunc
-	config     *MonitorConfig
+	metrics *SystemMetrics
+	mu      sync.RWMutex
+	ctx     context.Context
+	cancel  context.CancelFunc
+	config  *MonitorConfig
 }
 
 // SystemMetrics holds current system metrics
 type SystemMetrics struct {
-	CPUUsage        float64   `json:"cpu_usage"`
-	MemoryUsage     float64   `json:"memory_usage"`
-	GoroutineCount  int       `json:"goroutine_count"`
-	HeapSize        uint64    `json:"heap_size"`
-	SystemLoad      float64   `json:"system_load"`
-	LastUpdate      time.Time `json:"last_update"`
+	CPUUsage        float64                    `json:"cpu_usage"`
+	MemoryUsage     float64                    `json:"memory_usage"`
+	GoroutineCount  int                        `json:"goroutine_count"`
+	HeapSize        uint64                     `json:"heap_size"`
+	SystemLoad      float64                    `json:"system_load"`
+	LastUpdate      time.Time                  `json:"last_update"`
 	ComponentHealth map[string]ComponentHealth `json:"component_health"`
 }
 
 // ComponentHealth represents health status of a component
 type ComponentHealth struct {
-	Status      string    `json:"status"`      // "healthy", "warning", "critical"
-	LastCheck   time.Time `json:"last_check"`
+	Status       string        `json:"status"` // "healthy", "warning", "critical"
+	LastCheck    time.Time     `json:"last_check"`
 	ResponseTime time.Duration `json:"response_time"`
-	ErrorCount  int       `json:"error_count"`
-	Uptime      time.Duration `json:"uptime"`
+	ErrorCount   int           `json:"error_count"`
+	Uptime       time.Duration `json:"uptime"`
 }
 
 // MonitorConfig holds monitoring configuration
 type MonitorConfig struct {
-	UpdateInterval    time.Duration `yaml:"update_interval"`
-	HealthCheckInterval time.Duration `yaml:"health_check_interval"`
-	AlertThresholds   AlertThresholds `yaml:"alert_thresholds"`
+	UpdateInterval      time.Duration   `yaml:"update_interval"`
+	HealthCheckInterval time.Duration   `yaml:"health_check_interval"`
+	AlertThresholds     AlertThresholds `yaml:"alert_thresholds"`
 }
 
 // AlertThresholds defines when to alert on metrics
 type AlertThresholds struct {
-	CPUWarning    float64 `yaml:"cpu_warning"`
-	CPUCritical   float64 `yaml:"cpu_critical"`
-	MemoryWarning float64 `yaml:"memory_warning"`
+	CPUWarning     float64 `yaml:"cpu_warning"`
+	CPUCritical    float64 `yaml:"cpu_critical"`
+	MemoryWarning  float64 `yaml:"memory_warning"`
 	MemoryCritical float64 `yaml:"memory_critical"`
 }
 
 // NewSystemMonitor creates a new system monitor
 func NewSystemMonitor() *SystemMonitor {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	config := &MonitorConfig{
 		UpdateInterval:      time.Second * 5,
 		HealthCheckInterval: time.Second * 30,
@@ -66,7 +66,7 @@ func NewSystemMonitor() *SystemMonitor {
 			MemoryCritical: 95.0,
 		},
 	}
-	
+
 	return &SystemMonitor{
 		metrics: &SystemMetrics{
 			ComponentHealth: make(map[string]ComponentHealth),
@@ -81,13 +81,13 @@ func NewSystemMonitor() *SystemMonitor {
 // Start begins system monitoring
 func (sm *SystemMonitor) Start() error {
 	log.Println("System Monitor: Starting real-time monitoring processes...")
-	
+
 	// Start metrics collection loop
 	go sm.metricsLoop()
-	
+
 	// Start health check loop
 	go sm.healthCheckLoop()
-	
+
 	log.Println("System Monitor: Real-time monitoring started successfully")
 	return nil
 }
@@ -110,7 +110,7 @@ func (sm *SystemMonitor) GetSystemLoad() float64 {
 func (sm *SystemMonitor) GetMetrics() *SystemMetrics {
 	sm.mu.RLock()
 	defer sm.mu.RUnlock()
-	
+
 	// Return a copy
 	metrics := *sm.metrics
 	return &metrics
@@ -120,13 +120,13 @@ func (sm *SystemMonitor) GetMetrics() *SystemMetrics {
 func (sm *SystemMonitor) RegisterComponent(name string) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	
+
 	sm.metrics.ComponentHealth[name] = ComponentHealth{
 		Status:    "healthy",
 		LastCheck: time.Now(),
 		Uptime:    0,
 	}
-	
+
 	log.Printf("System Monitor: Registered component '%s' for health monitoring", name)
 }
 
@@ -134,7 +134,7 @@ func (sm *SystemMonitor) RegisterComponent(name string) {
 func (sm *SystemMonitor) UpdateComponentHealth(name string, status string, responseTime time.Duration) {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	
+
 	if health, exists := sm.metrics.ComponentHealth[name]; exists {
 		health.Status = status
 		health.LastCheck = time.Now()
@@ -150,7 +150,7 @@ func (sm *SystemMonitor) UpdateComponentHealth(name string, status string, respo
 func (sm *SystemMonitor) metricsLoop() {
 	ticker := time.NewTicker(sm.config.UpdateInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-sm.ctx.Done():
@@ -165,7 +165,7 @@ func (sm *SystemMonitor) metricsLoop() {
 func (sm *SystemMonitor) healthCheckLoop() {
 	ticker := time.NewTicker(sm.config.HealthCheckInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-sm.ctx.Done():
@@ -180,27 +180,27 @@ func (sm *SystemMonitor) healthCheckLoop() {
 func (sm *SystemMonitor) updateMetrics() {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	
+
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
-	
+
 	// Calculate CPU usage (simplified)
 	sm.metrics.CPUUsage = sm.calculateCPUUsage()
-	
+
 	// Memory usage
 	sm.metrics.MemoryUsage = float64(memStats.Alloc) / float64(memStats.Sys) * 100
-	
+
 	// Goroutine count
 	sm.metrics.GoroutineCount = runtime.NumGoroutine()
-	
+
 	// Heap size
 	sm.metrics.HeapSize = memStats.HeapAlloc
-	
+
 	// System load (composite metric)
 	sm.metrics.SystemLoad = sm.calculateSystemLoad()
-	
+
 	sm.metrics.LastUpdate = time.Now()
-	
+
 	// Check for alerts
 	sm.checkAlerts()
 }
@@ -210,13 +210,13 @@ func (sm *SystemMonitor) calculateCPUUsage() float64 {
 	// This is a simplified CPU calculation
 	// In production, you'd want to use proper CPU monitoring
 	goroutines := float64(runtime.NumGoroutine())
-	
+
 	// Estimate CPU usage based on goroutine activity
 	cpuUsage := (goroutines / 100.0) * 10.0
 	if cpuUsage > 100.0 {
 		cpuUsage = 100.0
 	}
-	
+
 	return cpuUsage
 }
 
@@ -226,16 +226,16 @@ func (sm *SystemMonitor) calculateSystemLoad() float64 {
 	cpuWeight := 0.4
 	memoryWeight := 0.4
 	goroutineWeight := 0.2
-	
+
 	normalizedGoroutines := float64(sm.metrics.GoroutineCount) / 1000.0
 	if normalizedGoroutines > 1.0 {
 		normalizedGoroutines = 1.0
 	}
-	
+
 	load := (sm.metrics.CPUUsage/100.0)*cpuWeight +
 		(sm.metrics.MemoryUsage/100.0)*memoryWeight +
 		normalizedGoroutines*goroutineWeight
-	
+
 	return load
 }
 
@@ -243,11 +243,11 @@ func (sm *SystemMonitor) calculateSystemLoad() float64 {
 func (sm *SystemMonitor) performHealthChecks() {
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
-	
+
 	for name, health := range sm.metrics.ComponentHealth {
 		// Update uptime
 		health.Uptime = time.Since(health.LastCheck)
-		
+
 		// Simple health check based on last update time
 		timeSinceLastCheck := time.Since(health.LastCheck)
 		if timeSinceLastCheck > time.Minute*5 {
@@ -256,7 +256,7 @@ func (sm *SystemMonitor) performHealthChecks() {
 		if timeSinceLastCheck > time.Minute*10 {
 			health.Status = "critical"
 		}
-		
+
 		sm.metrics.ComponentHealth[name] = health
 	}
 }
@@ -268,7 +268,7 @@ func (sm *SystemMonitor) checkAlerts() {
 	} else if sm.metrics.CPUUsage > sm.config.AlertThresholds.CPUWarning {
 		log.Printf("System Monitor: WARNING - CPU usage at %.2f%%", sm.metrics.CPUUsage)
 	}
-	
+
 	if sm.metrics.MemoryUsage > sm.config.AlertThresholds.MemoryCritical {
 		log.Printf("System Monitor: CRITICAL - Memory usage at %.2f%%", sm.metrics.MemoryUsage)
 	} else if sm.metrics.MemoryUsage > sm.config.AlertThresholds.MemoryWarning {

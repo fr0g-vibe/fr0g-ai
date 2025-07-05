@@ -392,7 +392,7 @@ func (p *Processor) categorizeFoods(foods []string) map[string][]string {
 
 func (p *Processor) getCulinaryAdventurousness(foods []string) string {
 	categories := p.categorizeFoods(foods)
-	
+
 	// Count exotic cuisines and sophisticated foods
 	adventurousCount := 0
 	if cuisines, exists := categories["cuisine"]; exists {
@@ -444,20 +444,20 @@ func (p *Processor) categorizeMusicGenres(music []string) map[string][]string {
 	categories := make(map[string][]string)
 
 	genreMap := map[string]string{
-		"rock":       "rock",
-		"pop":        "pop",
-		"jazz":       "jazz",
-		"classical":  "classical",
-		"hip-hop":    "hip-hop",
-		"rap":        "hip-hop",
-		"country":    "country",
-		"blues":      "blues",
-		"electronic": "electronic",
-		"folk":       "folk",
-		"reggae":     "reggae",
-		"metal":      "metal",
-		"punk":       "punk",
-		"indie":      "indie",
+		"rock":        "rock",
+		"pop":         "pop",
+		"jazz":        "jazz",
+		"classical":   "classical",
+		"hip-hop":     "hip-hop",
+		"rap":         "hip-hop",
+		"country":     "country",
+		"blues":       "blues",
+		"electronic":  "electronic",
+		"folk":        "folk",
+		"reggae":      "reggae",
+		"metal":       "metal",
+		"punk":        "punk",
+		"indie":       "indie",
 		"alternative": "alternative",
 	}
 
@@ -501,20 +501,20 @@ func (p *Processor) categorizeMovieGenres(movies []string) map[string][]string {
 	categories := make(map[string][]string)
 
 	genreMap := map[string]string{
-		"action":    "action",
-		"comedy":    "comedy",
-		"drama":     "drama",
-		"horror":    "horror",
-		"thriller":  "thriller",
-		"romance":   "romance",
-		"sci-fi":    "sci-fi",
-		"fantasy":   "fantasy",
+		"action":      "action",
+		"comedy":      "comedy",
+		"drama":       "drama",
+		"horror":      "horror",
+		"thriller":    "thriller",
+		"romance":     "romance",
+		"sci-fi":      "sci-fi",
+		"fantasy":     "fantasy",
 		"documentary": "documentary",
-		"animation": "animation",
-		"mystery":   "mystery",
-		"crime":     "crime",
-		"war":       "war",
-		"western":   "western",
+		"animation":   "animation",
+		"mystery":     "mystery",
+		"crime":       "crime",
+		"war":         "war",
+		"western":     "western",
 	}
 
 	for _, movie := range movies {
@@ -537,7 +537,7 @@ func (p *Processor) categorizeMovieGenres(movies []string) map[string][]string {
 
 func (p *Processor) getMoviePreferences(movies []string) string {
 	genres := p.categorizeMovieGenres(movies)
-	
+
 	// Analyze preference patterns
 	if len(genres["documentary"]) > 0 || len(genres["drama"]) > 0 {
 		return "serious"
@@ -548,7 +548,7 @@ func (p *Processor) getMoviePreferences(movies []string) string {
 	} else if len(genres["sci-fi"]) > 0 || len(genres["fantasy"]) > 0 {
 		return "imaginative"
 	}
-	
+
 	return "varied"
 }
 
@@ -593,7 +593,7 @@ func (p *Processor) categorizeBookGenres(books []string) map[string][]string {
 
 func (p *Processor) getReadingPreferences(books []string) string {
 	genres := p.categorizeBookGenres(books)
-	
+
 	// Analyze reading patterns
 	if len(genres["non-fiction"]) > len(genres["fiction"]) {
 		return "educational"
@@ -602,23 +602,23 @@ func (p *Processor) getReadingPreferences(books []string) string {
 	} else if len(genres["self-help"]) > 0 || len(genres["business"]) > 0 {
 		return "self-improvement"
 	}
-	
+
 	return "balanced"
 }
 
 func (p *Processor) getDigitalEngagement(techUse string) string {
 	normalized := p.normalizeString(techUse)
-	
+
 	engagementMap := map[string]string{
-		"expert":        "very-high",
-		"early-adopter": "very-high",
-		"tech-savvy":    "high",
+		"expert":         "very-high",
+		"early-adopter":  "very-high",
+		"tech-savvy":     "high",
 		"digital-native": "high",
-		"advanced":      "high",
-		"moderate":      "moderate",
-		"basic":         "low",
-		"minimal":       "very-low",
-		"luddite":       "very-low",
+		"advanced":       "high",
+		"moderate":       "moderate",
+		"basic":          "low",
+		"minimal":        "very-low",
+		"luddite":        "very-low",
 	}
 
 	if engagement, exists := engagementMap[normalized]; exists {
@@ -629,7 +629,7 @@ func (p *Processor) getDigitalEngagement(techUse string) string {
 
 func (p *Processor) getTravelPersonality(travelStyle string) string {
 	normalized := p.normalizeString(travelStyle)
-	
+
 	personalityMap := map[string]string{
 		"luxury":        "comfort-seeker",
 		"budget":        "value-conscious",
@@ -660,7 +660,7 @@ func (p *Processor) GetPreferenceProfile(prefs *pb.Preferences) map[string]inter
 
 func (p *Processor) calculateInterestDiversity(interests []string) float64 {
 	categories := p.categorizeInterests(interests)
-	
+
 	if len(interests) == 0 {
 		return 0.0
 	}
@@ -668,6 +668,6 @@ func (p *Processor) calculateInterestDiversity(interests []string) float64 {
 	// Calculate diversity as number of categories / total possible categories
 	maxCategories := 10.0 // Number of predefined categories
 	actualCategories := float64(len(categories))
-	
+
 	return actualCategories / maxCategories
 }

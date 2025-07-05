@@ -14,7 +14,7 @@ type ExampleConfig struct {
 	Security   sharedconfig.SecurityConfig   `yaml:"security"`
 	Monitoring sharedconfig.MonitoringConfig `yaml:"monitoring"`
 	Storage    sharedconfig.StorageConfig    `yaml:"storage"`
-	
+
 	// Project-specific fields
 	ProjectName    string        `yaml:"project_name"`
 	MaxWorkers     int           `yaml:"max_workers"`
@@ -25,32 +25,32 @@ type ExampleConfig struct {
 // Validate implements validation for the example config
 func (c *ExampleConfig) Validate() sharedconfig.ValidationErrors {
 	var errors []sharedconfig.ValidationError
-	
+
 	// Validate shared configurations
 	errors = append(errors, c.Server.Validate()...)
 	errors = append(errors, c.Security.Validate()...)
 	errors = append(errors, c.Monitoring.Validate()...)
 	errors = append(errors, c.Storage.Validate()...)
-	
+
 	// Validate project-specific fields
 	if err := sharedconfig.ValidateRequired(c.ProjectName, "project_name"); err != nil {
 		errors = append(errors, *err)
 	}
-	
+
 	if err := sharedconfig.ValidatePositive(c.MaxWorkers, "max_workers"); err != nil {
 		errors = append(errors, *err)
 	}
-	
+
 	if c.ProcessTimeout > 0 {
 		if err := sharedconfig.ValidateTimeout(c.ProcessTimeout, "process_timeout"); err != nil {
 			errors = append(errors, *err)
 		}
 	}
-	
+
 	if err := sharedconfig.ValidateStringSliceNotEmpty(c.Features, "features"); err != nil {
 		errors = append(errors, *err)
 	}
-	
+
 	return sharedconfig.ValidationErrors(errors)
 }
 
@@ -65,12 +65,12 @@ func LoadExampleConfig(configPath string) (*ExampleConfig, error) {
 			"../example.env",
 		},
 	})
-	
+
 	// Load environment files
 	if err := loader.LoadEnvFiles(); err != nil {
 		return nil, err
 	}
-	
+
 	// Create config with defaults
 	config := &ExampleConfig{
 		Server: sharedconfig.ServerConfig{
@@ -100,22 +100,22 @@ func LoadExampleConfig(configPath string) (*ExampleConfig, error) {
 		ProcessTimeout: 5 * time.Minute,
 		Features:       []string{"feature1", "feature2"},
 	}
-	
+
 	// Load from file
 	if err := loader.LoadFromFile(config); err != nil {
 		return nil, err
 	}
-	
+
 	// Override with environment variables
 	config.ProjectName = loader.GetEnvString("PROJECT_NAME", config.ProjectName)
 	config.MaxWorkers = loader.GetEnvInt("MAX_WORKERS", config.MaxWorkers)
 	config.ProcessTimeout = loader.GetEnvDuration("PROCESS_TIMEOUT", config.ProcessTimeout)
-	
+
 	// Validate final configuration
 	if errors := config.Validate(); errors.HasErrors() {
 		return nil, errors
 	}
-	
+
 	return config, nil
 }
 
@@ -210,17 +210,17 @@ func TestExampleConfigValidation(t *testing.T) {
 			errMsg:  "features: at least one item is required",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			errors := tt.config.Validate()
-			
+
 			if tt.wantErr {
 				if !errors.HasErrors() {
 					t.Errorf("expected validation errors, got none")
 					return
 				}
-				
+
 				if tt.errMsg != "" && !contains(errors.Error(), tt.errMsg) {
 					t.Errorf("expected error message to contain %q, got %q", tt.errMsg, errors.Error())
 				}
@@ -234,14 +234,14 @@ func TestExampleConfigValidation(t *testing.T) {
 }
 
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 || 
-		(len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || 
-		func() bool {
-			for i := 0; i <= len(s)-len(substr); i++ {
-				if s[i:i+len(substr)] == substr {
-					return true
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+		(len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr ||
+			func() bool {
+				for i := 0; i <= len(s)-len(substr); i++ {
+					if s[i:i+len(substr)] == substr {
+						return true
+					}
 				}
-			}
-			return false
-		}())))
+				return false
+			}())))
 }

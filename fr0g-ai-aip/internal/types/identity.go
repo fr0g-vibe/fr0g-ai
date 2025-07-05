@@ -1,25 +1,25 @@
 package types
 
 import (
-	"time"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 )
 
 // Identity represents a persona-based identity with rich attributes
 type Identity struct {
-	Id             string                 `json:"id"`
-	PersonaId      string                 `json:"persona_id"`
-	Name           string                 `json:"name"`
-	Description    string                 `json:"description"`
-	Attributes     map[string]string      `json:"attributes,omitempty"`     // Legacy
-	Preferences    map[string]string      `json:"preferences,omitempty"`    // Legacy
-	Background     string                 `json:"background"`
-	CreatedAt      time.Time              `json:"created_at"`
-	UpdatedAt      time.Time              `json:"updated_at"`
-	IsActive       bool                   `json:"is_active"`
-	Tags           []string               `json:"tags"`
-	RichAttributes *RichAttributes        `json:"rich_attributes,omitempty"`
+	Id             string            `json:"id"`
+	PersonaId      string            `json:"persona_id"`
+	Name           string            `json:"name"`
+	Description    string            `json:"description"`
+	Attributes     map[string]string `json:"attributes,omitempty"`  // Legacy
+	Preferences    map[string]string `json:"preferences,omitempty"` // Legacy
+	Background     string            `json:"background"`
+	CreatedAt      time.Time         `json:"created_at"`
+	UpdatedAt      time.Time         `json:"updated_at"`
+	IsActive       bool              `json:"is_active"`
+	Tags           []string          `json:"tags"`
+	RichAttributes *RichAttributes   `json:"rich_attributes,omitempty"`
 }
 
 // Use protobuf types for rich attributes
@@ -67,7 +67,7 @@ func ProtoToIdentity(pb *pb.Identity) *Identity {
 	if pb == nil {
 		return nil
 	}
-	
+
 	var createdAt, updatedAt time.Time
 	if pb.CreatedAt != nil {
 		createdAt = pb.CreatedAt.AsTime()
@@ -75,7 +75,7 @@ func ProtoToIdentity(pb *pb.Identity) *Identity {
 	if pb.UpdatedAt != nil {
 		updatedAt = pb.UpdatedAt.AsTime()
 	}
-	
+
 	return &Identity{
 		Id:             pb.Id,
 		PersonaId:      pb.PersonaId,
@@ -97,7 +97,7 @@ func IdentityToProto(i *Identity) *pb.Identity {
 	if i == nil {
 		return nil
 	}
-	
+
 	var createdAt, updatedAt *timestamppb.Timestamp
 	if !i.CreatedAt.IsZero() {
 		createdAt = timestamppb.New(i.CreatedAt)
@@ -105,7 +105,7 @@ func IdentityToProto(i *Identity) *pb.Identity {
 	if !i.UpdatedAt.IsZero() {
 		updatedAt = timestamppb.New(i.UpdatedAt)
 	}
-	
+
 	return &pb.Identity{
 		Id:             i.Id,
 		PersonaId:      i.PersonaId,

@@ -208,7 +208,7 @@ func (p *Processor) normalizeStringSlice(slice []string) []string {
 
 func (p *Processor) getDecisionStyleCategory(decisionMaking string) string {
 	normalized := p.normalizeString(decisionMaking)
-	
+
 	categoryMap := map[string]string{
 		"analytical":        "rational",
 		"data-driven":       "rational",
@@ -232,20 +232,20 @@ func (p *Processor) getDecisionStyleCategory(decisionMaking string) string {
 
 func (p *Processor) getConflictApproach(conflictResolution string) string {
 	normalized := p.normalizeString(conflictResolution)
-	
+
 	approachMap := map[string]string{
-		"collaborative":     "win-win",
-		"compromising":      "win-win",
-		"mediating":         "win-win",
-		"diplomatic":        "win-win",
-		"competitive":       "win-lose",
-		"confrontational":   "win-lose",
-		"aggressive":        "win-lose",
-		"accommodating":     "lose-win",
-		"passive":           "lose-win",
-		"avoiding":          "lose-lose",
-		"assertive":         "balanced",
-		"direct":            "balanced",
+		"collaborative":   "win-win",
+		"compromising":    "win-win",
+		"mediating":       "win-win",
+		"diplomatic":      "win-win",
+		"competitive":     "win-lose",
+		"confrontational": "win-lose",
+		"aggressive":      "win-lose",
+		"accommodating":   "lose-win",
+		"passive":         "lose-win",
+		"avoiding":        "lose-lose",
+		"assertive":       "balanced",
+		"direct":          "balanced",
 	}
 
 	if approach, exists := approachMap[normalized]; exists {
@@ -256,7 +256,7 @@ func (p *Processor) getConflictApproach(conflictResolution string) string {
 
 func (p *Processor) getCommunicationEffectiveness(communicationStyle string) string {
 	normalized := p.normalizeString(communicationStyle)
-	
+
 	// Rate effectiveness based on style characteristics
 	highEffective := []string{"assertive", "direct", "diplomatic", "concise", "logical"}
 	moderateEffective := []string{"formal", "informal", "expressive"}
@@ -267,13 +267,13 @@ func (p *Processor) getCommunicationEffectiveness(communicationStyle string) str
 			return "high"
 		}
 	}
-	
+
 	for _, style := range moderateEffective {
 		if normalized == style {
 			return "moderate"
 		}
 	}
-	
+
 	for _, style := range lowEffective {
 		if normalized == style {
 			return "needs-improvement"
@@ -285,21 +285,21 @@ func (p *Processor) getCommunicationEffectiveness(communicationStyle string) str
 
 func (p *Processor) getLeadershipApproach(leadershipStyle string) string {
 	normalized := p.normalizeString(leadershipStyle)
-	
+
 	approachMap := map[string]string{
-		"democratic":        "participative",
-		"collaborative":     "participative",
-		"servant":           "participative",
-		"coaching":          "participative",
-		"autocratic":        "directive",
-		"commanding":        "directive",
-		"pacesetting":       "directive",
-		"transformational":  "inspirational",
-		"visionary":         "inspirational",
-		"authentic":         "inspirational",
-		"transactional":     "transactional",
-		"laissez-faire":     "hands-off",
-		"affiliative":       "relationship-focused",
+		"democratic":       "participative",
+		"collaborative":    "participative",
+		"servant":          "participative",
+		"coaching":         "participative",
+		"autocratic":       "directive",
+		"commanding":       "directive",
+		"pacesetting":      "directive",
+		"transformational": "inspirational",
+		"visionary":        "inspirational",
+		"authentic":        "inspirational",
+		"transactional":    "transactional",
+		"laissez-faire":    "hands-off",
+		"affiliative":      "relationship-focused",
 	}
 
 	if approach, exists := approachMap[normalized]; exists {
@@ -312,38 +312,38 @@ func (p *Processor) categorizeCopingMechanisms(mechanisms []string) map[string][
 	categories := make(map[string][]string)
 
 	mechanismCategories := map[string]string{
-		"exercise":         "physical",
-		"sports":           "physical",
-		"running":          "physical",
-		"yoga":             "physical",
-		"meditation":       "mindfulness",
-		"mindfulness":      "mindfulness",
-		"breathing":        "mindfulness",
-		"relaxation":       "mindfulness",
-		"talking":          "social",
-		"friends":          "social",
-		"family":           "social",
-		"support-group":    "social",
-		"therapy":          "professional",
-		"counseling":       "professional",
-		"medication":       "professional",
-		"reading":          "cognitive",
-		"journaling":       "cognitive",
-		"problem-solving":  "cognitive",
-		"planning":         "cognitive",
-		"music":            "creative",
-		"art":              "creative",
-		"writing":          "creative",
-		"cooking":          "creative",
-		"alcohol":          "substance",
-		"smoking":          "substance",
-		"drugs":            "substance",
-		"shopping":         "behavioral",
-		"eating":           "behavioral",
-		"sleeping":         "behavioral",
-		"avoidance":        "avoidance",
-		"denial":           "avoidance",
-		"isolation":        "avoidance",
+		"exercise":        "physical",
+		"sports":          "physical",
+		"running":         "physical",
+		"yoga":            "physical",
+		"meditation":      "mindfulness",
+		"mindfulness":     "mindfulness",
+		"breathing":       "mindfulness",
+		"relaxation":      "mindfulness",
+		"talking":         "social",
+		"friends":         "social",
+		"family":          "social",
+		"support-group":   "social",
+		"therapy":         "professional",
+		"counseling":      "professional",
+		"medication":      "professional",
+		"reading":         "cognitive",
+		"journaling":      "cognitive",
+		"problem-solving": "cognitive",
+		"planning":        "cognitive",
+		"music":           "creative",
+		"art":             "creative",
+		"writing":         "creative",
+		"cooking":         "creative",
+		"alcohol":         "substance",
+		"smoking":         "substance",
+		"drugs":           "substance",
+		"shopping":        "behavioral",
+		"eating":          "behavioral",
+		"sleeping":        "behavioral",
+		"avoidance":       "avoidance",
+		"denial":          "avoidance",
+		"isolation":       "avoidance",
 	}
 
 	for _, mechanism := range mechanisms {
@@ -366,20 +366,20 @@ func (p *Processor) categorizeCopingMechanisms(mechanisms []string) map[string][
 
 func (p *Processor) getCopingEffectiveness(mechanisms []string) string {
 	categories := p.categorizeCopingMechanisms(mechanisms)
-	
+
 	// Count healthy vs unhealthy coping mechanisms
 	healthyCount := 0
 	unhealthyCount := 0
-	
+
 	healthyCategories := []string{"physical", "mindfulness", "social", "professional", "cognitive", "creative"}
 	unhealthyCategories := []string{"substance", "avoidance"}
-	
+
 	for _, category := range healthyCategories {
 		if items, exists := categories[category]; exists {
 			healthyCount += len(items)
 		}
 	}
-	
+
 	for _, category := range unhealthyCategories {
 		if items, exists := categories[category]; exists {
 			unhealthyCount += len(items)
@@ -395,26 +395,26 @@ func (p *Processor) getCopingEffectiveness(mechanisms []string) string {
 	} else if unhealthyCount > healthyCount {
 		return "concerning"
 	}
-	
+
 	return "unknown"
 }
 
 func (p *Processor) getStressManagementStyle(stressResponse string) string {
 	normalized := p.normalizeString(stressResponse)
-	
+
 	styleMap := map[string]string{
-		"problem-solving":  "proactive",
-		"action-oriented":  "proactive",
-		"seeking-support":  "social",
-		"emotion-focused":  "emotional",
-		"self-soothing":    "emotional",
-		"fight":            "confrontational",
-		"flight":           "avoidant",
-		"freeze":           "avoidant",
-		"fawn":             "accommodating",
-		"avoidance":        "avoidant",
-		"distraction":      "avoidant",
-		"rumination":       "maladaptive",
+		"problem-solving": "proactive",
+		"action-oriented": "proactive",
+		"seeking-support": "social",
+		"emotion-focused": "emotional",
+		"self-soothing":   "emotional",
+		"fight":           "confrontational",
+		"flight":          "avoidant",
+		"freeze":          "avoidant",
+		"fawn":            "accommodating",
+		"avoidance":       "avoidant",
+		"distraction":     "avoidant",
+		"rumination":      "maladaptive",
 	}
 
 	if style, exists := styleMap[normalized]; exists {
@@ -475,7 +475,7 @@ func (p *Processor) getBehavioralAdaptability(behavioral *pb.BehavioralTendencie
 func (p *Processor) getInterpersonalStyle(behavioral *pb.BehavioralTendencies) string {
 	// Analyze interpersonal tendencies across different behavioral aspects
 	socialScore := 0
-	
+
 	// Collaborative decision making
 	if strings.Contains(p.normalizeString(behavioral.DecisionMaking), "collaborative") {
 		socialScore += 2

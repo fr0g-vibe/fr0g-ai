@@ -59,7 +59,7 @@ type HealthResponse struct {
 // Validate validates the health response format comprehensively
 func (hr *HealthResponse) Validate() error {
 	var errors []string
-	
+
 	// Validate required status field
 	if hr.Status == "" {
 		errors = append(errors, "status field is required")
@@ -76,7 +76,7 @@ func (hr *HealthResponse) Validate() error {
 			errors = append(errors, fmt.Sprintf("status must be one of: %v, got: %s", validStatuses, hr.Status))
 		}
 	}
-	
+
 	// Validate required time field
 	if hr.Time.IsZero() {
 		errors = append(errors, "time field is required and cannot be zero")
@@ -90,7 +90,7 @@ func (hr *HealthResponse) Validate() error {
 			errors = append(errors, "time cannot be older than 24 hours")
 		}
 	}
-	
+
 	// Validate required version field
 	if hr.Version == "" {
 		errors = append(errors, "version field is required")
@@ -100,7 +100,7 @@ func (hr *HealthResponse) Validate() error {
 			errors = append(errors, "version field too long (max 50 characters)")
 		}
 	}
-	
+
 	// Validate error field constraints
 	if hr.Error != "" {
 		if len(hr.Error) > 1000 {
@@ -111,7 +111,7 @@ func (hr *HealthResponse) Validate() error {
 			errors = append(errors, "error field should not be present when status is healthy")
 		}
 	}
-	
+
 	// Validate details field
 	if hr.Details != nil {
 		if len(hr.Details) > 20 {
@@ -127,12 +127,12 @@ func (hr *HealthResponse) Validate() error {
 			}
 		}
 	}
-	
+
 	// Return combined errors
 	if len(errors) > 0 {
 		return fmt.Errorf("validation failed: %s", strings.Join(errors, "; "))
 	}
-	
+
 	return nil
 }
 
@@ -141,7 +141,7 @@ func (hr *HealthResponse) ValidateForStatusCode() (int, error) {
 	if err := hr.Validate(); err != nil {
 		return http.StatusInternalServerError, err
 	}
-	
+
 	switch hr.Status {
 	case "healthy":
 		return http.StatusOK, nil

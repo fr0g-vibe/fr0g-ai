@@ -55,7 +55,7 @@ func (p *Processor) ValidateHealth(health *pb.Health) []config.ValidationError {
 	// Validate fitness level
 	if health.FitnessLevel != "" {
 		validLevels := []string{
-			"sedentary", "lightly-active", "moderately-active", 
+			"sedentary", "lightly-active", "moderately-active",
 			"very-active", "extremely-active", "athlete",
 		}
 		if !p.isValidOption(health.FitnessLevel, validLevels) {
@@ -69,7 +69,7 @@ func (p *Processor) ValidateHealth(health *pb.Health) []config.ValidationError {
 	// Validate exercise frequency
 	if health.ExerciseFrequency != "" {
 		validFrequencies := []string{
-			"never", "rarely", "weekly", "few-times-week", 
+			"never", "rarely", "weekly", "few-times-week",
 			"daily", "multiple-daily", "professional",
 		}
 		if !p.isValidOption(health.ExerciseFrequency, validFrequencies) {
@@ -202,20 +202,20 @@ func (p *Processor) ProcessHealth(health *pb.Health) (*pb.Health, error) {
 
 	// Create processed copy
 	processed := &pb.Health{
-		PhysicalHealth:      p.normalizeString(health.PhysicalHealth),
-		MentalHealth:        p.normalizeString(health.MentalHealth),
-		FitnessLevel:        p.normalizeString(health.FitnessLevel),
-		ExerciseFrequency:   p.normalizeString(health.ExerciseFrequency),
-		DietType:            p.normalizeString(health.DietType),
-		SleepQuality:        p.normalizeString(health.SleepQuality),
-		StressLevel:         p.normalizeString(health.StressLevel),
-		SubstanceUse:        p.normalizeString(health.SubstanceUse),
-		Disabilities:        p.normalizeAndDeduplicateList(health.Disabilities),
-		ChronicConditions:   p.normalizeAndDeduplicateList(health.ChronicConditions),
-		Addictions:          p.normalizeAndDeduplicateList(health.Addictions),
-		Medications:         p.normalizeAndDeduplicateList(health.Medications),
-		MedicalConditions:   p.normalizeAndDeduplicateList(health.MedicalConditions),
-		Allergies:           p.normalizeAndDeduplicateList(health.Allergies),
+		PhysicalHealth:    p.normalizeString(health.PhysicalHealth),
+		MentalHealth:      p.normalizeString(health.MentalHealth),
+		FitnessLevel:      p.normalizeString(health.FitnessLevel),
+		ExerciseFrequency: p.normalizeString(health.ExerciseFrequency),
+		DietType:          p.normalizeString(health.DietType),
+		SleepQuality:      p.normalizeString(health.SleepQuality),
+		StressLevel:       p.normalizeString(health.StressLevel),
+		SubstanceUse:      p.normalizeString(health.SubstanceUse),
+		Disabilities:      p.normalizeAndDeduplicateList(health.Disabilities),
+		ChronicConditions: p.normalizeAndDeduplicateList(health.ChronicConditions),
+		Addictions:        p.normalizeAndDeduplicateList(health.Addictions),
+		Medications:       p.normalizeAndDeduplicateList(health.Medications),
+		MedicalConditions: p.normalizeAndDeduplicateList(health.MedicalConditions),
+		Allergies:         p.normalizeAndDeduplicateList(health.Allergies),
 	}
 
 	return processed, nil
@@ -282,7 +282,7 @@ func (p *Processor) normalizeString(s string) string {
 func (p *Processor) normalizeAndDeduplicateList(list []string) []string {
 	seen := make(map[string]bool)
 	var result []string
-	
+
 	for _, item := range list {
 		normalized := strings.TrimSpace(item)
 		if normalized != "" && !seen[normalized] {
@@ -290,7 +290,7 @@ func (p *Processor) normalizeAndDeduplicateList(list []string) []string {
 			result = append(result, normalized)
 		}
 	}
-	
+
 	return result
 }
 
@@ -606,24 +606,24 @@ func (p *Processor) categorizeAllergies(allergies []string) map[string][]string 
 	categories := make(map[string][]string)
 
 	allergyCategories := map[string]string{
-		"peanut":    "food",
-		"nut":       "food",
-		"dairy":     "food",
-		"egg":       "food",
-		"shellfish": "food",
-		"soy":       "food",
-		"wheat":     "food",
-		"gluten":    "food",
-		"pollen":    "environmental",
-		"dust":      "environmental",
-		"mold":      "environmental",
-		"pet":       "environmental",
-		"cat":       "environmental",
-		"dog":       "environmental",
+		"peanut":     "food",
+		"nut":        "food",
+		"dairy":      "food",
+		"egg":        "food",
+		"shellfish":  "food",
+		"soy":        "food",
+		"wheat":      "food",
+		"gluten":     "food",
+		"pollen":     "environmental",
+		"dust":       "environmental",
+		"mold":       "environmental",
+		"pet":        "environmental",
+		"cat":        "environmental",
+		"dog":        "environmental",
 		"penicillin": "medication",
-		"aspirin":   "medication",
-		"latex":     "contact",
-		"nickel":    "contact",
+		"aspirin":    "medication",
+		"latex":      "contact",
+		"nickel":     "contact",
 	}
 
 	for _, allergy := range allergies {
@@ -646,7 +646,7 @@ func (p *Processor) categorizeAllergies(allergies []string) map[string][]string 
 
 func (p *Processor) getAllergySeverity(allergies []string) string {
 	count := len(allergies)
-	
+
 	// Check for severe allergies
 	severeAllergies := []string{"peanut", "shellfish", "penicillin"}
 	for _, allergy := range allergies {

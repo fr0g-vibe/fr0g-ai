@@ -180,7 +180,7 @@ func (p *Processor) normalizeStringSlice(slice []string) []string {
 func (p *Processor) normalizeDietaryRestrictions(restrictions []string) []string {
 	var normalized []string
 	seen := make(map[string]bool)
-	
+
 	for _, restriction := range restrictions {
 		norm := p.normalizeString(restriction)
 		if norm != "" && !seen[norm] && p.isValidDietaryRestriction(norm) {
@@ -219,13 +219,13 @@ func (p *Processor) getReligiousFamily(religion string) string {
 
 func (p *Processor) getSpiritualPractices(spirituality string) []string {
 	practiceMap := map[string][]string{
-		"very-high": {"meditation", "prayer", "ritual", "pilgrimage", "fasting"},
-		"high":      {"meditation", "prayer", "ritual"},
-		"moderate":  {"prayer", "reflection"},
-		"low":       {"occasional-prayer"},
+		"very-high":               {"meditation", "prayer", "ritual", "pilgrimage", "fasting"},
+		"high":                    {"meditation", "prayer", "ritual"},
+		"moderate":                {"prayer", "reflection"},
+		"low":                     {"occasional-prayer"},
 		"spiritual-not-religious": {"meditation", "mindfulness", "nature-connection"},
-		"religious": {"prayer", "worship", "scripture-study"},
-		"deeply-religious": {"prayer", "worship", "scripture-study", "ritual", "service"},
+		"religious":               {"prayer", "worship", "scripture-study"},
+		"deeply-religious":        {"prayer", "worship", "scripture-study", "ritual", "service"},
 	}
 
 	normalized := p.normalizeString(spirituality)
@@ -237,7 +237,7 @@ func (p *Processor) getSpiritualPractices(spirituality string) []string {
 
 func (p *Processor) categorizeTraditions(traditions []string) map[string][]string {
 	categories := make(map[string][]string)
-	
+
 	traditionCategories := map[string]string{
 		"christmas":     "religious-holiday",
 		"easter":        "religious-holiday",
@@ -270,22 +270,22 @@ func (p *Processor) categorizeTraditions(traditions []string) map[string][]strin
 
 func (p *Processor) categorizeHolidays(holidays []string) map[string][]string {
 	categories := make(map[string][]string)
-	
+
 	holidayCategories := map[string]string{
-		"christmas":      "religious",
-		"easter":         "religious",
-		"eid":            "religious",
-		"diwali":         "religious",
-		"hanukkah":       "religious",
-		"new-year":       "secular",
-		"independence":   "national",
-		"thanksgiving":   "national",
-		"memorial-day":   "national",
-		"labor-day":      "national",
-		"valentine":      "cultural",
-		"halloween":      "cultural",
-		"mother-day":     "family",
-		"father-day":     "family",
+		"christmas":    "religious",
+		"easter":       "religious",
+		"eid":          "religious",
+		"diwali":       "religious",
+		"hanukkah":     "religious",
+		"new-year":     "secular",
+		"independence": "national",
+		"thanksgiving": "national",
+		"memorial-day": "national",
+		"labor-day":    "national",
+		"valentine":    "cultural",
+		"halloween":    "cultural",
+		"mother-day":   "family",
+		"father-day":   "family",
 	}
 
 	for _, holiday := range holidays {
@@ -308,29 +308,29 @@ func (p *Processor) categorizeHolidays(holidays []string) map[string][]string {
 
 func (p *Processor) getCulturalRegion(background string) string {
 	regionMap := map[string]string{
-		"american":     "north-america",
-		"canadian":     "north-america",
-		"mexican":      "north-america",
-		"british":      "europe",
-		"french":       "europe",
-		"german":       "europe",
-		"italian":      "europe",
-		"spanish":      "europe",
-		"chinese":      "east-asia",
-		"japanese":     "east-asia",
-		"korean":       "east-asia",
-		"indian":       "south-asia",
-		"pakistani":    "south-asia",
-		"bangladeshi":  "south-asia",
-		"arab":         "middle-east",
-		"persian":      "middle-east",
-		"turkish":      "middle-east",
-		"african":      "africa",
-		"nigerian":     "africa",
+		"american":      "north-america",
+		"canadian":      "north-america",
+		"mexican":       "north-america",
+		"british":       "europe",
+		"french":        "europe",
+		"german":        "europe",
+		"italian":       "europe",
+		"spanish":       "europe",
+		"chinese":       "east-asia",
+		"japanese":      "east-asia",
+		"korean":        "east-asia",
+		"indian":        "south-asia",
+		"pakistani":     "south-asia",
+		"bangladeshi":   "south-asia",
+		"arab":          "middle-east",
+		"persian":       "middle-east",
+		"turkish":       "middle-east",
+		"african":       "africa",
+		"nigerian":      "africa",
 		"south-african": "africa",
-		"brazilian":    "south-america",
-		"argentinian":  "south-america",
-		"australian":   "oceania",
+		"brazilian":     "south-america",
+		"argentinian":   "south-america",
+		"australian":    "oceania",
 	}
 
 	normalized := p.normalizeString(background)
@@ -344,22 +344,22 @@ func (p *Processor) getCulturalRegion(background string) string {
 
 func (p *Processor) categorizeDietaryRestrictions(restrictions []string) map[string][]string {
 	categories := make(map[string][]string)
-	
+
 	restrictionCategories := map[string]string{
-		"vegetarian":   "ethical",
-		"vegan":        "ethical",
-		"halal":        "religious",
-		"kosher":       "religious",
-		"gluten-free":  "medical",
-		"dairy-free":   "medical",
-		"nut-free":     "medical",
+		"vegetarian":     "ethical",
+		"vegan":          "ethical",
+		"halal":          "religious",
+		"kosher":         "religious",
+		"gluten-free":    "medical",
+		"dairy-free":     "medical",
+		"nut-free":       "medical",
 		"shellfish-free": "medical",
-		"low-sodium":   "health",
-		"low-sugar":    "health",
-		"keto":         "lifestyle",
-		"paleo":        "lifestyle",
-		"raw":          "lifestyle",
-		"organic-only": "lifestyle",
+		"low-sodium":     "health",
+		"low-sugar":      "health",
+		"keto":           "lifestyle",
+		"paleo":          "lifestyle",
+		"raw":            "lifestyle",
+		"organic-only":   "lifestyle",
 	}
 
 	for _, restriction := range restrictions {

@@ -12,12 +12,12 @@ type StrategyOrchestrator struct {
 	cognitive CognitiveInterface
 	workflow  WorkflowInterface
 	config    *OrchestratorConfig
-	
+
 	// Orchestration state
 	strategies       map[string]*Strategy
 	activeStrategies []string
 	resourcePool     *ResourcePool
-	
+
 	// Control
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -26,30 +26,30 @@ type StrategyOrchestrator struct {
 
 // Strategy represents an orchestration strategy
 type Strategy struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Type        string                 `json:"type"`
-	Priority    int                    `json:"priority"`
-	Conditions  []StrategyCondition    `json:"conditions"`
-	Actions     []StrategyAction       `json:"actions"`
-	Status      string                 `json:"status"`
-	CreatedAt   time.Time              `json:"created_at"`
-	LastExecuted *time.Time            `json:"last_executed,omitempty"`
-	ExecutionCount int                 `json:"execution_count"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	ID             string                 `json:"id"`
+	Name           string                 `json:"name"`
+	Type           string                 `json:"type"`
+	Priority       int                    `json:"priority"`
+	Conditions     []StrategyCondition    `json:"conditions"`
+	Actions        []StrategyAction       `json:"actions"`
+	Status         string                 `json:"status"`
+	CreatedAt      time.Time              `json:"created_at"`
+	LastExecuted   *time.Time             `json:"last_executed,omitempty"`
+	ExecutionCount int                    `json:"execution_count"`
+	Metadata       map[string]interface{} `json:"metadata"`
 }
 
 // StrategyCondition defines when a strategy should be executed
 type StrategyCondition struct {
-	Type      string      `json:"type"`      // "system_load", "pattern_detected", "time_based"
-	Operator  string      `json:"operator"`  // "gt", "lt", "eq", "contains"
-	Value     interface{} `json:"value"`
-	MetricPath string     `json:"metric_path,omitempty"`
+	Type       string      `json:"type"`     // "system_load", "pattern_detected", "time_based"
+	Operator   string      `json:"operator"` // "gt", "lt", "eq", "contains"
+	Value      interface{} `json:"value"`
+	MetricPath string      `json:"metric_path,omitempty"`
 }
 
 // StrategyAction defines what action to take
 type StrategyAction struct {
-	Type       string                 `json:"type"`       // "scale_resources", "trigger_workflow", "adjust_priority"
+	Type       string                 `json:"type"` // "scale_resources", "trigger_workflow", "adjust_priority"
 	Target     string                 `json:"target"`
 	Parameters map[string]interface{} `json:"parameters"`
 }
@@ -66,10 +66,10 @@ type ResourcePool struct {
 
 // OrchestratorConfig holds orchestrator configuration
 type OrchestratorConfig struct {
-	ResourceOptimization bool          `yaml:"resource_optimization"`
-	PredictiveManagement bool          `yaml:"predictive_management"`
-	StrategyInterval     time.Duration `yaml:"strategy_interval"`
-	MaxConcurrentStrategies int        `yaml:"max_concurrent_strategies"`
+	ResourceOptimization    bool          `yaml:"resource_optimization"`
+	PredictiveManagement    bool          `yaml:"predictive_management"`
+	StrategyInterval        time.Duration `yaml:"strategy_interval"`
+	MaxConcurrentStrategies int           `yaml:"max_concurrent_strategies"`
 }
 
 // CognitiveInterface defines the interface for cognitive operations
@@ -90,7 +90,7 @@ type WorkflowInterface interface {
 // NewStrategyOrchestrator creates a new strategy orchestrator
 func NewStrategyOrchestrator(config *OrchestratorConfig, cognitive CognitiveInterface, workflow WorkflowInterface) *StrategyOrchestrator {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Set default values
 	if config.StrategyInterval == 0 {
 		config.StrategyInterval = time.Second * 30
@@ -98,7 +98,7 @@ func NewStrategyOrchestrator(config *OrchestratorConfig, cognitive CognitiveInte
 	if config.MaxConcurrentStrategies == 0 {
 		config.MaxConcurrentStrategies = 5
 	}
-	
+
 	return &StrategyOrchestrator{
 		cognitive:        cognitive,
 		workflow:         workflow,
@@ -109,7 +109,7 @@ func NewStrategyOrchestrator(config *OrchestratorConfig, cognitive CognitiveInte
 			CPUAllocation:    make(map[string]float64),
 			MemoryAllocation: make(map[string]int64),
 			NetworkBandwidth: make(map[string]int64),
-			TotalCPU:         100.0, // 100% CPU available
+			TotalCPU:         100.0,                  // 100% CPU available
 			TotalMemory:      8 * 1024 * 1024 * 1024, // 8GB
 			TotalBandwidth:   1000 * 1024 * 1024,     // 1GB/s
 		},
@@ -121,18 +121,18 @@ func NewStrategyOrchestrator(config *OrchestratorConfig, cognitive CognitiveInte
 // Start begins orchestrator operation
 func (so *StrategyOrchestrator) Start() error {
 	log.Println("Strategy Orchestrator: Starting intelligent orchestration processes...")
-	
+
 	// Initialize default strategies
 	so.initializeDefaultStrategies()
-	
+
 	// Start orchestration loops
 	go so.strategyEvaluationLoop()
 	go so.resourceOptimizationLoop()
-	
+
 	if so.config.PredictiveManagement {
 		go so.predictiveManagementLoop()
 	}
-	
+
 	log.Println("Strategy Orchestrator: Intelligent orchestration started successfully")
 	return nil
 }
@@ -148,7 +148,7 @@ func (so *StrategyOrchestrator) Stop() error {
 func (so *StrategyOrchestrator) GetResourceAllocation() *ResourcePool {
 	so.mu.RLock()
 	defer so.mu.RUnlock()
-	
+
 	// Return a copy
 	pool := *so.resourcePool
 	return &pool
@@ -158,7 +158,7 @@ func (so *StrategyOrchestrator) GetResourceAllocation() *ResourcePool {
 func (so *StrategyOrchestrator) GetActiveStrategies() []string {
 	so.mu.RLock()
 	defer so.mu.RUnlock()
-	
+
 	strategies := make([]string, len(so.activeStrategies))
 	copy(strategies, so.activeStrategies)
 	return strategies
@@ -168,7 +168,7 @@ func (so *StrategyOrchestrator) GetActiveStrategies() []string {
 func (so *StrategyOrchestrator) initializeDefaultStrategies() {
 	so.mu.Lock()
 	defer so.mu.Unlock()
-	
+
 	// High Load Response Strategy
 	highLoadStrategy := &Strategy{
 		ID:       "high_load_response",
@@ -204,7 +204,7 @@ func (so *StrategyOrchestrator) initializeDefaultStrategies() {
 		CreatedAt: time.Now(),
 		Metadata:  make(map[string]interface{}),
 	}
-	
+
 	// Pattern-Based Optimization Strategy
 	patternStrategy := &Strategy{
 		ID:       "pattern_optimization",
@@ -231,7 +231,7 @@ func (so *StrategyOrchestrator) initializeDefaultStrategies() {
 		CreatedAt: time.Now(),
 		Metadata:  make(map[string]interface{}),
 	}
-	
+
 	// Predictive Resource Management Strategy
 	predictiveStrategy := &Strategy{
 		ID:       "predictive_management",
@@ -258,11 +258,11 @@ func (so *StrategyOrchestrator) initializeDefaultStrategies() {
 		CreatedAt: time.Now(),
 		Metadata:  make(map[string]interface{}),
 	}
-	
+
 	so.strategies[highLoadStrategy.ID] = highLoadStrategy
 	so.strategies[patternStrategy.ID] = patternStrategy
 	so.strategies[predictiveStrategy.ID] = predictiveStrategy
-	
+
 	log.Printf("Strategy Orchestrator: Initialized %d default strategies", len(so.strategies))
 }
 
@@ -270,7 +270,7 @@ func (so *StrategyOrchestrator) initializeDefaultStrategies() {
 func (so *StrategyOrchestrator) strategyEvaluationLoop() {
 	ticker := time.NewTicker(so.config.StrategyInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-so.ctx.Done():
@@ -286,10 +286,10 @@ func (so *StrategyOrchestrator) resourceOptimizationLoop() {
 	if !so.config.ResourceOptimization {
 		return
 	}
-	
+
 	ticker := time.NewTicker(time.Minute * 2)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-so.ctx.Done():
@@ -304,7 +304,7 @@ func (so *StrategyOrchestrator) resourceOptimizationLoop() {
 func (so *StrategyOrchestrator) predictiveManagementLoop() {
 	ticker := time.NewTicker(time.Minute * 5)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-so.ctx.Done():
@@ -319,16 +319,16 @@ func (so *StrategyOrchestrator) predictiveManagementLoop() {
 func (so *StrategyOrchestrator) evaluateStrategies() {
 	so.mu.Lock()
 	defer so.mu.Unlock()
-	
+
 	// Get current system state
 	awareness := so.cognitive.GetAwareness()
 	patterns := so.cognitive.GetPatterns()
-	
+
 	for _, strategy := range so.strategies {
 		if strategy.Status != "active" {
 			continue
 		}
-		
+
 		if so.evaluateStrategyConditions(strategy, awareness, patterns) {
 			so.executeStrategy(strategy)
 		}
@@ -367,23 +367,23 @@ func (so *StrategyOrchestrator) evaluateCondition(condition StrategyCondition, a
 		// Time-based conditions (simplified)
 		return true
 	}
-	
+
 	return false
 }
 
 // executeStrategy executes a strategy's actions
 func (so *StrategyOrchestrator) executeStrategy(strategy *Strategy) {
 	log.Printf("Strategy Orchestrator: Executing strategy '%s'", strategy.Name)
-	
+
 	for _, action := range strategy.Actions {
 		so.executeAction(action, strategy)
 	}
-	
+
 	// Update strategy execution info
 	now := time.Now()
 	strategy.LastExecuted = &now
 	strategy.ExecutionCount++
-	
+
 	// Add to active strategies if not already there
 	if !so.isStrategyActive(strategy.ID) {
 		so.activeStrategies = append(so.activeStrategies, strategy.ID)
@@ -407,11 +407,11 @@ func (so *StrategyOrchestrator) executeAction(action StrategyAction, strategy *S
 // scaleResources adjusts resource allocation
 func (so *StrategyOrchestrator) scaleResources(target string, params map[string]interface{}) {
 	log.Printf("Strategy Orchestrator: Scaling resources for %s", target)
-	
+
 	if cpuBoost, ok := params["cpu_boost"].(float64); ok {
 		currentAllocation := so.resourcePool.CPUAllocation[target]
 		newAllocation := currentAllocation * cpuBoost
-		
+
 		// Ensure we don't exceed total CPU
 		if newAllocation <= so.resourcePool.TotalCPU {
 			so.resourcePool.CPUAllocation[target] = newAllocation
@@ -423,7 +423,7 @@ func (so *StrategyOrchestrator) scaleResources(target string, params map[string]
 // triggerWorkflow triggers a workflow execution
 func (so *StrategyOrchestrator) triggerWorkflow(target string, params map[string]interface{}) {
 	log.Printf("Strategy Orchestrator: Triggering workflow %s", target)
-	
+
 	// In a real implementation, this would trigger specific workflows
 	// For now, we'll just log the action
 	if immediate, ok := params["immediate"].(bool); ok && immediate {
@@ -434,7 +434,7 @@ func (so *StrategyOrchestrator) triggerWorkflow(target string, params map[string
 // adjustPriority adjusts component priorities
 func (so *StrategyOrchestrator) adjustPriority(target string, params map[string]interface{}) {
 	log.Printf("Strategy Orchestrator: Adjusting priority for %s", target)
-	
+
 	for key, value := range params {
 		log.Printf("Strategy Orchestrator: Setting %s priority to %v for %s", key, value, target)
 	}
@@ -443,13 +443,13 @@ func (so *StrategyOrchestrator) adjustPriority(target string, params map[string]
 // optimizeResources performs resource optimization
 func (so *StrategyOrchestrator) optimizeResources() {
 	log.Println("Strategy Orchestrator: Performing resource optimization...")
-	
+
 	// Analyze current resource usage
 	totalAllocatedCPU := 0.0
 	for _, allocation := range so.resourcePool.CPUAllocation {
 		totalAllocatedCPU += allocation
 	}
-	
+
 	// Rebalance if needed
 	if totalAllocatedCPU > so.resourcePool.TotalCPU*0.9 {
 		log.Println("Strategy Orchestrator: High resource usage detected, rebalancing...")
@@ -460,7 +460,7 @@ func (so *StrategyOrchestrator) optimizeResources() {
 // performPredictiveManagement performs predictive resource management
 func (so *StrategyOrchestrator) performPredictiveManagement() {
 	log.Println("Strategy Orchestrator: Performing predictive management...")
-	
+
 	// Analyze patterns to predict future resource needs
 	patterns := so.cognitive.GetPatterns()
 	if patternsMap, ok := patterns.(map[string]interface{}); ok {

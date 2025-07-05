@@ -46,10 +46,10 @@ func TestProcessMessage(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name            string
-		message         SMSMessage
-		expectedThreat  ThreatLevel
-		minConfidence   float64
+		name           string
+		message        SMSMessage
+		expectedThreat ThreatLevel
+		minConfidence  float64
 	}{
 		{
 			name: "Normal message",
@@ -73,7 +73,7 @@ func TestProcessMessage(t *testing.T) {
 				Timestamp: time.Now(),
 			},
 			expectedThreat: ThreatLevelLow, // Adjusted expectation
-			minConfidence:  0.2, // Adjusted expectation
+			minConfidence:  0.2,            // Adjusted expectation
 		},
 		{
 			name: "Phishing message",
@@ -85,7 +85,7 @@ func TestProcessMessage(t *testing.T) {
 				Timestamp: time.Now(),
 			},
 			expectedThreat: ThreatLevelLow, // Realistic for basic pattern matching
-			minConfidence:  0.3, // Matches actual output
+			minConfidence:  0.3,            // Matches actual output
 		},
 	}
 
@@ -97,7 +97,7 @@ func TestProcessMessage(t *testing.T) {
 			}
 
 			if result.ThreatLevel < tt.expectedThreat {
-				t.Errorf("Expected threat level >= %s, got %s", 
+				t.Errorf("Expected threat level >= %s, got %s",
 					tt.expectedThreat.String(), result.ThreatLevel.String())
 			}
 
@@ -106,7 +106,7 @@ func TestProcessMessage(t *testing.T) {
 			}
 
 			if result.Analysis.Confidence < tt.minConfidence {
-				t.Errorf("Expected confidence >= %.2f, got %.2f", 
+				t.Errorf("Expected confidence >= %.2f, got %.2f",
 					tt.minConfidence, result.Analysis.Confidence)
 			}
 		})
@@ -146,9 +146,9 @@ func TestCalculateSpamScore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := processor.calculateSpamScore(tt.body)
-			
+
 			if score < tt.minScore || score > tt.maxScore {
-				t.Errorf("Expected spam score between %.2f and %.2f, got %.2f", 
+				t.Errorf("Expected spam score between %.2f and %.2f, got %.2f",
 					tt.minScore, tt.maxScore, score)
 			}
 		})
@@ -214,7 +214,7 @@ func TestGetStats(t *testing.T) {
 	stats := processor.GetStats()
 
 	expectedKeys := []string{
-		"total_messages", "unique_numbers", "threat_counts", 
+		"total_messages", "unique_numbers", "threat_counts",
 		"is_running", "google_voice_enabled", "webhook_enabled",
 	}
 
@@ -225,7 +225,7 @@ func TestGetStats(t *testing.T) {
 	}
 
 	if stats["total_messages"].(int) != len(testMessages) {
-		t.Errorf("Expected total_messages to be %d, got %v", 
+		t.Errorf("Expected total_messages to be %d, got %v",
 			len(testMessages), stats["total_messages"])
 	}
 }

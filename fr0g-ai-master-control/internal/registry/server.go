@@ -42,15 +42,15 @@ func (sr *ServiceRegistry) Start(ctx context.Context) error {
 
 // ServiceInfo represents a registered service
 type ServiceInfo struct {
-	ID          string            `json:"id"`
-	Name        string            `json:"name"`
-	Address     string            `json:"address"`
-	Port        int               `json:"port"`
-	Tags        []string          `json:"tags"`
-	Meta        map[string]string `json:"meta"`
-	Health      HealthStatus      `json:"health"`
-	RegisteredAt time.Time        `json:"registered_at"`
-	LastSeen    time.Time         `json:"last_seen"`
+	ID           string            `json:"id"`
+	Name         string            `json:"name"`
+	Address      string            `json:"address"`
+	Port         int               `json:"port"`
+	Tags         []string          `json:"tags"`
+	Meta         map[string]string `json:"meta"`
+	Health       HealthStatus      `json:"health"`
+	RegisteredAt time.Time         `json:"registered_at"`
+	LastSeen     time.Time         `json:"last_seen"`
 }
 
 // HealthStatus represents service health
@@ -64,7 +64,7 @@ type HealthStatus struct {
 type Registry struct {
 	services map[string]*ServiceInfo
 	mu       sync.RWMutex
-	
+
 	// Health checking
 	healthInterval time.Duration
 	healthTimeout  time.Duration
@@ -85,14 +85,14 @@ func NewRegistry() *Registry {
 func (r *Registry) RegisterService(service *ServiceInfo) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	service.RegisteredAt = time.Now()
 	service.LastSeen = time.Now()
 	service.Health = HealthStatus{
 		Status:      "unknown",
 		LastChecked: time.Now(),
 	}
-	
+
 	r.services[service.ID] = service
 	log.Printf("Service registered: %s (%s)", service.Name, service.ID)
 	return nil
@@ -102,13 +102,13 @@ func (r *Registry) RegisterService(service *ServiceInfo) error {
 func (r *Registry) DeregisterService(serviceID string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	if service, exists := r.services[serviceID]; exists {
 		delete(r.services, serviceID)
 		log.Printf("Service deregistered: %s (%s)", service.Name, serviceID)
 		return nil
 	}
-	
+
 	return fmt.Errorf("service not found: %s", serviceID)
 }
 
@@ -116,11 +116,11 @@ func (r *Registry) DeregisterService(serviceID string) error {
 func (r *Registry) GetService(serviceID string) (*ServiceInfo, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	if service, exists := r.services[serviceID]; exists {
 		return service, nil
 	}
-	
+
 	return nil, fmt.Errorf("service not found: %s", serviceID)
 }
 
@@ -128,14 +128,14 @@ func (r *Registry) GetService(serviceID string) (*ServiceInfo, error) {
 func (r *Registry) GetServicesByName(serviceName string) []*ServiceInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	var services []*ServiceInfo
 	for _, service := range r.services {
 		if service.Name == serviceName {
 			services = append(services, service)
 		}
 	}
-	
+
 	return services
 }
 
@@ -143,12 +143,12 @@ func (r *Registry) GetServicesByName(serviceName string) []*ServiceInfo {
 func (r *Registry) GetAllServices() []*ServiceInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	var services []*ServiceInfo
 	for _, service := range r.services {
 		services = append(services, service)
 	}
-	
+
 	return services
 }
 
@@ -156,7 +156,7 @@ func (r *Registry) GetAllServices() []*ServiceInfo {
 func (r *Registry) StartHealthChecking(ctx context.Context) {
 	ticker := time.NewTicker(r.healthInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -173,7 +173,7 @@ func (r *Registry) StartHealthChecking(ctx context.Context) {
 func (r *Registry) performHealthChecks() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	for _, service := range r.services {
 		go r.checkServiceHealth(service)
 	}
@@ -182,13 +182,13 @@ func (r *Registry) performHealthChecks() {
 // checkServiceHealth performs health check for a single service
 func (r *Registry) checkServiceHealth(service *ServiceInfo) {
 	healthURL := fmt.Sprintf("http://%s:%d/health", service.Address, service.Port)
-	
+
 	client := &http.Client{Timeout: r.healthTimeout}
 	resp, err := client.Get(healthURL)
-	
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	
+
 	if err != nil {
 		service.Health = HealthStatus{
 			Status:      "critical",
@@ -198,7 +198,7 @@ func (r *Registry) checkServiceHealth(service *ServiceInfo) {
 		return
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode == http.StatusOK {
 		service.Health = HealthStatus{
 			Status:      "passing",
@@ -233,7 +233,7 @@ func NewServer() *Server {
 		registry: registry,
 		mux:      http.NewServeMux(),
 	}
-	
+
 	server.setupRoutes()
 	return server
 }
@@ -243,12 +243,12 @@ func (s *Server) setupRoutes() {
 	// Service registration
 	s.mux.HandleFunc("/v1/agent/service/register", s.registerServiceHandler)
 	s.mux.HandleFunc("/v1/agent/service/deregister/", s.deregisterServiceHandler)
-	
+
 	// Service discovery
 	s.mux.HandleFunc("/v1/catalog/services", s.listServicesHandler)
 	s.mux.HandleFunc("/v1/catalog/service/", s.getServiceHandler)
 	s.mux.HandleFunc("/v1/health/service/", s.getServiceHealthHandler)
-	
+
 	// Health endpoint
 	s.mux.HandleFunc("/health", s.healthHandler)
 }
@@ -260,12 +260,12 @@ func (s *Server) registerServiceHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	
+
 	if err := s.registry.RegisterService(&service); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -274,27 +274,27 @@ func (s *Server) deregisterServiceHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	// Extract service ID from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/v1/agent/service/deregister/")
 	serviceID := strings.TrimSuffix(path, "/")
-	
+
 	if serviceID == "" {
 		http.Error(w, "Service ID required", http.StatusBadRequest)
 		return
 	}
-	
+
 	if err := s.registry.DeregisterService(serviceID); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	
+
 	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) listServicesHandler(w http.ResponseWriter, r *http.Request) {
 	services := s.registry.GetAllServices()
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(services)
 }
@@ -303,14 +303,14 @@ func (s *Server) getServiceHandler(w http.ResponseWriter, r *http.Request) {
 	// Extract service name from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/v1/catalog/service/")
 	serviceName := strings.TrimSuffix(path, "/")
-	
+
 	if serviceName == "" {
 		http.Error(w, "Service name required", http.StatusBadRequest)
 		return
 	}
-	
+
 	services := s.registry.GetServicesByName(serviceName)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(services)
 }
@@ -319,29 +319,29 @@ func (s *Server) getServiceHealthHandler(w http.ResponseWriter, r *http.Request)
 	// Extract service ID from URL path
 	path := strings.TrimPrefix(r.URL.Path, "/v1/health/service/")
 	serviceID := strings.TrimSuffix(path, "/")
-	
+
 	if serviceID == "" {
 		http.Error(w, "Service ID required", http.StatusBadRequest)
 		return
 	}
-	
+
 	service, err := s.registry.GetService(serviceID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(service.Health)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	health := map[string]interface{}{
-		"status":           "healthy",
-		"timestamp":        time.Now(),
+		"status":              "healthy",
+		"timestamp":           time.Now(),
 		"registered_services": len(s.registry.services),
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(health)
 }
@@ -350,12 +350,12 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) Start(ctx context.Context, addr string) error {
 	// Start health checking
 	go s.registry.StartHealthChecking(ctx)
-	
+
 	server := &http.Server{
 		Addr:    addr,
 		Handler: s.mux,
 	}
-	
+
 	log.Printf("Service registry starting on %s", addr)
 	return server.ListenAndServe()
 }

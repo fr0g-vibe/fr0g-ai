@@ -13,9 +13,9 @@ type LearningEngine struct {
 
 // LearningConfig holds learning engine configuration
 type LearningConfig struct {
-	LearningRate     float64       `yaml:"learning_rate"`
-	AdaptationSpeed  float64       `yaml:"adaptation_speed"`
-	UpdateInterval   time.Duration `yaml:"update_interval"`
+	LearningRate    float64       `yaml:"learning_rate"`
+	AdaptationSpeed float64       `yaml:"adaptation_speed"`
+	UpdateInterval  time.Duration `yaml:"update_interval"`
 }
 
 // MemoryInterface defines the interface for memory operations

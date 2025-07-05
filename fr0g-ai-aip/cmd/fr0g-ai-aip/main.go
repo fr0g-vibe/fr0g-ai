@@ -29,18 +29,18 @@ func NewApp() (*App, error) {
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
-	
+
 	app := &App{config: cfg}
 	if err := app.ValidateConfig(); err != nil {
 		return nil, err
 	}
-	
+
 	// Initialize storage
 	store, err := createStorage(cfg.Storage)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize storage: %v", err)
 	}
-	
+
 	app.service = persona.NewService(store)
 	return app, nil
 }
@@ -76,7 +76,7 @@ func (app *App) RunCLI() error {
 func (app *App) RunServers(httpMode, grpcMode bool) error {
 	// Print startup banner
 	app.printStartupBanner()
-	
+
 	// TODO: Add service discovery client initialization here
 	// discoveryClient := discovery.NewClient(&discovery.ClientConfig{
 	//     RegistryURL:    "http://localhost:8500",
@@ -86,40 +86,40 @@ func (app *App) RunServers(httpMode, grpcMode bool) error {
 	//     ServicePort:    app.config.HTTP.Port,
 	//     Tags:           []string{"aip", "personas", "ai"},
 	// })
-	
+
 	// Handle graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	
+
 	var wg sync.WaitGroup
 	errChan := make(chan error, 2)
-	
+
 	// Start HTTP server
 	if httpMode {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fmt.Printf("Starting fr0g-ai-aip HTTP server on port %s (storage: %s)\n", 
+			fmt.Printf("Starting fr0g-ai-aip HTTP server on port %s (storage: %s)\n",
 				app.config.HTTP.Port, app.config.Storage.Type)
 			if err := api.StartServerWithConfig(app.config, app.service); err != nil {
 				errChan <- fmt.Errorf("HTTP server error: %v", err)
 			}
 		}()
 	}
-	
+
 	// Start gRPC server
 	if grpcMode {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fmt.Printf("Starting fr0g-ai-aip gRPC server on port %s (storage: %s)\n", 
+			fmt.Printf("Starting fr0g-ai-aip gRPC server on port %s (storage: %s)\n",
 				app.config.GRPC.Port, app.config.Storage.Type)
 			if err := grpcserver.StartGRPCServerWithConfig(app.config, app.service); err != nil {
 				errChan <- fmt.Errorf("gRPC server error: %v", err)
 			}
 		}()
 	}
-	
+
 	// Wait for shutdown signal or error
 	select {
 	case sig := <-sigChan:
@@ -128,7 +128,7 @@ func (app *App) RunServers(httpMode, grpcMode bool) error {
 	case err := <-errChan:
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -188,7 +188,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Override config with command line flags
 	if *httpPort != "" {
 		app.config.HTTP.Port = *httpPort

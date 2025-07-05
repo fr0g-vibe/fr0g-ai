@@ -36,7 +36,7 @@ type Service struct {
 // NewService creates a new persona service with all attribute processors
 func NewService(storage storage.Storage) *Service {
 	cfg := config.Load()
-	
+
 	return &Service{
 		storage:                 storage,
 		config:                  cfg,
@@ -489,10 +489,10 @@ func (s *Service) GetPersonaInsights(personaID string) (*types.PersonaInsights, 
 	}
 
 	insights := &types.PersonaInsights{
-		PersonaID:      personaID,
-		PersonaName:    persona.Name,
-		IdentityCount:  len(identities),
-		GeneratedAt:    time.Now(),
+		PersonaID:     personaID,
+		PersonaName:   persona.Name,
+		IdentityCount: len(identities),
+		GeneratedAt:   time.Now(),
 	}
 
 	// Analyze demographics distribution
@@ -566,51 +566,51 @@ func (s *Service) GetIdentityProfile(identityID string) (*types.IdentityProfile,
 
 func (s *Service) analyzeDemographicsDistribution(identities []types.Identity) map[string]interface{} {
 	distribution := make(map[string]interface{})
-	
+
 	ageGroups := make(map[string]int)
 	genders := make(map[string]int)
 	educationLevels := make(map[string]int)
-	
+
 	for _, identity := range identities {
 		if identity.RichAttributes != nil && identity.RichAttributes.Demographics != nil {
 			demo := identity.RichAttributes.Demographics
-			
+
 			// Age groups
 			if demo.Age > 0 {
 				ageGroup := s.getAgeGroup(demo.Age)
 				ageGroups[ageGroup]++
 			}
-			
+
 			// Gender distribution
 			if demo.Gender != "" {
 				genders[demo.Gender]++
 			}
-			
+
 			// Education levels
 			if demo.Education != "" {
 				educationLevels[demo.Education]++
 			}
 		}
 	}
-	
+
 	distribution["age_groups"] = ageGroups
 	distribution["genders"] = genders
 	distribution["education_levels"] = educationLevels
-	
+
 	return distribution
 }
 
 func (s *Service) analyzePersonalityPatterns(identities []types.Identity) map[string]interface{} {
 	patterns := make(map[string]interface{})
-	
+
 	var opennessSum, conscientiousnessSum, extraversionSum, agreeablenessSum, neuroticismSum float64
 	var count int
-	
+
 	for _, identity := range identities {
-		if identity.RichAttributes != nil && 
-		   identity.RichAttributes.Psychographics != nil && 
-		   identity.RichAttributes.Psychographics.Personality != nil {
-			
+		if identity.RichAttributes != nil &&
+			identity.RichAttributes.Psychographics != nil &&
+			identity.RichAttributes.Psychographics.Personality != nil {
+
 			p := identity.RichAttributes.Psychographics.Personality
 			opennessSum += p.Openness
 			conscientiousnessSum += p.Conscientiousness
@@ -620,7 +620,7 @@ func (s *Service) analyzePersonalityPatterns(identities []types.Identity) map[st
 			count++
 		}
 	}
-	
+
 	if count > 0 {
 		patterns["average_openness"] = opennessSum / float64(count)
 		patterns["average_conscientiousness"] = conscientiousnessSum / float64(count)
@@ -629,35 +629,35 @@ func (s *Service) analyzePersonalityPatterns(identities []types.Identity) map[st
 		patterns["average_neuroticism"] = neuroticismSum / float64(count)
 		patterns["sample_size"] = count
 	}
-	
+
 	return patterns
 }
 
 func (s *Service) analyzeCulturalDiversity(identities []types.Identity) map[string]interface{} {
 	diversity := make(map[string]interface{})
-	
+
 	religions := make(map[string]int)
 	cultures := make(map[string]int)
-	
+
 	for _, identity := range identities {
 		if identity.RichAttributes != nil && identity.RichAttributes.CulturalReligious != nil {
 			cultural := identity.RichAttributes.CulturalReligious
-			
+
 			if cultural.Religion != "" {
 				religions[cultural.Religion]++
 			}
-			
+
 			if cultural.CulturalBackground != "" {
 				cultures[cultural.CulturalBackground]++
 			}
 		}
 	}
-	
+
 	diversity["religions"] = religions
 	diversity["cultural_backgrounds"] = cultures
 	diversity["religious_diversity"] = len(religions)
 	diversity["cultural_diversity"] = len(cultures)
-	
+
 	return diversity
 }
 

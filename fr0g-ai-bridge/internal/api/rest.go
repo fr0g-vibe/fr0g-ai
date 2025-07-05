@@ -10,17 +10,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/models"
+	"github.com/gorilla/mux"
 )
 
 // RESTServer handles REST API requests
 type RESTServer struct {
-	client     *client.OpenWebUIClient
-	router     *mux.Router
-	config     *config.Config
+	client      *client.OpenWebUIClient
+	router      *mux.Router
+	config      *config.Config
 	rateLimiter *RateLimiter
 }
 
@@ -47,7 +47,7 @@ func (rl *RateLimiter) Allow(ip string) bool {
 	defer rl.mutex.Unlock()
 
 	now := time.Now()
-	
+
 	// Clean old requests
 	if requests, exists := rl.requests[ip]; exists {
 		var validRequests []time.Time
@@ -92,7 +92,7 @@ func (s *RESTServer) setupRoutes() {
 
 	// Legacy simple chat endpoint
 	s.router.HandleFunc("/api/v1/chat", s.handleSimpleChat).Methods("POST")
-	
+
 	// Models endpoint
 	s.router.HandleFunc("/api/v1/models", s.handleModels).Methods("GET")
 
@@ -127,7 +127,7 @@ func (s *RESTServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 	// Check OpenWebUI health
 	err := s.client.HealthCheck(ctx)
-	
+
 	if err != nil {
 		response.Status = "unhealthy"
 		response.Error = s.sanitizeErrorMessage(err.Error())
@@ -189,19 +189,19 @@ func (s *RESTServer) buildHealthDetails(healthy bool, err error) map[string]inte
 func (s *RESTServer) sanitizeErrorMessage(errMsg string) string {
 	// Remove potential sensitive information
 	sanitized := strings.ReplaceAll(errMsg, s.config.OpenWebUI.APIKey, "[REDACTED]")
-	
+
 	// Truncate if too long
 	if len(sanitized) > 500 {
 		sanitized = sanitized[:497] + "..."
 	}
-	
+
 	return sanitized
 }
 
 // categorizeError categorizes errors for better debugging
 func (s *RESTServer) categorizeError(err error) string {
 	errStr := strings.ToLower(err.Error())
-	
+
 	if strings.Contains(errStr, "timeout") || strings.Contains(errStr, "deadline") {
 		return "timeout"
 	}
@@ -214,7 +214,7 @@ func (s *RESTServer) categorizeError(err error) string {
 	if strings.Contains(errStr, "not found") || strings.Contains(errStr, "404") {
 		return "not_found"
 	}
-	
+
 	return "unknown"
 }
 
@@ -361,16 +361,15 @@ func (s *RESTServer) validateChatCompletionRequest(req *models.ChatCompletionReq
 	return nil
 }
 
-
 // writeError writes an error response
 func (s *RESTServer) writeError(w http.ResponseWriter, statusCode int, message string, err error) {
 	log.Printf("API Error: %s - %v", message, err)
-	
+
 	errorResp := models.ErrorResponse{
-		Error:   message,
-		Code:    statusCode,
+		Error: message,
+		Code:  statusCode,
 	}
-	
+
 	if err != nil {
 		errorResp.Message = err.Error()
 	}
@@ -387,7 +386,7 @@ func (s *RESTServer) corsMiddleware(next http.Handler) http.Handler {
 		if len(s.config.Security.AllowedOrigins) > 0 && s.config.Security.AllowedOrigins[0] != "*" {
 			origin = s.config.Security.AllowedOrigins[0] // Simplified for now
 		}
-		
+
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key")
@@ -423,14 +422,14 @@ func (s *RESTServer) rateLimitMiddleware(next http.Handler) http.Handler {
 func (s *RESTServer) loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		
+
 		// Create a response writer wrapper to capture status code
 		wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-		
+
 		next.ServeHTTP(wrapped, r)
-		
+
 		duration := time.Since(start)
-		log.Printf("[%s] %s %s - %d - %v", 
+		log.Printf("[%s] %s %s - %d - %v",
 			r.Method, r.RequestURI, r.RemoteAddr, wrapped.statusCode, duration)
 	})
 }
@@ -461,7 +460,7 @@ func (s *RESTServer) securityHeadersMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		// Content Security Policy
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'none'; object-src 'none'")
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -513,7 +512,7 @@ func (s *RESTServer) isValidAPIKey(apiKey string) bool {
 	if len(s.config.Security.AllowedAPIKeys) == 0 {
 		return true // No API keys configured, allow all
 	}
-	
+
 	for _, validKey := range s.config.Security.AllowedAPIKeys {
 		if apiKey == validKey {
 			return true

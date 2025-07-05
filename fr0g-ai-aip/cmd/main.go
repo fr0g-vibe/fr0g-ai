@@ -30,7 +30,7 @@ func main() {
 	}
 
 	log.Println("🚀 Starting fr0g.ai AIP servers...")
-	
+
 	// Start gRPC server
 	grpcServer := grpc.NewServer()
 	grpcPersonaServer := grpcserver.NewServer()
@@ -52,7 +52,7 @@ func main() {
 	// Start REST API server
 	restServer := api.NewServer(cfg, nil)
 	restPort := cfg.HTTP.Port
-	
+
 	httpServer := &http.Server{
 		Addr:    ":" + restPort,
 		Handler: restServer,
@@ -64,7 +64,7 @@ func main() {
 			log.Printf("REST server error: %v", err)
 		}
 	}()
-	
+
 	log.Println("🎯 fr0g.ai AIP is running...")
 
 	// Wait for interrupt signal

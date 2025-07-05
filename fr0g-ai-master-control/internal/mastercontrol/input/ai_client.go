@@ -18,8 +18,8 @@ type RealAIPersonaCommunityClient struct {
 
 // AIClientConfig holds configuration for the AI client
 type AIClientConfig struct {
-	AIPServiceURL    string `yaml:"aip_service_url"`
-	BridgeServiceURL string `yaml:"bridge_service_url"`
+	AIPServiceURL    string        `yaml:"aip_service_url"`
+	BridgeServiceURL string        `yaml:"bridge_service_url"`
 	Timeout          time.Duration `yaml:"timeout"`
 }
 
@@ -41,7 +41,7 @@ func (r *RealAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topi
 	if err != nil {
 		return nil, fmt.Errorf("failed to get personas from AIP: %w", err)
 	}
-	
+
 	community := &Community{
 		ID:        fmt.Sprintf("community_%d", time.Now().UnixNano()),
 		Topic:     topic,
@@ -49,7 +49,7 @@ func (r *RealAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topi
 		CreatedAt: time.Now(),
 		Status:    "active",
 	}
-	
+
 	return community, nil
 }
 
@@ -60,7 +60,7 @@ func (r *RealAIPersonaCommunityClient) SubmitForReview(ctx context.Context, comm
 	if err != nil {
 		return nil, fmt.Errorf("failed to get community: %w", err)
 	}
-	
+
 	review := &CommunityReview{
 		ReviewID:        fmt.Sprintf("review_%d", time.Now().UnixNano()),
 		Topic:           community.Topic,
@@ -70,7 +70,7 @@ func (r *RealAIPersonaCommunityClient) SubmitForReview(ctx context.Context, comm
 		Metadata:        make(map[string]interface{}),
 		CreatedAt:       time.Now(),
 	}
-	
+
 	// Submit to each persona via bridge service
 	totalScore := 0.0
 	for _, persona := range community.Members {
@@ -80,11 +80,11 @@ func (r *RealAIPersonaCommunityClient) SubmitForReview(ctx context.Context, comm
 			fmt.Printf("Warning: Failed to get review from persona %s: %v\n", persona.Name, err)
 			continue
 		}
-		
+
 		review.PersonaReviews = append(review.PersonaReviews, *personaReview)
 		totalScore += personaReview.Score
 	}
-	
+
 	// Calculate consensus
 	if len(review.PersonaReviews) > 0 {
 		avgScore := totalScore / float64(len(review.PersonaReviews))
@@ -96,10 +96,10 @@ func (r *RealAIPersonaCommunityClient) SubmitForReview(ctx context.Context, comm
 			ConfidenceLevel: r.calculateConfidence(review.PersonaReviews),
 		}
 	}
-	
+
 	completedAt := time.Now()
 	review.CompletedAt = &completedAt
-	
+
 	return review, nil
 }
 
@@ -115,7 +115,7 @@ func (r *RealAIPersonaCommunityClient) GetCommunityMembers(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return community.Members, nil
 }
 
@@ -129,37 +129,37 @@ func (r *RealAIPersonaCommunityClient) getPersonasFromAIP(ctx context.Context, t
 			"is_active": true,
 		},
 	}
-	
+
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
-	
+
 	req, err := http.NewRequestWithContext(ctx, "POST", r.aipServiceURL+"/api/v1/personas/search", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	
+
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call AIP service: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("AIP service returned status %d", resp.StatusCode)
 	}
-	
+
 	var response struct {
 		Personas []PersonaInfo `json:"personas"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
-	
+
 	return response.Personas, nil
 }
 
@@ -182,29 +182,29 @@ func (r *RealAIPersonaCommunityClient) getPersonaReview(ctx context.Context, per
 		"temperature":    0.7,
 		"max_tokens":     1000,
 	}
-	
+
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
-	
+
 	req, err := http.NewRequestWithContext(ctx, "POST", r.bridgeServiceURL+"/v1/chat/completions", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	
+
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	resp, err := r.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call bridge service: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("bridge service returned status %d", resp.StatusCode)
 	}
-	
+
 	var response struct {
 		Choices []struct {
 			Message struct {
@@ -212,22 +212,22 @@ func (r *RealAIPersonaCommunityClient) getPersonaReview(ctx context.Context, per
 			} `json:"message"`
 		} `json:"choices"`
 	}
-	
+
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
-	
+
 	if len(response.Choices) == 0 {
 		return nil, fmt.Errorf("no response from AI model")
 	}
-	
+
 	reviewContent := response.Choices[0].Message.Content
-	
+
 	// Parse the review content to extract score and other metrics
 	// This is a simplified implementation - in reality you'd want more sophisticated parsing
 	score := r.extractScoreFromReview(reviewContent)
 	confidence := r.extractConfidenceFromReview(reviewContent)
-	
+
 	return &PersonaReview{
 		PersonaID:   persona.ID,
 		PersonaName: persona.Name,
@@ -245,31 +245,31 @@ func (r *RealAIPersonaCommunityClient) getPersonaReview(ctx context.Context, per
 func (r *RealAIPersonaCommunityClient) extractScoreFromReview(review string) float64 {
 	// Simplified scoring based on keywords - in reality this would be more sophisticated
 	// You could use sentiment analysis, keyword matching, or train a specific model
-	
+
 	// Count threat indicators
 	threatKeywords := []string{"threat", "malicious", "suspicious", "dangerous", "risk", "attack", "phishing", "malware"}
 	safeKeywords := []string{"safe", "legitimate", "normal", "benign", "trusted", "secure"}
-	
+
 	threatCount := 0
 	safeCount := 0
-	
+
 	for _, keyword := range threatKeywords {
 		if contains(review, keyword) {
 			threatCount++
 		}
 	}
-	
+
 	for _, keyword := range safeKeywords {
 		if contains(review, keyword) {
 			safeCount++
 		}
 	}
-	
+
 	// Calculate score (0.0 = safe, 1.0 = high threat)
 	if threatCount == 0 && safeCount == 0 {
 		return 0.5 // neutral
 	}
-	
+
 	total := threatCount + safeCount
 	return float64(threatCount) / float64(total)
 }
@@ -284,23 +284,23 @@ func (r *RealAIPersonaCommunityClient) calculateAgreement(reviews []PersonaRevie
 	if len(reviews) < 2 {
 		return 1.0
 	}
-	
+
 	// Calculate variance in scores
 	var sum, sumSquares float64
 	for _, review := range reviews {
 		sum += review.Score
 		sumSquares += review.Score * review.Score
 	}
-	
+
 	mean := sum / float64(len(reviews))
 	variance := (sumSquares / float64(len(reviews))) - (mean * mean)
-	
+
 	// Convert variance to agreement (lower variance = higher agreement)
 	agreement := 1.0 - variance
 	if agreement < 0 {
 		agreement = 0
 	}
-	
+
 	return agreement
 }
 
@@ -321,7 +321,7 @@ func (r *RealAIPersonaCommunityClient) extractKeyPoints(reviews []PersonaReview)
 	// Simplified key point extraction
 	// In reality, this could use NLP techniques to extract common themes
 	keyPoints := []string{}
-	
+
 	for _, review := range reviews {
 		if len(review.Review) > 100 {
 			// Extract first sentence as a key point
@@ -331,7 +331,7 @@ func (r *RealAIPersonaCommunityClient) extractKeyPoints(reviews []PersonaReview)
 			}
 		}
 	}
-	
+
 	return keyPoints
 }
 
@@ -339,12 +339,12 @@ func (r *RealAIPersonaCommunityClient) calculateConfidence(reviews []PersonaRevi
 	if len(reviews) == 0 {
 		return 0.0
 	}
-	
+
 	var totalConfidence float64
 	for _, review := range reviews {
 		totalConfidence += review.Confidence
 	}
-	
+
 	return totalConfidence / float64(len(reviews))
 }
 
@@ -356,12 +356,12 @@ func (r *RealAIPersonaCommunityClient) getCommunityByID(communityID string) (*Co
 
 // Utility functions
 func contains(text, substring string) bool {
-	return len(text) >= len(substring) && 
-		   (text == substring || 
-		    (len(text) > len(substring) && 
-		     (text[:len(substring)] == substring || 
-		      text[len(text)-len(substring):] == substring ||
-		      containsSubstring(text, substring))))
+	return len(text) >= len(substring) &&
+		(text == substring ||
+			(len(text) > len(substring) &&
+				(text[:len(substring)] == substring ||
+					text[len(text)-len(substring):] == substring ||
+					containsSubstring(text, substring))))
 }
 
 func containsSubstring(text, substring string) bool {
@@ -377,7 +377,7 @@ func splitSentences(text string) []string {
 	// Simplified sentence splitting
 	sentences := []string{}
 	current := ""
-	
+
 	for _, char := range text {
 		current += string(char)
 		if char == '.' || char == '!' || char == '?' {
@@ -385,10 +385,10 @@ func splitSentences(text string) []string {
 			current = ""
 		}
 	}
-	
+
 	if current != "" {
 		sentences = append(sentences, current)
 	}
-	
+
 	return sentences
 }

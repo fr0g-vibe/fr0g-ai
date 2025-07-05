@@ -57,10 +57,10 @@ func TestProcessMessage(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name            string
-		message         IRCMessage
-		expectedThreat  ThreatLevel
-		minConfidence   float64
+		name           string
+		message        IRCMessage
+		expectedThreat ThreatLevel
+		minConfidence  float64
 	}{
 		{
 			name: "Normal message",
@@ -152,7 +152,7 @@ func TestProcessMessage(t *testing.T) {
 			}
 
 			if result.ThreatLevel < tt.expectedThreat {
-				t.Errorf("Expected threat level >= %s, got %s", 
+				t.Errorf("Expected threat level >= %s, got %s",
 					tt.expectedThreat.String(), result.ThreatLevel.String())
 			}
 
@@ -161,7 +161,7 @@ func TestProcessMessage(t *testing.T) {
 			}
 
 			if result.Analysis.Confidence < tt.minConfidence {
-				t.Errorf("Expected confidence >= %.2f, got %.2f", 
+				t.Errorf("Expected confidence >= %.2f, got %.2f",
 					tt.minConfidence, result.Analysis.Confidence)
 			}
 
@@ -228,7 +228,7 @@ func TestThreatPatterns(t *testing.T) {
 					}
 				}
 				if !found {
-					t.Errorf("Expected pattern %s to be detected in message: %s", 
+					t.Errorf("Expected pattern %s to be detected in message: %s",
 						expectedPattern, tt.message)
 				}
 			}
@@ -286,9 +286,9 @@ func TestSpamScoreCalculation(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name          string
-		message       string
-		minSpamScore  float64
+		name         string
+		message      string
+		minSpamScore float64
 	}{
 		{
 			name:         "Normal message",
@@ -321,7 +321,7 @@ func TestSpamScoreCalculation(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			score := processor.calculateSpamScore(strings.ToLower(tt.message))
 			if score < tt.minSpamScore {
-				t.Errorf("Expected spam score >= %.2f, got %.2f for message: %s", 
+				t.Errorf("Expected spam score >= %.2f, got %.2f for message: %s",
 					tt.minSpamScore, score, tt.message)
 			}
 		})
@@ -337,9 +337,9 @@ func TestBotDetection(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name       string
-		nick       string
-		message    string
+		name        string
+		nick        string
+		message     string
 		minBotScore float64
 	}{
 		{
@@ -377,7 +377,7 @@ func TestBotDetection(t *testing.T) {
 
 			score := processor.calculateBotScore(msg)
 			if score < tt.minBotScore {
-				t.Errorf("Expected bot score >= %.2f, got %.2f for nick: %s, message: %s", 
+				t.Errorf("Expected bot score >= %.2f, got %.2f for nick: %s, message: %s",
 					tt.minBotScore, score, tt.nick, tt.message)
 			}
 		})
@@ -386,9 +386,9 @@ func TestBotDetection(t *testing.T) {
 
 func TestGetStats(t *testing.T) {
 	cfg := &config.IRCConfig{
-		Enabled:    true,
-		Servers:    []string{"irc1.example.com", "irc2.example.com"},
-		Channels:   []string{"#test1", "#test2"},
+		Enabled:  true,
+		Servers:  []string{"irc1.example.com", "irc2.example.com"},
+		Channels: []string{"#test1", "#test2"},
 	}
 
 	processor := NewProcessor(cfg)

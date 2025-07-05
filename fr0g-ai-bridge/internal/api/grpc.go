@@ -27,7 +27,7 @@ func NewGRPCServer(openWebUIClient *client.OpenWebUIClient) *GRPCServer {
 func (s *GRPCServer) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
 	// Check OpenWebUI health
 	err := s.client.HealthCheck(ctx)
-	
+
 	response := &pb.HealthCheckResponse{
 		Version: "1.0.0",
 	}
@@ -103,7 +103,6 @@ func (s *GRPCServer) validateChatCompletionRequest(req *pb.ChatCompletionRequest
 	}
 	return nil
 }
-
 
 // protoToModel converts protobuf request to internal model
 func (s *GRPCServer) protoToModel(req *pb.ChatCompletionRequest) *models.ChatCompletionRequest {

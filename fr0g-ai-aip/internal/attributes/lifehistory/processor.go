@@ -247,11 +247,11 @@ func (p *Processor) ProcessLifeHistory(history *pb.LifeHistory) (*pb.LifeHistory
 
 	// Create processed copy
 	processed := &pb.LifeHistory{
-		ChildhoodTraumas:  p.normalizeStringSlice(history.ChildhoodTraumas),
-		AdultTraumas:      p.normalizeStringSlice(history.AdultTraumas),
-		MajorEvents:       p.processMajorEvents(history.MajorEvents),
-		EducationHistory:  p.processEducationHistory(history.EducationHistory),
-		CareerHistory:     p.processCareerHistory(history.CareerHistory),
+		ChildhoodTraumas: p.normalizeStringSlice(history.ChildhoodTraumas),
+		AdultTraumas:     p.normalizeStringSlice(history.AdultTraumas),
+		MajorEvents:      p.processMajorEvents(history.MajorEvents),
+		EducationHistory: p.processEducationHistory(history.EducationHistory),
+		CareerHistory:    p.processCareerHistory(history.CareerHistory),
 	}
 
 	return processed, nil
@@ -538,7 +538,7 @@ func (p *Processor) getLifePhases(events []*pb.LifeEvent) map[string][]string {
 			if age == 0 && event.AgeAtEvent > 0 {
 				age = event.AgeAtEvent
 			}
-			
+
 			if age > 0 {
 				var phase string
 				switch {
@@ -555,13 +555,13 @@ func (p *Processor) getLifePhases(events []*pb.LifeEvent) map[string][]string {
 				default:
 					phase = "senior"
 				}
-				
+
 				// Use Type field, fall back to EventType for compatibility
 				eventType := event.Type
 				if eventType == "" && event.EventType != "" {
 					eventType = event.EventType
 				}
-				
+
 				phases[phase] = append(phases[phase], eventType)
 			}
 		}

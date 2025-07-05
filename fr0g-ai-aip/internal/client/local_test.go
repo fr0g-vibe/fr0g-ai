@@ -10,18 +10,18 @@ import (
 func TestLocalClient_Create(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	client := NewLocalClient(storage)
-	
+
 	p := &types.Persona{
 		Name:   "Local Test",
 		Topic:  "Local Testing",
 		Prompt: "You are a local testing expert.",
 	}
-	
+
 	err := client.Create(p)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
-	
+
 	if p.Id == "" {
 		t.Error("Expected ID to be generated")
 	}
@@ -30,7 +30,7 @@ func TestLocalClient_Create(t *testing.T) {
 func TestLocalClient_CRUD(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	client := NewLocalClient(storage)
-	
+
 	// Create
 	p := &types.Persona{
 		Name:   "CRUD Test",
@@ -44,11 +44,11 @@ func TestLocalClient_CRUD(t *testing.T) {
 	if err := client.Create(p); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
-	
+
 	if p.Id == "" {
 		t.Error("Expected ID to be generated")
 	}
-	
+
 	// Read
 	retrieved, err := client.Get(p.Id)
 	if err != nil {
@@ -63,7 +63,7 @@ func TestLocalClient_CRUD(t *testing.T) {
 	if len(retrieved.Rag) != len(p.Rag) {
 		t.Errorf("Expected RAG length %d, got %d", len(p.Rag), len(retrieved.Rag))
 	}
-	
+
 	// List
 	list, err := client.List()
 	if err != nil {
@@ -72,14 +72,14 @@ func TestLocalClient_CRUD(t *testing.T) {
 	if len(list) != 1 {
 		t.Errorf("Expected 1 persona, got %d", len(list))
 	}
-	
+
 	// Update
 	retrieved.Name = "Updated CRUD Test"
 	retrieved.Context["updated"] = "true"
 	if err := client.Update(p.Id, retrieved); err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
-	
+
 	// Verify update
 	updated, err := client.Get(p.Id)
 	if err != nil {
@@ -91,17 +91,17 @@ func TestLocalClient_CRUD(t *testing.T) {
 	if updated.Context["updated"] != "true" {
 		t.Error("Expected context to be updated")
 	}
-	
+
 	// Delete
 	if err := client.Delete(p.Id); err != nil {
 		t.Fatalf("Delete failed: %v", err)
 	}
-	
+
 	_, err = client.Get(p.Id)
 	if err == nil {
 		t.Error("Expected error after delete")
 	}
-	
+
 	// Verify list is empty after delete
 	finalList, err := client.List()
 	if err != nil {
@@ -115,7 +115,7 @@ func TestLocalClient_CRUD(t *testing.T) {
 func TestLocalClient_GetNotFound(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	client := NewLocalClient(storage)
-	
+
 	_, err := client.Get("nonexistent")
 	if err == nil {
 		t.Error("Expected error for nonexistent persona")

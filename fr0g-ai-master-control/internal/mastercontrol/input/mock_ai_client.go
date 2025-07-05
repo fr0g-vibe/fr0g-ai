@@ -15,7 +15,7 @@ type MockAIPersonaCommunityClient struct{}
 func (m *MockAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topic string, personaCount int) (*Community, error) {
 	// Create realistic personas based on topic
 	personas := m.generatePersonas(topic, personaCount)
-	
+
 	community := &Community{
 		ID:        fmt.Sprintf("community_%d", time.Now().UnixNano()),
 		Topic:     topic,
@@ -23,7 +23,7 @@ func (m *MockAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topi
 		CreatedAt: time.Now(),
 		Status:    "active",
 	}
-	
+
 	return community, nil
 }
 
@@ -31,13 +31,13 @@ func (m *MockAIPersonaCommunityClient) CreateCommunity(ctx context.Context, topi
 func (m *MockAIPersonaCommunityClient) SubmitForReview(ctx context.Context, communityID string, content string) (*CommunityReview, error) {
 	// Simulate processing time
 	time.Sleep(time.Millisecond * 100)
-	
+
 	// Generate realistic persona reviews
 	personaReviews := m.generatePersonaReviews(content)
-	
+
 	// Calculate consensus
 	consensus := m.calculateConsensus(personaReviews)
-	
+
 	now := time.Now()
 	review := &CommunityReview{
 		ReviewID:        fmt.Sprintf("review_%d", time.Now().UnixNano()),
@@ -50,7 +50,7 @@ func (m *MockAIPersonaCommunityClient) SubmitForReview(ctx context.Context, comm
 		CreatedAt:       now,
 		CompletedAt:     &now,
 	}
-	
+
 	return review, nil
 }
 
@@ -67,10 +67,10 @@ func (m *MockAIPersonaCommunityClient) GetCommunityMembers(ctx context.Context, 
 // generatePersonas creates realistic AI personas based on topic
 func (m *MockAIPersonaCommunityClient) generatePersonas(topic string, count int) []PersonaInfo {
 	var personas []PersonaInfo
-	
+
 	// Define persona templates based on topic
 	var templates []PersonaInfo
-	
+
 	switch {
 	case strings.Contains(topic, "threat") || strings.Contains(topic, "security"):
 		templates = []PersonaInfo{
@@ -93,14 +93,14 @@ func (m *MockAIPersonaCommunityClient) generatePersonas(topic string, count int)
 			{ID: "quality_assessor_001", Name: "Quality Assessor", Expertise: []string{"quality_assessment", "evaluation"}, Description: "Expert in quality assessment and evaluation"},
 		}
 	}
-	
+
 	// Select personas up to the requested count
 	for i := 0; i < count && i < len(templates); i++ {
 		persona := templates[i]
 		persona.Model = "gpt-4"
 		personas = append(personas, persona)
 	}
-	
+
 	// If we need more personas than templates, create variations
 	for len(personas) < count {
 		basePersona := templates[len(personas)%len(templates)]
@@ -109,17 +109,17 @@ func (m *MockAIPersonaCommunityClient) generatePersonas(topic string, count int)
 		variation.Name = fmt.Sprintf("%s %d", basePersona.Name, len(personas)+1)
 		personas = append(personas, variation)
 	}
-	
+
 	return personas
 }
 
 // generatePersonaReviews creates realistic persona reviews
 func (m *MockAIPersonaCommunityClient) generatePersonaReviews(content string) []PersonaReview {
 	contentLower := strings.ToLower(content)
-	
+
 	// Analyze content for threat indicators
 	threatScore := m.calculateThreatScore(contentLower)
-	
+
 	reviews := []PersonaReview{
 		{
 			PersonaID:   "security_analyst_001",
@@ -155,14 +155,14 @@ func (m *MockAIPersonaCommunityClient) generatePersonaReviews(content string) []
 			Timestamp:   time.Now(),
 		},
 	}
-	
+
 	return reviews
 }
 
 // calculateThreatScore analyzes content and calculates a threat score
 func (m *MockAIPersonaCommunityClient) calculateThreatScore(content string) float64 {
 	score := 0.0
-	
+
 	// High threat indicators
 	highThreatKeywords := []string{
 		"urgent", "click here", "verify", "suspended", "bitcoin", "cryptocurrency",
@@ -171,7 +171,7 @@ func (m *MockAIPersonaCommunityClient) calculateThreatScore(content string) floa
 		"download", "install", "execute", "run", "admin", "administrator",
 		"password", "login", "credentials", "account", "security alert",
 	}
-	
+
 	// Medium threat indicators
 	mediumThreatKeywords := []string{
 		"free", "winner", "congratulations", "prize", "lottery", "inheritance",
@@ -179,50 +179,50 @@ func (m *MockAIPersonaCommunityClient) calculateThreatScore(content string) floa
 		"microsoft", "apple", "google", "amazon", "paypal", "ebay",
 		"irs", "fbi", "police", "government", "tax", "refund",
 	}
-	
+
 	// Low threat indicators
 	lowThreatKeywords := []string{
 		"unsubscribe", "marketing", "newsletter", "promotion", "sale",
 		"discount", "offer", "deal", "shopping", "product",
 	}
-	
+
 	// Count keyword occurrences
 	for _, keyword := range highThreatKeywords {
 		if strings.Contains(content, keyword) {
 			score += 0.15
 		}
 	}
-	
+
 	for _, keyword := range mediumThreatKeywords {
 		if strings.Contains(content, keyword) {
 			score += 0.08
 		}
 	}
-	
+
 	for _, keyword := range lowThreatKeywords {
 		if strings.Contains(content, keyword) {
 			score += 0.03
 		}
 	}
-	
+
 	// Check for suspicious patterns
 	if strings.Contains(content, "http://") && !strings.Contains(content, "https://") {
 		score += 0.1 // Insecure links
 	}
-	
+
 	if strings.Count(content, "!") > 3 {
 		score += 0.05 // Excessive exclamation marks
 	}
-	
+
 	if strings.Contains(content, "URGENT") || strings.Contains(content, "IMMEDIATE") {
 		score += 0.1 // All caps urgency
 	}
-	
+
 	// Normalize score to 0-1 range
 	if score > 1.0 {
 		score = 0.95 // Cap at 95% to leave room for uncertainty
 	}
-	
+
 	return score
 }
 
@@ -272,7 +272,7 @@ func (m *MockAIPersonaCommunityClient) calculateConsensus(reviews []PersonaRevie
 			ConfidenceLevel: 0.0,
 		}
 	}
-	
+
 	// Calculate average score
 	totalScore := 0.0
 	totalConfidence := 0.0
@@ -280,10 +280,10 @@ func (m *MockAIPersonaCommunityClient) calculateConsensus(reviews []PersonaRevie
 		totalScore += review.Score
 		totalConfidence += review.Confidence
 	}
-	
+
 	avgScore := totalScore / float64(len(reviews))
 	avgConfidence := totalConfidence / float64(len(reviews))
-	
+
 	// Calculate agreement (inverse of variance)
 	variance := 0.0
 	for _, review := range reviews {
@@ -292,7 +292,7 @@ func (m *MockAIPersonaCommunityClient) calculateConsensus(reviews []PersonaRevie
 	}
 	variance /= float64(len(reviews))
 	agreement := 1.0 - variance // Higher variance = lower agreement
-	
+
 	// Generate recommendation
 	var recommendation string
 	if avgScore >= 0.8 {
@@ -306,14 +306,14 @@ func (m *MockAIPersonaCommunityClient) calculateConsensus(reviews []PersonaRevie
 	} else {
 		recommendation = "MINIMAL THREAT - Content appears safe"
 	}
-	
+
 	// Extract key points
 	keyPoints := []string{
 		fmt.Sprintf("Multiple reviewers noted: %s", m.getCommonTheme(avgScore)),
 		fmt.Sprintf("Consensus confidence: %.1f%%", avgConfidence*100),
 		fmt.Sprintf("Reviewer agreement: %.1f%%", agreement*100),
 	}
-	
+
 	return &Consensus{
 		OverallScore:    avgScore,
 		Agreement:       agreement,

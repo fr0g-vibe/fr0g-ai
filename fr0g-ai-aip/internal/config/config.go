@@ -19,24 +19,24 @@ type Config struct {
 	// Server configuration using shared types
 	HTTP sharedconfig.HTTPConfig `yaml:"http"`
 	GRPC sharedconfig.GRPCConfig `yaml:"grpc"`
-	
+
 	// Storage configuration using shared types
 	Storage sharedconfig.StorageConfig `yaml:"storage"`
-	
+
 	// Security configuration using shared types
 	Security sharedconfig.SecurityConfig `yaml:"security"`
-	
+
 	// Logging configuration using shared types
 	Logging sharedconfig.LoggingConfig `yaml:"logging"`
-	
+
 	// AIP-specific configuration
-	Client ClientConfig `yaml:"client"`
+	Client     ClientConfig     `yaml:"client"`
 	Validation ValidationConfig `yaml:"validation"`
 }
 
 type ClientConfig struct {
-	Type      string `yaml:"type"`       // local, rest, grpc
-	ServerURL string `yaml:"server_url"`
+	Type      string        `yaml:"type"` // local, rest, grpc
+	ServerURL string        `yaml:"server_url"`
 	Timeout   time.Duration `yaml:"timeout"`
 }
 
@@ -93,14 +93,14 @@ func Load() *Config {
 			StrictMode: getBoolEnv("FR0G_VALIDATION_STRICT", false),
 		},
 	}
-	
+
 	// Expand relative paths
 	if !filepath.IsAbs(config.Storage.DataDir) {
 		if abs, err := filepath.Abs(config.Storage.DataDir); err == nil {
 			config.Storage.DataDir = abs
 		}
 	}
-	
+
 	return config
 }
 
@@ -110,12 +110,12 @@ func LoadConfig(configPath string) (*Config, error) {
 		ConfigPath: configPath,
 		EnvPrefix:  "FR0G_AIP",
 	})
-	
+
 	// Load environment files
 	if err := loader.LoadEnvFiles(); err != nil {
 		// Non-fatal, just log warning
 	}
-	
+
 	// Create default config
 	cfg := &Config{
 		HTTP: sharedconfig.HTTPConfig{
@@ -150,12 +150,12 @@ func LoadConfig(configPath string) (*Config, error) {
 			StrictMode: false,
 		},
 	}
-	
+
 	// Load from file
 	if err := loader.LoadFromFile(cfg); err != nil {
 		return nil, err
 	}
-	
+
 	// Override with environment variables
 	cfg.HTTP.Port = loader.GetEnvString("HTTP_PORT", cfg.HTTP.Port)
 	cfg.HTTP.Host = loader.GetEnvString("HTTP_HOST", cfg.HTTP.Host)
@@ -163,14 +163,14 @@ func LoadConfig(configPath string) (*Config, error) {
 	cfg.GRPC.Host = loader.GetEnvString("GRPC_HOST", cfg.GRPC.Host)
 	cfg.Logging.Level = loader.GetEnvString("LOG_LEVEL", cfg.Logging.Level)
 	cfg.Logging.Format = loader.GetEnvString("LOG_FORMAT", cfg.Logging.Format)
-	
+
 	return cfg, nil
 }
 
 // Validate validates the entire configuration using shared validation
 func (c *Config) Validate() error {
 	var errors []sharedconfig.ValidationError
-	
+
 	// Validate HTTP config
 	if c.HTTP.Port == "" {
 		errors = append(errors, sharedconfig.ValidationError{
@@ -178,7 +178,7 @@ func (c *Config) Validate() error {
 			Message: "HTTP port is required",
 		})
 	}
-	
+
 	// Validate gRPC config
 	if c.GRPC.Port == "" {
 		errors = append(errors, sharedconfig.ValidationError{
@@ -186,11 +186,11 @@ func (c *Config) Validate() error {
 			Message: "gRPC port is required",
 		})
 	}
-	
+
 	// Validate other components using shared validation
 	errors = append(errors, c.Security.Validate()...)
 	errors = append(errors, c.Storage.Validate()...)
-	
+
 	// Validate client type
 	validClientTypes := []string{"local", "rest", "grpc"}
 	if !contains(validClientTypes, c.Client.Type) {
@@ -199,7 +199,7 @@ func (c *Config) Validate() error {
 			Message: "invalid client type, must be one of: local, rest, grpc",
 		})
 	}
-	
+
 	// Validate timeout
 	if c.Client.Timeout <= 0 {
 		errors = append(errors, sharedconfig.ValidationError{
@@ -207,11 +207,11 @@ func (c *Config) Validate() error {
 			Message: "timeout must be positive",
 		})
 	}
-	
+
 	if len(errors) > 0 {
 		return sharedconfig.ValidationErrors(errors)
 	}
-	
+
 	return nil
 }
 

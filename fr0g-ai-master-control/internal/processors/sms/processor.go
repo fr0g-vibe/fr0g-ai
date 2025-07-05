@@ -14,14 +14,14 @@ import (
 
 // Processor handles SMS threat detection and analysis
 type Processor struct {
-	config          *config.SMSConfig
-	threatPatterns  map[string]*regexp.Regexp
-	spamKeywords    []string
-	phoneNumbers    map[string]*PhoneNumberInfo
-	messageHistory  []SMSMessage
-	mu              sync.RWMutex
-	isRunning       bool
-	stopChan        chan struct{}
+	config         *config.SMSConfig
+	threatPatterns map[string]*regexp.Regexp
+	spamKeywords   []string
+	phoneNumbers   map[string]*PhoneNumberInfo
+	messageHistory []SMSMessage
+	mu             sync.RWMutex
+	isRunning      bool
+	stopChan       chan struct{}
 }
 
 // SMSMessage represents an incoming SMS message
@@ -108,14 +108,14 @@ func NewProcessor(cfg *config.SMSConfig) *Processor {
 // initializeThreatPatterns sets up regex patterns for threat detection
 func (p *Processor) initializeThreatPatterns() {
 	patterns := map[string]string{
-		"phishing_url":     `(?i)(bit\.ly|tinyurl|t\.co|goo\.gl|short\.link)/[a-zA-Z0-9]+`,
-		"credit_card":      `\b(?:\d{4}[-\s]?){3}\d{4}\b`,
-		"ssn":              `\b\d{3}-?\d{2}-?\d{4}\b`,
-		"urgent_action":    `(?i)(urgent|immediate|act now|limited time|expires|deadline)`,
-		"financial_scam":   `(?i)(wire transfer|bitcoin|cryptocurrency|investment|lottery|inheritance)`,
-		"malware_link":     `(?i)(download|install|update|click here|verify account)`,
-		"social_eng":       `(?i)(verify|confirm|update|suspended|locked|security alert)`,
-		"phone_scam":       `(?i)(irs|tax|refund|arrest|warrant|legal action|court)`,
+		"phishing_url":   `(?i)(bit\.ly|tinyurl|t\.co|goo\.gl|short\.link)/[a-zA-Z0-9]+`,
+		"credit_card":    `\b(?:\d{4}[-\s]?){3}\d{4}\b`,
+		"ssn":            `\b\d{3}-?\d{2}-?\d{4}\b`,
+		"urgent_action":  `(?i)(urgent|immediate|act now|limited time|expires|deadline)`,
+		"financial_scam": `(?i)(wire transfer|bitcoin|cryptocurrency|investment|lottery|inheritance)`,
+		"malware_link":   `(?i)(download|install|update|click here|verify account)`,
+		"social_eng":     `(?i)(verify|confirm|update|suspended|locked|security alert)`,
+		"phone_scam":     `(?i)(irs|tax|refund|arrest|warrant|legal action|court)`,
 	}
 
 	for name, pattern := range patterns {
@@ -493,14 +493,14 @@ func (p *Processor) processQueuedMessages() {
 // startGoogleVoiceIntegration starts Google Voice API integration
 func (p *Processor) startGoogleVoiceIntegration(ctx context.Context) {
 	log.Println("Starting Google Voice API integration...")
-	
+
 	// TODO: Implement Google Voice API integration
 	// This would involve:
 	// 1. Authentication with Google Voice API
 	// 2. Setting up webhooks for incoming messages
 	// 3. Polling for new messages if webhooks not available
 	// 4. Processing and forwarding messages to threat analysis
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -517,14 +517,14 @@ func (p *Processor) startGoogleVoiceIntegration(ctx context.Context) {
 // startWebhookServer starts webhook server for receiving SMS messages
 func (p *Processor) startWebhookServer(ctx context.Context) {
 	log.Printf("Starting SMS webhook server on port %d...", p.config.WebhookPort)
-	
+
 	// TODO: Implement webhook server
 	// This would involve:
 	// 1. HTTP server setup
 	// 2. Webhook endpoint handlers
 	// 3. Message validation and parsing
 	// 4. Integration with threat analysis pipeline
-	
+
 	select {
 	case <-ctx.Done():
 		return
@@ -544,11 +544,11 @@ func (p *Processor) GetStats() map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"total_messages":     len(p.messageHistory),
-		"unique_numbers":     len(p.phoneNumbers),
-		"threat_counts":      threatCounts,
-		"is_running":         p.isRunning,
+		"total_messages":       len(p.messageHistory),
+		"unique_numbers":       len(p.phoneNumbers),
+		"threat_counts":        threatCounts,
+		"is_running":           p.isRunning,
 		"google_voice_enabled": p.config.GoogleVoiceEnabled,
-		"webhook_enabled":    p.config.WebhookEnabled,
+		"webhook_enabled":      p.config.WebhookEnabled,
 	}
 }

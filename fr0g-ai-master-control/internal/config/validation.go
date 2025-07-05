@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	
+
 	sharedconfig "pkg/config"
 )
 
@@ -14,18 +14,18 @@ type ValidationErrors = sharedconfig.ValidationErrors
 
 // SMSConfig holds SMS processor configuration
 type SMSConfig struct {
-	Enabled              bool    `yaml:"enabled" json:"enabled"`
-	GoogleVoiceEnabled   bool    `yaml:"google_voice_enabled" json:"google_voice_enabled"`
-	GoogleVoiceAPIKey    string  `yaml:"google_voice_api_key" json:"google_voice_api_key"`
-	WebhookEnabled       bool    `yaml:"webhook_enabled" json:"webhook_enabled"`
-	WebhookPort          int     `yaml:"webhook_port" json:"webhook_port"`
-	WebhookPath          string  `yaml:"webhook_path" json:"webhook_path"`
-	ProcessingInterval   int     `yaml:"processing_interval" json:"processing_interval"`
-	MaxHistorySize       int     `yaml:"max_history_size" json:"max_history_size"`
-	ThreatThreshold      float64 `yaml:"threat_threshold" json:"threat_threshold"`
-	SpamFilterEnabled    bool    `yaml:"spam_filter_enabled" json:"spam_filter_enabled"`
-	BlacklistEnabled     bool    `yaml:"blacklist_enabled" json:"blacklist_enabled"`
-	WhitelistEnabled     bool    `yaml:"whitelist_enabled" json:"whitelist_enabled"`
+	Enabled            bool    `yaml:"enabled" json:"enabled"`
+	GoogleVoiceEnabled bool    `yaml:"google_voice_enabled" json:"google_voice_enabled"`
+	GoogleVoiceAPIKey  string  `yaml:"google_voice_api_key" json:"google_voice_api_key"`
+	WebhookEnabled     bool    `yaml:"webhook_enabled" json:"webhook_enabled"`
+	WebhookPort        int     `yaml:"webhook_port" json:"webhook_port"`
+	WebhookPath        string  `yaml:"webhook_path" json:"webhook_path"`
+	ProcessingInterval int     `yaml:"processing_interval" json:"processing_interval"`
+	MaxHistorySize     int     `yaml:"max_history_size" json:"max_history_size"`
+	ThreatThreshold    float64 `yaml:"threat_threshold" json:"threat_threshold"`
+	SpamFilterEnabled  bool    `yaml:"spam_filter_enabled" json:"spam_filter_enabled"`
+	BlacklistEnabled   bool    `yaml:"blacklist_enabled" json:"blacklist_enabled"`
+	WhitelistEnabled   bool    `yaml:"whitelist_enabled" json:"whitelist_enabled"`
 }
 
 // VoiceConfig holds voice processor configuration
@@ -70,7 +70,7 @@ type IRCConfig struct {
 // Validate validates the SMS configuration
 func (c *SMSConfig) Validate() ValidationErrors {
 	var errors []ValidationError
-	
+
 	if c.Enabled {
 		if c.WebhookEnabled {
 			if err := sharedconfig.ValidatePort(c.WebhookPort, "sms.webhook_port"); err != nil {
@@ -80,29 +80,29 @@ func (c *SMSConfig) Validate() ValidationErrors {
 				errors = append(errors, *err)
 			}
 		}
-		
+
 		if c.GoogleVoiceEnabled {
 			if err := sharedconfig.ValidateRequired(c.GoogleVoiceAPIKey, "sms.google_voice_api_key"); err != nil {
 				errors = append(errors, *err)
 			}
 		}
-		
+
 		if err := sharedconfig.ValidatePositive(c.ProcessingInterval, "sms.processing_interval"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		if err := sharedconfig.ValidateRange(c.ThreatThreshold, 0, 1, "sms.threat_threshold"); err != nil {
 			errors = append(errors, *err)
 		}
 	}
-	
+
 	return ValidationErrors(errors)
 }
 
 // Validate validates the Voice configuration
 func (c *VoiceConfig) Validate() ValidationErrors {
 	var errors []ValidationError
-	
+
 	if c.Enabled {
 		if c.WebhookEnabled {
 			if err := sharedconfig.ValidatePort(c.WebhookPort, "voice.webhook_port"); err != nil {
@@ -112,27 +112,27 @@ func (c *VoiceConfig) Validate() ValidationErrors {
 				errors = append(errors, *err)
 			}
 		}
-		
+
 		if c.SpeechToTextEnabled {
 			if err := sharedconfig.ValidateRequired(c.SpeechToTextAPIKey, "voice.speech_to_text_api_key"); err != nil {
 				errors = append(errors, *err)
 			}
 		}
-		
+
 		if c.CallRecordingEnabled {
 			if err := sharedconfig.ValidateRequired(c.RecordingPath, "voice.recording_path"); err != nil {
 				errors = append(errors, *err)
 			}
 		}
-		
+
 		if err := sharedconfig.ValidatePositive(c.MonitoringInterval, "voice.monitoring_interval"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		if err := sharedconfig.ValidateRange(c.ThreatThreshold, 0, 1, "voice.threat_threshold"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		validProviders := []string{"twilio", "aws_transcribe", "google_speech"}
 		if c.TelephonyProvider != "" && !sharedconfig.Contains(validProviders, c.TelephonyProvider) {
 			errors = append(errors, ValidationError{
@@ -141,48 +141,48 @@ func (c *VoiceConfig) Validate() ValidationErrors {
 			})
 		}
 	}
-	
+
 	return ValidationErrors(errors)
 }
 
 // Validate validates the IRC configuration
 func (c *IRCConfig) Validate() ValidationErrors {
 	var errors []ValidationError
-	
+
 	if c.Enabled {
 		if err := sharedconfig.ValidateStringSliceNotEmpty(c.Servers, "irc.servers"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		// Validate server addresses
 		for i, server := range c.Servers {
 			if err := sharedconfig.ValidateNetworkAddress(server, fmt.Sprintf("irc.servers[%d]", i)); err != nil {
 				errors = append(errors, *err)
 			}
 		}
-		
+
 		if err := sharedconfig.ValidateRequired(c.Nickname, "irc.nickname"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		if err := sharedconfig.ValidateRequired(c.Username, "irc.username"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		if err := sharedconfig.ValidatePositive(c.ReconnectInterval, "irc.reconnect_interval"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		if err := sharedconfig.ValidateRange(c.ThreatThreshold, 0, 1, "irc.threat_threshold"); err != nil {
 			errors = append(errors, *err)
 		}
-		
+
 		if c.FloodProtection {
 			if err := sharedconfig.ValidatePositive(c.MaxMessagesPerMinute, "irc.max_messages_per_minute"); err != nil {
 				errors = append(errors, *err)
 			}
 		}
 	}
-	
+
 	return ValidationErrors(errors)
 }

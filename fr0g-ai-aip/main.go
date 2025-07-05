@@ -42,7 +42,7 @@ func main() {
 	// Start REST API server
 	restServer := api.NewServer(cfg, nil)
 	restPort := cfg.GetString("REST_PORT", "8080")
-	
+
 	httpServer := &http.Server{
 		Addr:    ":" + restPort,
 		Handler: restServer,

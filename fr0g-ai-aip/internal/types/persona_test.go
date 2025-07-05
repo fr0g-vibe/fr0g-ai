@@ -20,20 +20,20 @@ func TestPersonaJSONSerialization(t *testing.T) {
 			"Go testing framework",
 		},
 	}
-	
+
 	// Test JSON marshaling
 	data, err := json.Marshal(p)
 	if err != nil {
 		t.Fatalf("Failed to marshal persona: %v", err)
 	}
-	
+
 	// Test JSON unmarshaling
 	var unmarshaled Persona
 	err = json.Unmarshal(data, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal persona: %v", err)
 	}
-	
+
 	// Verify fields
 	if unmarshaled.Id != p.Id {
 		t.Errorf("Expected ID %s, got %s", p.Id, unmarshaled.Id)
@@ -47,7 +47,7 @@ func TestPersonaJSONSerialization(t *testing.T) {
 	if unmarshaled.Prompt != p.Prompt {
 		t.Errorf("Expected prompt %s, got %s", p.Prompt, unmarshaled.Prompt)
 	}
-	
+
 	// Verify context
 	if len(unmarshaled.Context) != len(p.Context) {
 		t.Errorf("Expected context length %d, got %d", len(p.Context), len(unmarshaled.Context))
@@ -57,7 +57,7 @@ func TestPersonaJSONSerialization(t *testing.T) {
 			t.Errorf("Expected context[%s] = %s, got %s", k, v, unmarshaled.Context[k])
 		}
 	}
-	
+
 	// Verify RAG
 	if len(unmarshaled.Rag) != len(p.Rag) {
 		t.Errorf("Expected RAG length %d, got %d", len(p.Rag), len(unmarshaled.Rag))
@@ -76,19 +76,19 @@ func TestPersonaEmptyFields(t *testing.T) {
 		Topic:  "Testing",
 		Prompt: "You are a testing expert.",
 	}
-	
+
 	// Test with nil context and RAG
 	data, err := json.Marshal(p)
 	if err != nil {
 		t.Fatalf("Failed to marshal persona with empty fields: %v", err)
 	}
-	
+
 	var unmarshaled Persona
 	err = json.Unmarshal(data, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal persona with empty fields: %v", err)
 	}
-	
+
 	// Verify required fields
 	if unmarshaled.Id != p.Id {
 		t.Errorf("Expected ID %s, got %s", p.Id, unmarshaled.Id)
@@ -102,7 +102,7 @@ func TestPersonaEmptyFields(t *testing.T) {
 	if unmarshaled.Prompt != p.Prompt {
 		t.Errorf("Expected prompt %s, got %s", p.Prompt, unmarshaled.Prompt)
 	}
-	
+
 	// Verify optional fields are properly handled
 	if unmarshaled.Context != nil && len(unmarshaled.Context) != 0 {
 		t.Errorf("Expected empty context, got %v", unmarshaled.Context)
@@ -128,20 +128,20 @@ func TestPersonaJSONEdgeCases(t *testing.T) {
 			"unicode-doc-🚀.md",
 		},
 	}
-	
+
 	// Test marshaling
 	data, err := json.Marshal(p)
 	if err != nil {
 		t.Fatalf("Failed to marshal persona with special chars: %v", err)
 	}
-	
+
 	// Test unmarshaling
 	var unmarshaled Persona
 	err = json.Unmarshal(data, &unmarshaled)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal persona with special chars: %v", err)
 	}
-	
+
 	// Verify all fields are preserved
 	if unmarshaled.Name != p.Name {
 		t.Errorf("Expected name %s, got %s", p.Name, unmarshaled.Name)
@@ -152,14 +152,14 @@ func TestPersonaJSONEdgeCases(t *testing.T) {
 	if unmarshaled.Prompt != p.Prompt {
 		t.Errorf("Expected prompt %s, got %s", p.Prompt, unmarshaled.Prompt)
 	}
-	
+
 	// Verify context with special characters
 	for k, v := range p.Context {
 		if unmarshaled.Context[k] != v {
 			t.Errorf("Expected context[%s] = %s, got %s", k, v, unmarshaled.Context[k])
 		}
 	}
-	
+
 	// Verify RAG with special characters
 	for i, v := range p.Rag {
 		if unmarshaled.Rag[i] != v {
@@ -200,7 +200,7 @@ func TestPersonaJSONInvalidCases(t *testing.T) {
 			wantErr:  false,
 		},
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var p Persona

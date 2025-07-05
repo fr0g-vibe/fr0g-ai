@@ -20,14 +20,14 @@ func TestClientImplementations(t *testing.T) {
 		"local": NewLocalClient(storage.NewMemoryStorage()),
 		"rest":  NewRESTClient("http://localhost:8080"),
 	}
-	
+
 	// Add gRPC client
 	grpcClient, err := NewGRPCClient("localhost:9090")
 	if err != nil {
 		t.Fatalf("Failed to create gRPC client: %v", err)
 	}
 	clients["grpc"] = grpcClient
-	
+
 	for name, client := range clients {
 		t.Run(name, func(t *testing.T) {
 			if client == nil {
@@ -41,37 +41,37 @@ func TestClientCRUDInterface(t *testing.T) {
 	// Test that all clients implement the same interface methods
 	storage := storage.NewMemoryStorage()
 	client := NewLocalClient(storage)
-	
+
 	p := &types.Persona{
 		Name:   "Interface Test",
 		Topic:  "Testing",
 		Prompt: "You are a testing expert.",
 	}
-	
+
 	// Test Create method signature
 	err := client.Create(p)
 	if err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
-	
+
 	// Test Get method signature
 	_, err = client.Get(p.Id)
 	if err != nil {
 		t.Fatalf("Get failed: %v", err)
 	}
-	
+
 	// Test List method signature
 	_, err = client.List()
 	if err != nil {
 		t.Fatalf("List failed: %v", err)
 	}
-	
+
 	// Test Update method signature
 	err = client.Update(p.Id, *p)
 	if err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
-	
+
 	// Test Delete method signature
 	err = client.Delete(p.Id)
 	if err != nil {

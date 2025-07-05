@@ -12,12 +12,12 @@ import (
 	"syscall"
 	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/client"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/config"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/pb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -85,9 +85,9 @@ func main() {
 	if !*grpcOnly {
 		go func() {
 			log.Printf("Starting HTTP REST server on %s:%d", cfg.Server.Host, cfg.Server.HTTPPort)
-			
+
 			restServer := api.NewRESTServer(openWebUIClient, cfg)
-			
+
 			// Add health check endpoint
 			mux := http.NewServeMux()
 			mux.Handle("/", restServer.GetRouter())
@@ -101,7 +101,7 @@ func main() {
 					"version": "1.0.0"
 				}`, time.Now().Format(time.RFC3339))
 			})
-			
+
 			httpServer := &http.Server{
 				Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.HTTPPort),
 				Handler: mux,
@@ -116,11 +116,11 @@ func main() {
 
 			// Wait for context cancellation
 			<-ctx.Done()
-			
+
 			// Graceful shutdown
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer shutdownCancel()
-			
+
 			if err := httpServer.Shutdown(shutdownCtx); err != nil {
 				log.Printf("HTTP server shutdown error: %v", err)
 			} else {
@@ -133,7 +133,7 @@ func main() {
 	if !*httpOnly {
 		go func() {
 			log.Printf("Starting gRPC server on %s:%d", cfg.Server.Host, cfg.Server.GRPCPort)
-			
+
 			lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.GRPCPort))
 			if err != nil {
 				errChan <- fmt.Errorf("failed to listen on gRPC port: %w", err)
@@ -141,17 +141,17 @@ func main() {
 			}
 
 			grpcServer := grpc.NewServer()
-			
+
 			bridgeServer := api.NewGRPCServer(openWebUIClient)
 			pb.RegisterFr0GAiBridgeServiceServer(grpcServer, bridgeServer)
 			log.Printf("gRPC bridge service registered successfully")
-			
+
 			// Enable gRPC reflection for debugging and tools like grpcurl (if enabled)
 			if cfg.Security.EnableReflection {
 				reflection.Register(grpcServer)
 				log.Printf("gRPC reflection enabled")
 			}
-			
+
 			log.Printf("gRPC server ready with Fr0gAiBridgeService")
 
 			// Start server in goroutine
@@ -163,7 +163,7 @@ func main() {
 
 			// Wait for context cancellation
 			<-ctx.Done()
-			
+
 			// Graceful shutdown
 			log.Println("Shutting down gRPC server...")
 			grpcServer.GracefulStop()

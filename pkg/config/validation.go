@@ -44,7 +44,7 @@ type Validator interface {
 // ValidatePort validates a port number
 func ValidatePort(port interface{}, fieldName string) *ValidationError {
 	var portNum int
-	
+
 	switch p := port.(type) {
 	case int:
 		portNum = p
@@ -63,14 +63,14 @@ func ValidatePort(port interface{}, fieldName string) *ValidationError {
 			Message: "port must be int or string",
 		}
 	}
-	
+
 	if portNum <= 0 || portNum > 65535 {
 		return &ValidationError{
 			Field:   fieldName,
 			Message: "port must be between 1 and 65535",
 		}
 	}
-	
+
 	return nil
 }
 
@@ -121,7 +121,7 @@ func ValidateModel(model string) *ValidationError {
 			Message: "model cannot be empty",
 		}
 	}
-	
+
 	validModelPattern := regexp.MustCompile(`^[a-zA-Z0-9\-_.]+$`)
 	if !validModelPattern.MatchString(model) {
 		return &ValidationError{
@@ -129,7 +129,7 @@ func ValidateModel(model string) *ValidationError {
 			Message: fmt.Sprintf("invalid model name format: %s", model),
 		}
 	}
-	
+
 	return nil
 }
 
@@ -142,18 +142,18 @@ func ValidateNetworkAddress(address string, fieldName string) *ValidationError {
 			Message: fmt.Sprintf("invalid address format: %v", err),
 		}
 	}
-	
+
 	if host == "" {
 		return &ValidationError{
 			Field:   fieldName,
 			Message: "host cannot be empty",
 		}
 	}
-	
+
 	if portErr := ValidatePort(port, fieldName+".port"); portErr != nil {
 		return portErr
 	}
-	
+
 	return nil
 }
 
@@ -189,13 +189,13 @@ func ValidateEnum(value string, allowedValues []string, fieldName string) *Valid
 			Message: "value is required",
 		}
 	}
-	
+
 	for _, allowed := range allowedValues {
 		if value == allowed {
 			return nil
 		}
 	}
-	
+
 	return &ValidationError{
 		Field:   fieldName,
 		Message: fmt.Sprintf("invalid value, must be one of: %s", strings.Join(allowedValues, ", ")),
@@ -228,7 +228,7 @@ func ValidateDirectoryPath(path string, fieldName string) *ValidationError {
 			Message: "directory path is required",
 		}
 	}
-	
+
 	// Check if path exists or can be created
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// Try to create the directory
@@ -239,7 +239,7 @@ func ValidateDirectoryPath(path string, fieldName string) *ValidationError {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -251,7 +251,7 @@ func ValidateURL(url string, fieldName string) *ValidationError {
 			Message: "URL cannot be empty",
 		}
 	}
-	
+
 	// Basic URL validation - starts with http:// or https://
 	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
 		return &ValidationError{
@@ -259,7 +259,7 @@ func ValidateURL(url string, fieldName string) *ValidationError {
 			Message: "URL must start with http:// or https://",
 		}
 	}
-	
+
 	return nil
 }
 
@@ -304,14 +304,14 @@ func ValidateFilePath(path string, fieldName string) *ValidationError {
 			Message: "file path is required",
 		}
 	}
-	
+
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return &ValidationError{
 			Field:   fieldName,
 			Message: fmt.Sprintf("file does not exist: %s", path),
 		}
 	}
-	
+
 	return nil
 }
 

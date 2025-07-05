@@ -46,10 +46,10 @@ func TestProcessCall(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name            string
-		call            VoiceCall
-		expectedThreat  ThreatLevel
-		minConfidence   float64
+		name           string
+		call           VoiceCall
+		expectedThreat ThreatLevel
+		minConfidence  float64
 	}{
 		{
 			name: "Normal call",
@@ -113,7 +113,7 @@ func TestProcessCall(t *testing.T) {
 			}
 
 			if result.ThreatLevel < tt.expectedThreat {
-				t.Errorf("Expected threat level >= %s, got %s", 
+				t.Errorf("Expected threat level >= %s, got %s",
 					tt.expectedThreat.String(), result.ThreatLevel.String())
 			}
 
@@ -122,7 +122,7 @@ func TestProcessCall(t *testing.T) {
 			}
 
 			if result.Analysis.Confidence < tt.minConfidence {
-				t.Errorf("Expected confidence >= %.2f, got %.2f", 
+				t.Errorf("Expected confidence >= %.2f, got %.2f",
 					tt.minConfidence, result.Analysis.Confidence)
 			}
 		})
@@ -134,37 +134,37 @@ func TestCalculateScamScore(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name     string
+		name       string
 		transcript string
-		minScore float64
-		maxScore float64
+		minScore   float64
+		maxScore   float64
 	}{
 		{
-			name:     "Normal conversation",
+			name:       "Normal conversation",
 			transcript: "hello how are you today can we schedule a meeting",
-			minScore: 0.0,
-			maxScore: 0.2,
+			minScore:   0.0,
+			maxScore:   0.2,
 		},
 		{
-			name:     "Suspicious words",
+			name:       "Suspicious words",
 			transcript: "urgent immediate verify confirm suspended account",
-			minScore: 0.4,
-			maxScore: 1.0,
+			minScore:   0.4,
+			maxScore:   1.0,
 		},
 		{
-			name:     "High threat content",
+			name:       "High threat content",
 			transcript: "urgent arrest warrant legal action immediate payment required",
-			minScore: 0.6,
-			maxScore: 1.0,
+			minScore:   0.6,
+			maxScore:   1.0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := processor.calculateScamScore(tt.transcript)
-			
+
 			if score < tt.minScore || score > tt.maxScore {
-				t.Errorf("Expected scam score between %.2f and %.2f, got %.2f", 
+				t.Errorf("Expected scam score between %.2f and %.2f, got %.2f",
 					tt.minScore, tt.maxScore, score)
 			}
 		})
@@ -176,37 +176,37 @@ func TestCalculatePhishingScore(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name     string
+		name       string
 		transcript string
-		minScore float64
-		maxScore float64
+		minScore   float64
+		maxScore   float64
 	}{
 		{
-			name:     "Normal conversation",
+			name:       "Normal conversation",
 			transcript: "hello how are you doing today",
-			minScore: 0.0,
-			maxScore: 0.2,
+			minScore:   0.0,
+			maxScore:   0.2,
 		},
 		{
-			name:     "Information request",
+			name:       "Information request",
 			transcript: "we need to verify your social security number and bank account",
-			minScore: 0.5,
-			maxScore: 1.0,
+			minScore:   0.5,
+			maxScore:   1.0,
 		},
 		{
-			name:     "Account suspension",
+			name:       "Account suspension",
 			transcript: "your account has been suspended please confirm your details",
-			minScore: 0.4,
-			maxScore: 1.0,
+			minScore:   0.4,
+			maxScore:   1.0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := processor.calculatePhishingScore(tt.transcript)
-			
+
 			if score < tt.minScore || score > tt.maxScore {
-				t.Errorf("Expected phishing score between %.2f and %.2f, got %.2f", 
+				t.Errorf("Expected phishing score between %.2f and %.2f, got %.2f",
 					tt.minScore, tt.maxScore, score)
 			}
 		})
@@ -255,9 +255,9 @@ func TestCalculateRobocallScore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := processor.calculateRobocallScore(tt.call)
-			
+
 			if score < tt.minScore || score > tt.maxScore {
-				t.Errorf("Expected robocall score between %.2f and %.2f, got %.2f", 
+				t.Errorf("Expected robocall score between %.2f and %.2f, got %.2f",
 					tt.minScore, tt.maxScore, score)
 			}
 		})
@@ -269,37 +269,37 @@ func TestCalculateSocialEngScore(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name     string
+		name       string
 		transcript string
-		minScore float64
-		maxScore float64
+		minScore   float64
+		maxScore   float64
 	}{
 		{
-			name:     "Normal conversation",
+			name:       "Normal conversation",
 			transcript: "hello how can I help you today",
-			minScore: 0.0,
-			maxScore: 0.2,
+			minScore:   0.0,
+			maxScore:   0.2,
 		},
 		{
-			name:     "Authority claim",
+			name:       "Authority claim",
 			transcript: "this is the irs calling about your tax situation",
-			minScore: 0.1,
-			maxScore: 0.5,
+			minScore:   0.1,
+			maxScore:   0.5,
 		},
 		{
-			name:     "Fear tactics",
+			name:       "Fear tactics",
 			transcript: "police will arrest you if you don't pay this fine immediately",
-			minScore: 0.4,
-			maxScore: 1.0,
+			minScore:   0.4,
+			maxScore:   1.0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			score := processor.calculateSocialEngScore(tt.transcript)
-			
+
 			if score < tt.minScore || score > tt.maxScore {
-				t.Errorf("Expected social engineering score between %.2f and %.2f, got %.2f", 
+				t.Errorf("Expected social engineering score between %.2f and %.2f, got %.2f",
 					tt.minScore, tt.maxScore, score)
 			}
 		})
@@ -311,31 +311,31 @@ func TestAnalyzeSpeechPatterns(t *testing.T) {
 	processor := NewProcessor(cfg)
 
 	tests := []struct {
-		name       string
-		transcript string
+		name          string
+		transcript    string
 		expectPattern bool
 		patternType   string
 	}{
 		{
-			name:       "Normal speech",
-			transcript: "Hello how are you doing today",
+			name:          "Normal speech",
+			transcript:    "Hello how are you doing today",
 			expectPattern: false,
 		},
 		{
-			name:       "Script reading",
-			transcript: "Hello. This is a formal message. Please listen carefully. We have important information. Thank you.",
+			name:          "Script reading",
+			transcript:    "Hello. This is a formal message. Please listen carefully. We have important information. Thank you.",
 			expectPattern: true,
 			patternType:   "formal_script_reading",
 		},
 		{
-			name:       "High word density",
-			transcript: strings.Repeat("word ", 250),
+			name:          "High word density",
+			transcript:    strings.Repeat("word ", 250),
 			expectPattern: true,
 			patternType:   "high_word_density",
 		},
 		{
-			name:       "Repetitive words",
-			transcript: "urgent urgent urgent urgent this is urgent please urgent",
+			name:          "Repetitive words",
+			transcript:    "urgent urgent urgent urgent this is urgent please urgent",
 			expectPattern: true,
 			patternType:   "repetitive_word_urgent",
 		},
@@ -344,7 +344,7 @@ func TestAnalyzeSpeechPatterns(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			patterns := processor.analyzeSpeechPatterns(tt.transcript)
-			
+
 			if tt.expectPattern {
 				if len(patterns) == 0 {
 					t.Errorf("Expected to find speech patterns, got none")
@@ -439,7 +439,7 @@ func TestGetStats(t *testing.T) {
 	stats := processor.GetStats()
 
 	expectedKeys := []string{
-		"total_calls", "unique_callers", "threat_counts", 
+		"total_calls", "unique_callers", "threat_counts",
 		"average_call_duration", "total_call_duration",
 		"is_running", "speech_to_text_enabled", "call_recording_enabled",
 	}
@@ -451,7 +451,7 @@ func TestGetStats(t *testing.T) {
 	}
 
 	if stats["total_calls"].(int) != len(testCalls) {
-		t.Errorf("Expected total_calls to be %d, got %v", 
+		t.Errorf("Expected total_calls to be %d, got %v",
 			len(testCalls), stats["total_calls"])
 	}
 }
@@ -487,7 +487,7 @@ func TestUpdateCallerInfo(t *testing.T) {
 
 	// First call
 	processor.updateCallerInfo(callerID, duration1)
-	
+
 	info, exists := processor.callerInfo[callerID]
 	if !exists {
 		t.Fatal("Expected caller info to be created")
@@ -503,7 +503,7 @@ func TestUpdateCallerInfo(t *testing.T) {
 
 	// Second call
 	processor.updateCallerInfo(callerID, duration2)
-	
+
 	if info.CallCount != 2 {
 		t.Errorf("Expected call count to be 2, got %d", info.CallCount)
 	}
