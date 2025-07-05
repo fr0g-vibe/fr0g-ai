@@ -147,6 +147,13 @@ func (s *RESTServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 
+	// Validate response format before sending
+	if err := response.Validate(); err != nil {
+		log.Printf("Health response validation failed: %v", err)
+		s.writeError(w, http.StatusInternalServerError, "Invalid health response format", err)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }

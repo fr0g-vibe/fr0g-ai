@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // ChatMessage represents a single chat message
 type ChatMessage struct {
@@ -49,6 +52,35 @@ type HealthResponse struct {
 	Version string                 `json:"version"`
 	Error   string                 `json:"error,omitempty"`
 	Details map[string]interface{} `json:"details,omitempty"`
+}
+
+// Validate validates the health response format
+func (hr *HealthResponse) Validate() error {
+	if hr.Status == "" {
+		return fmt.Errorf("status field is required")
+	}
+	
+	validStatuses := []string{"healthy", "unhealthy", "degraded"}
+	isValidStatus := false
+	for _, validStatus := range validStatuses {
+		if hr.Status == validStatus {
+			isValidStatus = true
+			break
+		}
+	}
+	if !isValidStatus {
+		return fmt.Errorf("status must be one of: %v", validStatuses)
+	}
+	
+	if hr.Time.IsZero() {
+		return fmt.Errorf("time field is required")
+	}
+	
+	if hr.Version == "" {
+		return fmt.Errorf("version field is required")
+	}
+	
+	return nil
 }
 
 // ErrorResponse represents an error response
