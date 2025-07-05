@@ -52,6 +52,92 @@ func (p *Processor) ValidateHealth(health *pb.Health) []config.ValidationError {
 		}
 	}
 
+	// Validate fitness level
+	if health.FitnessLevel != "" {
+		validLevels := []string{
+			"sedentary", "lightly-active", "moderately-active", 
+			"very-active", "extremely-active", "athlete",
+		}
+		if !p.isValidOption(health.FitnessLevel, validLevels) {
+			errors = append(errors, config.ValidationError{
+				Field:   "fitness_level",
+				Message: "invalid fitness level",
+			})
+		}
+	}
+
+	// Validate exercise frequency
+	if health.ExerciseFrequency != "" {
+		validFrequencies := []string{
+			"never", "rarely", "weekly", "few-times-week", 
+			"daily", "multiple-daily", "professional",
+		}
+		if !p.isValidOption(health.ExerciseFrequency, validFrequencies) {
+			errors = append(errors, config.ValidationError{
+				Field:   "exercise_frequency",
+				Message: "invalid exercise frequency",
+			})
+		}
+	}
+
+	// Validate diet type
+	if health.DietType != "" {
+		validDiets := []string{
+			"omnivore", "vegetarian", "vegan", "pescatarian",
+			"keto", "paleo", "mediterranean", "low-carb",
+			"low-fat", "intermittent-fasting", "raw", "other",
+		}
+		if !p.isValidOption(health.DietType, validDiets) {
+			errors = append(errors, config.ValidationError{
+				Field:   "diet_type",
+				Message: "invalid diet type",
+			})
+		}
+	}
+
+	// Validate sleep quality
+	if health.SleepQuality != "" {
+		validQualities := []string{
+			"excellent", "good", "fair", "poor", "very-poor",
+			"insomnia", "sleep-disorder", "irregular",
+		}
+		if !p.isValidOption(health.SleepQuality, validQualities) {
+			errors = append(errors, config.ValidationError{
+				Field:   "sleep_quality",
+				Message: "invalid sleep quality",
+			})
+		}
+	}
+
+	// Validate stress level
+	if health.StressLevel != "" {
+		validLevels := []string{
+			"very-low", "low", "moderate", "high", "very-high",
+			"chronic", "managed", "overwhelming",
+		}
+		if !p.isValidOption(health.StressLevel, validLevels) {
+			errors = append(errors, config.ValidationError{
+				Field:   "stress_level",
+				Message: "invalid stress level",
+			})
+		}
+	}
+
+	// Validate substance use
+	if health.SubstanceUse != "" {
+		validUse := []string{
+			"none", "social-drinking", "regular-drinking", "heavy-drinking",
+			"social-smoking", "regular-smoking", "heavy-smoking",
+			"recreational-drugs", "prescription-drugs", "recovering",
+		}
+		if !p.isValidOption(health.SubstanceUse, validUse) {
+			errors = append(errors, config.ValidationError{
+				Field:   "substance_use",
+				Message: "invalid substance use",
+			})
+		}
+	}
+
 	// Validate disabilities list
 	if len(health.Disabilities) > 10 {
 		errors = append(errors, config.ValidationError{
@@ -84,6 +170,22 @@ func (p *Processor) ValidateHealth(health *pb.Health) []config.ValidationError {
 		})
 	}
 
+	// Validate medical conditions list
+	if len(health.MedicalConditions) > 20 {
+		errors = append(errors, config.ValidationError{
+			Field:   "medical_conditions",
+			Message: "too many medical conditions specified (max 20)",
+		})
+	}
+
+	// Validate allergies list
+	if len(health.Allergies) > 15 {
+		errors = append(errors, config.ValidationError{
+			Field:   "allergies",
+			Message: "too many allergies specified (max 15)",
+		})
+	}
+
 	return errors
 }
 
@@ -100,12 +202,20 @@ func (p *Processor) ProcessHealth(health *pb.Health) (*pb.Health, error) {
 
 	// Create processed copy
 	processed := &pb.Health{
-		PhysicalHealth:    p.normalizeString(health.PhysicalHealth),
-		MentalHealth:      p.normalizeString(health.MentalHealth),
-		Disabilities:      p.normalizeAndDeduplicateList(health.Disabilities),
-		ChronicConditions: p.normalizeAndDeduplicateList(health.ChronicConditions),
-		Addictions:        p.normalizeAndDeduplicateList(health.Addictions),
-		Medications:       p.normalizeAndDeduplicateList(health.Medications),
+		PhysicalHealth:      p.normalizeString(health.PhysicalHealth),
+		MentalHealth:        p.normalizeString(health.MentalHealth),
+		FitnessLevel:        p.normalizeString(health.FitnessLevel),
+		ExerciseFrequency:   p.normalizeString(health.ExerciseFrequency),
+		DietType:            p.normalizeString(health.DietType),
+		SleepQuality:        p.normalizeString(health.SleepQuality),
+		StressLevel:         p.normalizeString(health.StressLevel),
+		SubstanceUse:        p.normalizeString(health.SubstanceUse),
+		Disabilities:        p.normalizeAndDeduplicateList(health.Disabilities),
+		ChronicConditions:   p.normalizeAndDeduplicateList(health.ChronicConditions),
+		Addictions:          p.normalizeAndDeduplicateList(health.Addictions),
+		Medications:         p.normalizeAndDeduplicateList(health.Medications),
+		MedicalConditions:   p.normalizeAndDeduplicateList(health.MedicalConditions),
+		Allergies:           p.normalizeAndDeduplicateList(health.Allergies),
 	}
 
 	return processed, nil
@@ -131,20 +241,24 @@ func (p *Processor) GetHealthProfile(health *pb.Health) map[string]interface{} {
 		profile["mental_health_support"] = p.getMentalHealthSupport(health.MentalHealth)
 	}
 
-	// Note: FitnessLevel and ExerciseFrequency are not in the protobuf Health message
-	// Skipping fitness profile for now
+	// Fitness and activity
+	if health.FitnessLevel != "" || health.ExerciseFrequency != "" {
+		profile["fitness_profile"] = p.getFitnessProfile(health)
+	}
 
 	// Lifestyle factors
 	profile["lifestyle_factors"] = p.getLifestyleFactors(health)
 
-	// Medical information - using ChronicConditions from protobuf
-	if len(health.ChronicConditions) > 0 {
-		profile["condition_categories"] = p.categorizeConditions(health.ChronicConditions)
-		profile["chronic_conditions"] = p.hasChronicConditions(health.ChronicConditions)
+	// Medical information
+	if len(health.MedicalConditions) > 0 {
+		profile["condition_categories"] = p.categorizeConditions(health.MedicalConditions)
+		profile["chronic_conditions"] = p.hasChronicConditions(health.MedicalConditions)
 	}
 
-	// Note: Allergies field is not in the protobuf Health message
-	// Skipping allergy analysis for now
+	if len(health.Allergies) > 0 {
+		profile["allergy_categories"] = p.categorizeAllergies(health.Allergies)
+		profile["allergy_severity"] = p.getAllergySeverity(health.Allergies)
+	}
 
 	return profile
 }
@@ -328,6 +442,7 @@ func (p *Processor) getFitnessProfile(health *pb.Health) map[string]string {
 
 	if health.FitnessLevel != "" {
 		profile["fitness_level"] = health.FitnessLevel
+		profile["fitness_description"] = p.getFitnessDescription(health.FitnessLevel)
 	}
 
 	if health.ExerciseFrequency != "" {
@@ -336,6 +451,18 @@ func (p *Processor) getFitnessProfile(health *pb.Health) map[string]string {
 	}
 
 	return profile
+}
+
+func (p *Processor) getFitnessDescription(level string) string {
+	descriptions := map[string]string{
+		"sedentary":         "Little to no physical activity",
+		"lightly-active":    "Light exercise 1-3 days per week",
+		"moderately-active": "Moderate exercise 3-5 days per week",
+		"very-active":       "Heavy exercise 6-7 days per week",
+		"extremely-active":  "Very heavy physical work or training",
+		"athlete":           "Professional or competitive athlete level",
+	}
+	return descriptions[level]
 }
 
 func (p *Processor) getActivityConsistency(frequency string) string {

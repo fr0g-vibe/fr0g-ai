@@ -533,23 +533,38 @@ func (p *Processor) getLifePhases(events []*pb.LifeEvent) map[string][]string {
 	phases := make(map[string][]string)
 
 	for _, event := range events {
-		if event != nil && event.Age > 0 {
-			var phase string
-			switch {
-			case event.Age <= 12:
-				phase = "childhood"
-			case event.Age <= 17:
-				phase = "adolescence"
-			case event.Age <= 25:
-				phase = "young-adult"
-			case event.Age <= 40:
-				phase = "adult"
-			case event.Age <= 65:
-				phase = "middle-age"
-			default:
-				phase = "senior"
+		if event != nil {
+			// Use Age field, fall back to AgeAtEvent for compatibility
+			age := event.Age
+			if age == 0 && event.AgeAtEvent > 0 {
+				age = event.AgeAtEvent
 			}
-			phases[phase] = append(phases[phase], event.Type)
+			
+			if age > 0 {
+				var phase string
+				switch {
+				case age <= 12:
+					phase = "childhood"
+				case age <= 17:
+					phase = "adolescence"
+				case age <= 25:
+					phase = "young-adult"
+				case age <= 40:
+					phase = "adult"
+				case age <= 65:
+					phase = "middle-age"
+				default:
+					phase = "senior"
+				}
+				
+				// Use Type field, fall back to EventType for compatibility
+				eventType := event.Type
+				if eventType == "" && event.EventType != "" {
+					eventType = event.EventType
+				}
+				
+				phases[phase] = append(phases[phase], eventType)
+			}
 		}
 	}
 

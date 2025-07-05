@@ -106,6 +106,9 @@ message LifeEvent {
   int32 age = 3;
   google.protobuf.Timestamp date = 4;
   string impact = 5;
+  string event_type = 6;  // Alternative field name for compatibility
+  int32 age_at_event = 7; // Alternative field name for compatibility
+  int32 year = 8;         // Year when event occurred
 }
 
 // Education represents educational background
@@ -115,6 +118,11 @@ message Education {
   string institution = 3;
   google.protobuf.Timestamp graduation = 4;
   string performance = 5;
+  string field_of_study = 6; // Alternative field name for compatibility
+  int32 start_year = 7;      // Start year
+  int32 end_year = 8;        // End year
+  bool completed = 9;        // Whether education was completed
+  double gpa = 10;           // Grade point average
 }
 
 // Career represents career information
@@ -126,6 +134,10 @@ message Career {
   google.protobuf.Timestamp end_date = 5;
   bool is_current = 6;
   string salary = 7;
+  string job_title = 8;      // Alternative field name for compatibility
+  int32 start_year = 9;      // Start year
+  int32 end_year = 10;       // End year
+  string description = 11;   // Job description
 }
 
 // CulturalReligious represents cultural and religious background
@@ -156,6 +168,14 @@ message Health {
   repeated string chronic_conditions = 4;
   repeated string addictions = 5;
   repeated string medications = 6;
+  string fitness_level = 7;
+  string exercise_frequency = 8;
+  string diet_type = 9;
+  string sleep_quality = 10;
+  string stress_level = 11;
+  string substance_use = 12;
+  repeated string medical_conditions = 13;
+  repeated string allergies = 14;
 }
 
 // Preferences represents personal preferences and interests
