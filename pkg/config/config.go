@@ -67,21 +67,133 @@ type OpenWebUIConfig struct {
 
 // LoggingConfig holds logging configuration
 type LoggingConfig struct {
-	Level  string `yaml:"level" json:"level"`
-	Format string `yaml:"format" json:"format"`
+	Level      string `yaml:"level" json:"level"`
+	Format     string `yaml:"format" json:"format"`
+	Output     string `yaml:"output" json:"output"`
+	MaxSize    int    `yaml:"max_size" json:"max_size"`
+	MaxBackups int    `yaml:"max_backups" json:"max_backups"`
+	MaxAge     int    `yaml:"max_age" json:"max_age"`
+}
+
+// SMSConfig holds SMS processing configuration
+type SMSConfig struct {
+	Enabled               bool     `yaml:"enabled" json:"enabled"`
+	GoogleVoiceEnabled    bool     `yaml:"google_voice_enabled" json:"google_voice_enabled"`
+	WebhookEnabled        bool     `yaml:"webhook_enabled" json:"webhook_enabled"`
+	WebhookPort           int      `yaml:"webhook_port" json:"webhook_port"`
+	ProcessingInterval    int      `yaml:"processing_interval" json:"processing_interval"`
+	MaxHistorySize        int      `yaml:"max_history_size" json:"max_history_size"`
+	ThreatThreshold       float64  `yaml:"threat_threshold" json:"threat_threshold"`
+	ResponseEnabled       bool     `yaml:"response_enabled" json:"response_enabled"`
+	ResponseTemplates     []string `yaml:"response_templates" json:"response_templates"`
+}
+
+// VoiceConfig holds voice processing configuration
+type VoiceConfig struct {
+	Enabled              bool    `yaml:"enabled" json:"enabled"`
+	SpeechToTextEnabled  bool    `yaml:"speech_to_text_enabled" json:"speech_to_text_enabled"`
+	CallRecordingEnabled bool    `yaml:"call_recording_enabled" json:"call_recording_enabled"`
+	MonitoringInterval   int     `yaml:"monitoring_interval" json:"monitoring_interval"`
+	MaxHistorySize       int     `yaml:"max_history_size" json:"max_history_size"`
+	ThreatThreshold      float64 `yaml:"threat_threshold" json:"threat_threshold"`
+	ResponseEnabled      bool    `yaml:"response_enabled" json:"response_enabled"`
+	VoiceAPIKey          string  `yaml:"voice_api_key" json:"voice_api_key"`
+}
+
+// IRCConfig holds IRC processing configuration
+type IRCConfig struct {
+	Enabled           bool     `yaml:"enabled" json:"enabled"`
+	Servers           []string `yaml:"servers" json:"servers"`
+	Channels          []string `yaml:"channels" json:"channels"`
+	Nickname          string   `yaml:"nickname" json:"nickname"`
+	Username          string   `yaml:"username" json:"username"`
+	Realname          string   `yaml:"realname" json:"realname"`
+	Password          string   `yaml:"password" json:"password"`
+	TLS               bool     `yaml:"tls" json:"tls"`
+	TLSInsecure       bool     `yaml:"tls_insecure" json:"tls_insecure"`
+	ReconnectInterval int      `yaml:"reconnect_interval" json:"reconnect_interval"`
+	MaxHistorySize    int      `yaml:"max_history_size" json:"max_history_size"`
+	ResponseEnabled   bool     `yaml:"response_enabled" json:"response_enabled"`
+}
+
+// ESMTPConfig holds ESMTP processing configuration
+type ESMTPConfig struct {
+	Enabled         bool     `yaml:"enabled" json:"enabled"`
+	ListenAddress   string   `yaml:"listen_address" json:"listen_address"`
+	Port            int      `yaml:"port" json:"port"`
+	TLS             bool     `yaml:"tls" json:"tls"`
+	CertFile        string   `yaml:"cert_file" json:"cert_file"`
+	KeyFile         string   `yaml:"key_file" json:"key_file"`
+	MaxMessageSize  int64    `yaml:"max_message_size" json:"max_message_size"`
+	AllowedDomains  []string `yaml:"allowed_domains" json:"allowed_domains"`
+	ResponseEnabled bool     `yaml:"response_enabled" json:"response_enabled"`
+	SMTPRelay       string   `yaml:"smtp_relay" json:"smtp_relay"`
+}
+
+// DiscordConfig holds Discord processing configuration
+type DiscordConfig struct {
+	Enabled         bool     `yaml:"enabled" json:"enabled"`
+	BotToken        string   `yaml:"bot_token" json:"bot_token"`
+	WebhookEnabled  bool     `yaml:"webhook_enabled" json:"webhook_enabled"`
+	WebhookPort     int      `yaml:"webhook_port" json:"webhook_port"`
+	GuildIDs        []string `yaml:"guild_ids" json:"guild_ids"`
+	ChannelIDs      []string `yaml:"channel_ids" json:"channel_ids"`
+	ResponseEnabled bool     `yaml:"response_enabled" json:"response_enabled"`
+	MaxHistorySize  int      `yaml:"max_history_size" json:"max_history_size"`
+}
+
+// WebhookConfig holds webhook processing configuration
+type WebhookConfig struct {
+	Enabled        bool          `yaml:"enabled" json:"enabled"`
+	Port           int           `yaml:"port" json:"port"`
+	Host           string        `yaml:"host" json:"host"`
+	ReadTimeout    time.Duration `yaml:"read_timeout" json:"read_timeout"`
+	WriteTimeout   time.Duration `yaml:"write_timeout" json:"write_timeout"`
+	MaxRequestSize int64         `yaml:"max_request_size" json:"max_request_size"`
+	EnableLogging  bool          `yaml:"enable_logging" json:"enable_logging"`
+	AllowedOrigins []string      `yaml:"allowed_origins" json:"allowed_origins"`
+}
+
+// QueueConfig holds message queue configuration
+type QueueConfig struct {
+	Type           string        `yaml:"type" json:"type"` // "memory", "redis", "rabbitmq"
+	Address        string        `yaml:"address" json:"address"`
+	MaxSize        int           `yaml:"max_size" json:"max_size"`
+	RetryAttempts  int           `yaml:"retry_attempts" json:"retry_attempts"`
+	RetryDelay     time.Duration `yaml:"retry_delay" json:"retry_delay"`
+	PersistEnabled bool          `yaml:"persist_enabled" json:"persist_enabled"`
+}
+
+// MasterControlConfig holds master control communication configuration
+type MasterControlConfig struct {
+	Address    string        `yaml:"address" json:"address"`
+	Port       int           `yaml:"port" json:"port"`
+	TLS        bool          `yaml:"tls" json:"tls"`
+	Timeout    time.Duration `yaml:"timeout" json:"timeout"`
+	RetryCount int           `yaml:"retry_count" json:"retry_count"`
+	RetryDelay time.Duration `yaml:"retry_delay" json:"retry_delay"`
 }
 
 // Config represents the main configuration structure used by applications
 type Config struct {
-	HTTP     HTTPConfig     `yaml:"http" json:"http"`
-	GRPC     GRPCConfig     `yaml:"grpc" json:"grpc"`
-	Storage  StorageConfig  `yaml:"storage" json:"storage"`
-	Security SecurityConfig `yaml:"security" json:"security"`
-	Logging  LoggingConfig  `yaml:"logging" json:"logging"`
+	HTTP          HTTPConfig          `yaml:"http" json:"http"`
+	GRPC          GRPCConfig          `yaml:"grpc" json:"grpc"`
+	Storage       StorageConfig       `yaml:"storage" json:"storage"`
+	Security      SecurityConfig      `yaml:"security" json:"security"`
+	Logging       LoggingConfig       `yaml:"logging" json:"logging"`
+	SMS           SMSConfig           `yaml:"sms" json:"sms"`
+	Voice         VoiceConfig         `yaml:"voice" json:"voice"`
+	IRC           IRCConfig           `yaml:"irc" json:"irc"`
+	ESMTP         ESMTPConfig         `yaml:"esmtp" json:"esmtp"`
+	Discord       DiscordConfig       `yaml:"discord" json:"discord"`
+	Webhook       WebhookConfig       `yaml:"webhook" json:"webhook"`
+	Queue         QueueConfig         `yaml:"queue" json:"queue"`
+	MasterControl MasterControlConfig `yaml:"master_control" json:"master_control"`
 }
 
 // HTTPConfig holds HTTP server configuration
 type HTTPConfig struct {
+	Address         string        `yaml:"address" json:"address"`
 	Port            string        `yaml:"port" json:"port"`
 	Host            string        `yaml:"host" json:"host"`
 	ReadTimeout     time.Duration `yaml:"read_timeout" json:"read_timeout"`
@@ -90,16 +202,19 @@ type HTTPConfig struct {
 	EnableTLS       bool          `yaml:"enable_tls" json:"enable_tls"`
 	CertFile        string        `yaml:"cert_file" json:"cert_file"`
 	KeyFile         string        `yaml:"key_file" json:"key_file"`
+	EnableCORS      bool          `yaml:"enable_cors" json:"enable_cors"`
 }
 
 // GRPCConfig holds gRPC server configuration
 type GRPCConfig struct {
+	Address           string        `yaml:"address" json:"address"`
 	Port              string        `yaml:"port" json:"port"`
 	Host              string        `yaml:"host" json:"host"`
 	MaxRecvMsgSize    int           `yaml:"max_recv_msg_size" json:"max_recv_msg_size"`
 	MaxSendMsgSize    int           `yaml:"max_send_msg_size" json:"max_send_msg_size"`
 	ConnectionTimeout time.Duration `yaml:"connection_timeout" json:"connection_timeout"`
 	EnableTLS         bool          `yaml:"enable_tls" json:"enable_tls"`
+	TLS               bool          `yaml:"tls" json:"tls"`
 	CertFile          string        `yaml:"cert_file" json:"cert_file"`
 	KeyFile           string        `yaml:"key_file" json:"key_file"`
 }
