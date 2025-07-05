@@ -25,7 +25,7 @@ type App struct {
 
 // NewApp creates a new application instance
 func NewApp() (*App, error) {
-	cfg := config.LoadConfig()
+	cfg := config.Load()
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %v", err)
 	}
