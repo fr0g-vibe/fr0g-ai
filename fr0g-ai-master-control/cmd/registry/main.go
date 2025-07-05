@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"fr0g-ai-master-control/internal/discovery"
+	"fr0g-ai-master-control/internal/registry"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	// Create registry configuration
-	config := &discovery.RegistryConfig{
+	config := &registry.RegistryConfig{
 		Port:           *port,
 		Host:           *host,
 		HealthInterval: 30 * time.Second,
@@ -29,12 +29,12 @@ func main() {
 	}
 
 	// Create and start registry
-	registry := discovery.NewServiceRegistry(config)
+	serviceRegistry := registry.NewServiceRegistry(config)
 	
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := registry.Start(ctx); err != nil {
+	if err := serviceRegistry.Start(ctx); err != nil {
 		log.Fatalf("Failed to start registry: %v", err)
 	}
 
