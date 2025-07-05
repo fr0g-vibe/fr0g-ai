@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
 )
 
 // Sender handles Voice message sending
@@ -65,7 +65,7 @@ func (s *Sender) Stop() error {
 }
 
 // Send sends a Voice message
-func (s *Sender) Send(message *outputs.OutputMessage) error {
+func (s *Sender) Send(message *types.OutputCommand) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -75,7 +75,7 @@ func (s *Sender) Send(message *outputs.OutputMessage) error {
 
 	// TODO: Implement actual voice call/message sending
 	// This would integrate with voice APIs like Twilio Voice API
-	log.Printf("Sending Voice message to %s: %s", message.Destination, message.Content)
+	log.Printf("Sending Voice message to %s: %s", message.Target, message.Content)
 
 	s.sentCount++
 	return nil
