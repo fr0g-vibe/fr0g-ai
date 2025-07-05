@@ -1,0 +1,127 @@
+{
+  "test_suite": "fr0g-ai-aip",
+  "version": "1.0.0",
+  "description": "Comprehensive test configuration for AIP service endpoints",
+  "endpoints": {
+    "http_base": "http://localhost:8080",
+    "grpc_endpoint": "localhost:9090"
+  },
+  "test_scenarios": {
+    "health_checks": {
+      "enabled": true,
+      "endpoints": [
+        "/health",
+        "/metrics"
+      ]
+    },
+    "persona_crud": {
+      "enabled": true,
+      "test_data": {
+        "create": {
+          "name": "API Test Persona",
+          "topic": "Automated Testing",
+          "prompt": "You are a test persona for automated API validation",
+          "context": {
+            "environment": "test",
+            "automation": "true",
+            "test_suite": "aip_validation"
+          },
+          "rag": ["test_doc_1", "test_doc_2", "validation_guide"]
+        },
+        "update": {
+          "name": "Updated API Test Persona",
+          "topic": "Updated Automated Testing",
+          "prompt": "You are an updated test persona for automated API validation",
+          "context": {
+            "environment": "test",
+            "automation": "true",
+            "test_suite": "aip_validation",
+            "updated": "true"
+          },
+          "rag": ["updated_test_doc"]
+        }
+      }
+    },
+    "identity_crud": {
+      "enabled": true,
+      "test_data": {
+        "create": {
+          "name": "Test Identity",
+          "description": "Automated test identity with rich attributes",
+          "persona_id": "test-persona-id",
+          "background": "Generated for automated testing purposes",
+          "demographics": {
+            "age": 28,
+            "gender": "non-binary",
+            "education": "masters",
+            "location": {
+              "country": "US",
+              "state": "CA",
+              "city": "San Francisco"
+            }
+          },
+          "psychographics": {
+            "personality": {
+              "openness": 0.8,
+              "conscientiousness": 0.7,
+              "extraversion": 0.6,
+              "agreeableness": 0.9,
+              "neuroticism": 0.3
+            },
+            "values": ["innovation", "collaboration", "sustainability"]
+          },
+          "preferences": {
+            "hobbies": ["programming", "reading", "hiking"],
+            "interests": ["artificial intelligence", "sustainability", "music"],
+            "entertainment": {
+              "music_genres": ["electronic", "jazz"],
+              "movie_genres": ["sci-fi", "documentary"]
+            }
+          }
+        }
+      }
+    },
+    "attribute_validation": {
+      "enabled": true,
+      "processors": [
+        "demographics",
+        "psychographics",
+        "life_history",
+        "preferences",
+        "cultural_religious",
+        "political_social",
+        "health",
+        "behavioral_tendencies"
+      ]
+    },
+    "grpc_operations": {
+      "enabled": true,
+      "methods": [
+        "CreatePersona",
+        "GetPersona",
+        "UpdatePersona",
+        "DeletePersona",
+        "ListPersonas"
+      ]
+    }
+  },
+  "validation_rules": {
+    "response_time_ms": 5000,
+    "required_fields": {
+      "persona": ["id", "name", "topic", "prompt"],
+      "identity": ["id", "name", "persona_id"]
+    },
+    "status_codes": {
+      "create": [200, 201],
+      "read": [200],
+      "update": [200],
+      "delete": [200, 204],
+      "not_found": [404]
+    }
+  },
+  "performance_thresholds": {
+    "max_response_time_ms": 1000,
+    "max_memory_usage_mb": 512,
+    "min_throughput_rps": 100
+  }
+}
