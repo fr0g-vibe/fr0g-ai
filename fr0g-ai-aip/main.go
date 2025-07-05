@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -12,22 +11,15 @@ import (
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/api"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	grpcserver "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
-	"github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"google.golang.org/grpc"
 )
 
 func main() {
 	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-
-	// Create context for graceful shutdown
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	cfg := config.Load()
 
 	// Start gRPC server
 	grpcServer := grpc.NewServer()
@@ -48,7 +40,7 @@ func main() {
 	}()
 
 	// Start REST API server
-	restServer := api.NewServer()
+	restServer := api.NewServer(cfg, nil)
 	restPort := cfg.GetString("REST_PORT", "8080")
 	
 	httpServer := &http.Server{
