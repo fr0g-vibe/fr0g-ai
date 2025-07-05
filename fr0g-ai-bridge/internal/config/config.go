@@ -4,17 +4,30 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
+// ServiceRegistryConfig holds service registry configuration
+type ServiceRegistryConfig struct {
+	Enabled     bool          `yaml:"enabled"`
+	URL         string        `yaml:"url"`
+	ServiceName string        `yaml:"service_name"`
+	ServiceID   string        `yaml:"service_id"`
+	Tags        []string      `yaml:"tags"`
+	Meta        map[string]string `yaml:"meta"`
+	HealthInterval time.Duration `yaml:"health_interval"`
+}
+
 // Config holds the application configuration
 type Config struct {
-	Server     sharedconfig.ServerConfig     `yaml:"server"`
-	OpenWebUI  sharedconfig.OpenWebUIConfig  `yaml:"openwebui"`
-	Logging    sharedconfig.LoggingConfig    `yaml:"logging"`
-	Security   sharedconfig.SecurityConfig   `yaml:"security"`
-	Monitoring sharedconfig.MonitoringConfig `yaml:"monitoring"`
+	Server          sharedconfig.ServerConfig     `yaml:"server"`
+	OpenWebUI       sharedconfig.OpenWebUIConfig  `yaml:"openwebui"`
+	ServiceRegistry ServiceRegistryConfig         `yaml:"service_registry"`
+	Logging         sharedconfig.LoggingConfig    `yaml:"logging"`
+	Security        sharedconfig.SecurityConfig   `yaml:"security"`
+	Monitoring      sharedconfig.MonitoringConfig `yaml:"monitoring"`
 }
 
 // Validate validates the configuration using shared validation
@@ -36,6 +49,28 @@ func (c *Config) Validate() sharedconfig.ValidationErrors {
 			Field:   "openwebui.timeout",
 			Message: "timeout must be positive",
 		})
+	}
+
+	// Validate Service Registry configuration
+	if c.ServiceRegistry.Enabled {
+		if err := sharedconfig.ValidateURL(c.ServiceRegistry.URL, "service_registry.url"); err != nil {
+			errors = append(errors, *err)
+		}
+
+		if err := sharedconfig.ValidateRequired(c.ServiceRegistry.ServiceName, "service_registry.service_name"); err != nil {
+			errors = append(errors, *err)
+		}
+
+		if err := sharedconfig.ValidateRequired(c.ServiceRegistry.ServiceID, "service_registry.service_id"); err != nil {
+			errors = append(errors, *err)
+		}
+
+		if c.ServiceRegistry.HealthInterval <= 0 {
+			errors = append(errors, sharedconfig.ValidationError{
+				Field:   "service_registry.health_interval",
+				Message: "health interval must be positive",
+			})
+		}
 	}
 
 	return sharedconfig.ValidationErrors(errors)
@@ -68,6 +103,15 @@ func LoadConfig(configPath string) (*Config, error) {
 		OpenWebUI: sharedconfig.OpenWebUIConfig{
 			BaseURL: "http://localhost:3000",
 			Timeout: 30,
+		},
+		ServiceRegistry: ServiceRegistryConfig{
+			Enabled:        false, // Disabled by default
+			URL:            "http://localhost:8500",
+			ServiceName:    "fr0g-ai-bridge",
+			ServiceID:      "fr0g-ai-bridge-1",
+			Tags:           []string{"ai", "bridge", "openwebui"},
+			Meta:           map[string]string{"version": "1.0.0"},
+			HealthInterval: 30 * time.Second,
 		},
 		Logging: sharedconfig.LoggingConfig{
 			Level:  "info",
@@ -155,6 +199,29 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	if enableMetrics := os.Getenv("ENABLE_METRICS"); enableMetrics == "false" {
 		config.Monitoring.EnableMetrics = false
+	}
+
+	// Service Registry environment variables
+	if enableRegistry := os.Getenv("SERVICE_REGISTRY_ENABLED"); enableRegistry == "true" {
+		config.ServiceRegistry.Enabled = true
+	}
+
+	if registryURL := os.Getenv("SERVICE_REGISTRY_URL"); registryURL != "" {
+		config.ServiceRegistry.URL = registryURL
+	}
+
+	if serviceName := os.Getenv("SERVICE_NAME"); serviceName != "" {
+		config.ServiceRegistry.ServiceName = serviceName
+	}
+
+	if serviceID := os.Getenv("SERVICE_ID"); serviceID != "" {
+		config.ServiceRegistry.ServiceID = serviceID
+	}
+
+	if healthIntervalStr := os.Getenv("SERVICE_REGISTRY_HEALTH_INTERVAL"); healthIntervalStr != "" {
+		if duration, err := time.ParseDuration(healthIntervalStr); err == nil {
+			config.ServiceRegistry.HealthInterval = duration
+		}
 	}
 
 	return config, nil
