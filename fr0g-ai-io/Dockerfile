@@ -8,11 +8,11 @@ RUN apk add --no-cache git ca-certificates
 WORKDIR /app
 
 # Copy go mod files from root
-COPY ../go.mod ../go.sum ./
-COPY ../pkg/ ./pkg/
+COPY go.mod go.sum ./
+COPY pkg/ ./pkg/
 
 # Copy fr0g-ai-io source
-COPY . ./fr0g-ai-io/
+COPY fr0g-ai-io/ ./fr0g-ai-io/
 
 # Download dependencies
 RUN go mod download
