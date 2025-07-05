@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // Config holds all application configuration
@@ -117,38 +119,55 @@ func LoadConfig() *Config {
 	return config
 }
 
-// Validate validates the entire configuration
+// Validate validates the entire configuration using shared validation
 func (c *Config) Validate() error {
-	var errors ValidationErrors
+	var errors sharedconfig.ValidationErrors
 	
-	// Validate HTTP config
-	if httpErrors := c.validateHTTPConfig(); len(httpErrors) > 0 {
-		errors = append(errors, httpErrors...)
+	// Validate HTTP port
+	if err := sharedconfig.ValidatePort(c.HTTP.Port, "http.port"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	// Validate gRPC config
-	if grpcErrors := c.validateGRPCConfig(); len(grpcErrors) > 0 {
-		errors = append(errors, grpcErrors...)
+	// Validate gRPC port
+	if err := sharedconfig.ValidatePort(c.GRPC.Port, "grpc.port"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	// Validate storage config
-	if storageErrors := c.validateStorageConfig(); len(storageErrors) > 0 {
-		errors = append(errors, storageErrors...)
+	// Validate storage type
+	validStorageTypes := []string{"memory", "file"}
+	if err := sharedconfig.ValidateEnum(c.Storage.Type, validStorageTypes, "storage.type"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	// Validate client config
-	if clientErrors := c.validateClientConfig(); len(clientErrors) > 0 {
-		errors = append(errors, clientErrors...)
+	// Validate data directory if using file storage
+	if c.Storage.Type == "file" {
+		if err := sharedconfig.ValidateRequired(c.Storage.DataDir, "storage.data_dir"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateDirectoryPath(c.Storage.DataDir, "storage.data_dir"); err != nil {
+			errors = append(errors, *err)
+		}
 	}
 	
-	// Validate security config
-	if securityErrors := c.validateSecurityConfig(); len(securityErrors) > 0 {
-		errors = append(errors, securityErrors...)
+	// Validate client type
+	validClientTypes := []string{"local", "rest", "grpc"}
+	if err := sharedconfig.ValidateEnum(c.Client.Type, validClientTypes, "client.type"); err != nil {
+		errors = append(errors, *err)
 	}
 	
-	// Cross-validation
-	if crossErrors := c.validateCrossConfig(); len(crossErrors) > 0 {
-		errors = append(errors, crossErrors...)
+	// Validate timeout
+	if err := sharedconfig.ValidateTimeout(c.Client.Timeout, "client.timeout"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	// Validate API key if auth is enabled
+	if c.Security.EnableAuth {
+		if err := sharedconfig.ValidateRequired(c.Security.APIKey, "security.api_key"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := sharedconfig.ValidateAPIKey(c.Security.APIKey, "security.api_key"); err != nil {
+			errors = append(errors, *err)
+		}
 	}
 	
 	if len(errors) > 0 {
