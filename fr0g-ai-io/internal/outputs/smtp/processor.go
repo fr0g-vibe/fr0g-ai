@@ -56,8 +56,6 @@ func (p *Processor) IsEnabled() bool {
 
 // Process sends an email using SMTP
 func (p *Processor) Process(command *types.OutputCommand) (*types.OutputResult, error) {
-	startTime := time.Now()
-
 	if !p.IsEnabled() {
 		return &types.OutputResult{
 			CommandID:    command.ID,

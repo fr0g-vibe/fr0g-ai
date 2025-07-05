@@ -245,11 +245,8 @@ func (p *Processor) ProcessMessage(msg EmailMessage) (*EmailMessage, error) {
 	msg.Analysis = analysis
 	msg.ThreatLevel = p.calculateThreatLevel(analysis)
 
-	// Store message in history (use default limit if not configured)
+	// Store message in history (use default limit)
 	maxHistory := 1000
-	if p.config.MaxHistorySize > 0 {
-		maxHistory = p.config.MaxHistorySize
-	}
 	
 	p.emailHistory = append(p.emailHistory, msg)
 	if len(p.emailHistory) > maxHistory {
