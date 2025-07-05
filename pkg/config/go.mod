@@ -1,4 +1,4 @@
-module pkg/config
+module github.com/fr0g-vibe/fr0g-ai/pkg/config
 
 go 1.21
 

@@ -41,6 +41,7 @@ type SecurityConfig struct {
 	AllowedOrigins   []string `yaml:"allowed_origins" json:"allowed_origins"`
 	RateLimitRPM     int      `yaml:"rate_limit_rpm" json:"rate_limit_rpm"`
 	RequireAPIKey    bool     `yaml:"require_api_key" json:"require_api_key"`
+	EnableReflection bool     `yaml:"enable_reflection" json:"enable_reflection"`
 }
 
 // StorageConfig holds common storage configuration
@@ -55,6 +56,19 @@ type MonitoringConfig struct {
 	MetricsPort         int  `yaml:"metrics_port" json:"metrics_port"`
 	HealthCheckInterval int  `yaml:"health_check_interval" json:"health_check_interval"`
 	EnableTracing       bool `yaml:"enable_tracing" json:"enable_tracing"`
+}
+
+// OpenWebUIConfig holds OpenWebUI client configuration
+type OpenWebUIConfig struct {
+	BaseURL string `yaml:"base_url" json:"base_url"`
+	APIKey  string `yaml:"api_key" json:"api_key"`
+	Timeout int    `yaml:"timeout" json:"timeout"` // timeout in seconds
+}
+
+// LoggingConfig holds logging configuration
+type LoggingConfig struct {
+	Level  string `yaml:"level" json:"level"`
+	Format string `yaml:"format" json:"format"`
 }
 
 // Validate validates the CommonConfig

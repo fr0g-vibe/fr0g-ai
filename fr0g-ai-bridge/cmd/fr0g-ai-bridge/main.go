@@ -14,10 +14,10 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"fr0g-ai-bridge/internal/api"
-	"fr0g-ai-bridge/internal/client"
-	"fr0g-ai-bridge/internal/config"
-	pb "fr0g-ai-bridge/internal/pb/proto"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/api"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/client"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/config"
+	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/pb"
 )
 
 func main() {
@@ -33,6 +33,11 @@ func main() {
 	if *version {
 		fmt.Println("fr0g-ai-bridge v1.0.0")
 		return
+	}
+
+	// Default to running both HTTP and gRPC if no specific mode is chosen
+	if !*httpOnly && !*grpcOnly && len(os.Args) == 1 {
+		log.Println("No mode specified, starting both HTTP and gRPC servers...")
 	}
 
 	// Load configuration
@@ -83,9 +88,23 @@ func main() {
 			
 			restServer := api.NewRESTServer(openWebUIClient, cfg)
 			
+			// Add health check endpoint
+			mux := http.NewServeMux()
+			mux.Handle("/", restServer.GetRouter())
+			mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintf(w, `{
+					"status": "healthy",
+					"service": "fr0g-ai-bridge",
+					"timestamp": "%s",
+					"version": "1.0.0"
+				}`, time.Now().Format(time.RFC3339))
+			})
+			
 			httpServer := &http.Server{
 				Addr:    fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.HTTPPort),
-				Handler: restServer.GetRouter(),
+				Handler: mux,
 			}
 
 			// Start server in goroutine

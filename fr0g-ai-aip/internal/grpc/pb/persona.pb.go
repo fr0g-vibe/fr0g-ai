@@ -814,6 +814,9 @@ type LifeEvent struct {
 	Age           int32                  `protobuf:"varint,3,opt,name=age,proto3" json:"age,omitempty"`
 	Date          *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=date,proto3" json:"date,omitempty"`
 	Impact        string                 `protobuf:"bytes,5,opt,name=impact,proto3" json:"impact,omitempty"`
+	EventType     string                 `protobuf:"bytes,6,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`       // Alternative field name for compatibility
+	AgeAtEvent    int32                  `protobuf:"varint,7,opt,name=age_at_event,json=ageAtEvent,proto3" json:"age_at_event,omitempty"` // Alternative field name for compatibility
+	Year          int32                  `protobuf:"varint,8,opt,name=year,proto3" json:"year,omitempty"`                                 // Year when event occurred
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -883,6 +886,27 @@ func (x *LifeEvent) GetImpact() string {
 	return ""
 }
 
+func (x *LifeEvent) GetEventType() string {
+	if x != nil {
+		return x.EventType
+	}
+	return ""
+}
+
+func (x *LifeEvent) GetAgeAtEvent() int32 {
+	if x != nil {
+		return x.AgeAtEvent
+	}
+	return 0
+}
+
+func (x *LifeEvent) GetYear() int32 {
+	if x != nil {
+		return x.Year
+	}
+	return 0
+}
+
 // Education represents educational background
 type Education struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -891,6 +915,11 @@ type Education struct {
 	Institution   string                 `protobuf:"bytes,3,opt,name=institution,proto3" json:"institution,omitempty"`
 	Graduation    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=graduation,proto3" json:"graduation,omitempty"`
 	Performance   string                 `protobuf:"bytes,5,opt,name=performance,proto3" json:"performance,omitempty"`
+	FieldOfStudy  string                 `protobuf:"bytes,6,opt,name=field_of_study,json=fieldOfStudy,proto3" json:"field_of_study,omitempty"` // Alternative field name for compatibility
+	StartYear     int32                  `protobuf:"varint,7,opt,name=start_year,json=startYear,proto3" json:"start_year,omitempty"`           // Start year
+	EndYear       int32                  `protobuf:"varint,8,opt,name=end_year,json=endYear,proto3" json:"end_year,omitempty"`                 // End year
+	Completed     bool                   `protobuf:"varint,9,opt,name=completed,proto3" json:"completed,omitempty"`                            // Whether education was completed
+	Gpa           float64                `protobuf:"fixed64,10,opt,name=gpa,proto3" json:"gpa,omitempty"`                                      // Grade point average
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -960,6 +989,41 @@ func (x *Education) GetPerformance() string {
 	return ""
 }
 
+func (x *Education) GetFieldOfStudy() string {
+	if x != nil {
+		return x.FieldOfStudy
+	}
+	return ""
+}
+
+func (x *Education) GetStartYear() int32 {
+	if x != nil {
+		return x.StartYear
+	}
+	return 0
+}
+
+func (x *Education) GetEndYear() int32 {
+	if x != nil {
+		return x.EndYear
+	}
+	return 0
+}
+
+func (x *Education) GetCompleted() bool {
+	if x != nil {
+		return x.Completed
+	}
+	return false
+}
+
+func (x *Education) GetGpa() float64 {
+	if x != nil {
+		return x.Gpa
+	}
+	return 0
+}
+
 // Career represents career information
 type Career struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -970,6 +1034,10 @@ type Career struct {
 	EndDate       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
 	IsCurrent     bool                   `protobuf:"varint,6,opt,name=is_current,json=isCurrent,proto3" json:"is_current,omitempty"`
 	Salary        string                 `protobuf:"bytes,7,opt,name=salary,proto3" json:"salary,omitempty"`
+	JobTitle      string                 `protobuf:"bytes,8,opt,name=job_title,json=jobTitle,proto3" json:"job_title,omitempty"`     // Alternative field name for compatibility
+	StartYear     int32                  `protobuf:"varint,9,opt,name=start_year,json=startYear,proto3" json:"start_year,omitempty"` // Start year
+	EndYear       int32                  `protobuf:"varint,10,opt,name=end_year,json=endYear,proto3" json:"end_year,omitempty"`      // End year
+	Description   string                 `protobuf:"bytes,11,opt,name=description,proto3" json:"description,omitempty"`              // Job description
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1049,6 +1117,34 @@ func (x *Career) GetIsCurrent() bool {
 func (x *Career) GetSalary() string {
 	if x != nil {
 		return x.Salary
+	}
+	return ""
+}
+
+func (x *Career) GetJobTitle() string {
+	if x != nil {
+		return x.JobTitle
+	}
+	return ""
+}
+
+func (x *Career) GetStartYear() int32 {
+	if x != nil {
+		return x.StartYear
+	}
+	return 0
+}
+
+func (x *Career) GetEndYear() int32 {
+	if x != nil {
+		return x.EndYear
+	}
+	return 0
+}
+
+func (x *Career) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -1232,6 +1328,14 @@ type Health struct {
 	ChronicConditions []string               `protobuf:"bytes,4,rep,name=chronic_conditions,json=chronicConditions,proto3" json:"chronic_conditions,omitempty"`
 	Addictions        []string               `protobuf:"bytes,5,rep,name=addictions,proto3" json:"addictions,omitempty"`
 	Medications       []string               `protobuf:"bytes,6,rep,name=medications,proto3" json:"medications,omitempty"`
+	FitnessLevel      string                 `protobuf:"bytes,7,opt,name=fitness_level,json=fitnessLevel,proto3" json:"fitness_level,omitempty"`
+	ExerciseFrequency string                 `protobuf:"bytes,8,opt,name=exercise_frequency,json=exerciseFrequency,proto3" json:"exercise_frequency,omitempty"`
+	DietType          string                 `protobuf:"bytes,9,opt,name=diet_type,json=dietType,proto3" json:"diet_type,omitempty"`
+	SleepQuality      string                 `protobuf:"bytes,10,opt,name=sleep_quality,json=sleepQuality,proto3" json:"sleep_quality,omitempty"`
+	StressLevel       string                 `protobuf:"bytes,11,opt,name=stress_level,json=stressLevel,proto3" json:"stress_level,omitempty"`
+	SubstanceUse      string                 `protobuf:"bytes,12,opt,name=substance_use,json=substanceUse,proto3" json:"substance_use,omitempty"`
+	MedicalConditions []string               `protobuf:"bytes,13,rep,name=medical_conditions,json=medicalConditions,proto3" json:"medical_conditions,omitempty"`
+	Allergies         []string               `protobuf:"bytes,14,rep,name=allergies,proto3" json:"allergies,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -1304,6 +1408,62 @@ func (x *Health) GetAddictions() []string {
 func (x *Health) GetMedications() []string {
 	if x != nil {
 		return x.Medications
+	}
+	return nil
+}
+
+func (x *Health) GetFitnessLevel() string {
+	if x != nil {
+		return x.FitnessLevel
+	}
+	return ""
+}
+
+func (x *Health) GetExerciseFrequency() string {
+	if x != nil {
+		return x.ExerciseFrequency
+	}
+	return ""
+}
+
+func (x *Health) GetDietType() string {
+	if x != nil {
+		return x.DietType
+	}
+	return ""
+}
+
+func (x *Health) GetSleepQuality() string {
+	if x != nil {
+		return x.SleepQuality
+	}
+	return ""
+}
+
+func (x *Health) GetStressLevel() string {
+	if x != nil {
+		return x.StressLevel
+	}
+	return ""
+}
+
+func (x *Health) GetSubstanceUse() string {
+	if x != nil {
+		return x.SubstanceUse
+	}
+	return ""
+}
+
+func (x *Health) GetMedicalConditions() []string {
+	if x != nil {
+		return x.MedicalConditions
+	}
+	return nil
+}
+
+func (x *Health) GetAllergies() []string {
+	if x != nil {
+		return x.Allergies
 	}
 	return nil
 }
@@ -2856,13 +3016,18 @@ const file_persona_proto_rawDesc = "" +
 	"\radult_traumas\x18\x02 \x03(\tR\fadultTraumas\x125\n" +
 	"\fmajor_events\x18\x03 \x03(\v2\x12.persona.LifeEventR\vmajorEvents\x12?\n" +
 	"\x11education_history\x18\x04 \x03(\v2\x12.persona.EducationR\x10educationHistory\x126\n" +
-	"\x0ecareer_history\x18\x05 \x03(\v2\x0f.persona.CareerR\rcareerHistory\"\x9b\x01\n" +
+	"\x0ecareer_history\x18\x05 \x03(\v2\x0f.persona.CareerR\rcareerHistory\"\xf0\x01\n" +
 	"\tLifeEvent\x12\x12\n" +
 	"\x04type\x18\x01 \x01(\tR\x04type\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x10\n" +
 	"\x03age\x18\x03 \x01(\x05R\x03age\x12.\n" +
 	"\x04date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\x04date\x12\x16\n" +
-	"\x06impact\x18\x05 \x01(\tR\x06impact\"\xb7\x01\n" +
+	"\x06impact\x18\x05 \x01(\tR\x06impact\x12\x1d\n" +
+	"\n" +
+	"event_type\x18\x06 \x01(\tR\teventType\x12 \n" +
+	"\fage_at_event\x18\a \x01(\x05R\n" +
+	"ageAtEvent\x12\x12\n" +
+	"\x04year\x18\b \x01(\x05R\x04year\"\xc7\x02\n" +
 	"\tEducation\x12\x14\n" +
 	"\x05level\x18\x01 \x01(\tR\x05level\x12\x14\n" +
 	"\x05field\x18\x02 \x01(\tR\x05field\x12 \n" +
@@ -2870,7 +3035,14 @@ const file_persona_proto_rawDesc = "" +
 	"\n" +
 	"graduation\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"graduation\x12 \n" +
-	"\vperformance\x18\x05 \x01(\tR\vperformance\"\xfd\x01\n" +
+	"\vperformance\x18\x05 \x01(\tR\vperformance\x12$\n" +
+	"\x0efield_of_study\x18\x06 \x01(\tR\ffieldOfStudy\x12\x1d\n" +
+	"\n" +
+	"start_year\x18\a \x01(\x05R\tstartYear\x12\x19\n" +
+	"\bend_year\x18\b \x01(\x05R\aendYear\x12\x1c\n" +
+	"\tcompleted\x18\t \x01(\bR\tcompleted\x12\x10\n" +
+	"\x03gpa\x18\n" +
+	" \x01(\x01R\x03gpa\"\xf6\x02\n" +
 	"\x06Career\x12\x14\n" +
 	"\x05title\x18\x01 \x01(\tR\x05title\x12\x1a\n" +
 	"\bindustry\x18\x02 \x01(\tR\bindustry\x12\x18\n" +
@@ -2880,7 +3052,13 @@ const file_persona_proto_rawDesc = "" +
 	"\bend_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\x12\x1d\n" +
 	"\n" +
 	"is_current\x18\x06 \x01(\bR\tisCurrent\x12\x16\n" +
-	"\x06salary\x18\a \x01(\tR\x06salary\"\xf3\x01\n" +
+	"\x06salary\x18\a \x01(\tR\x06salary\x12\x1b\n" +
+	"\tjob_title\x18\b \x01(\tR\bjobTitle\x12\x1d\n" +
+	"\n" +
+	"start_year\x18\t \x01(\x05R\tstartYear\x12\x19\n" +
+	"\bend_year\x18\n" +
+	" \x01(\x05R\aendYear\x12 \n" +
+	"\vdescription\x18\v \x01(\tR\vdescription\"\xf3\x01\n" +
 	"\x11CulturalReligious\x12\x1a\n" +
 	"\breligion\x18\x01 \x01(\tR\breligion\x12\"\n" +
 	"\fspirituality\x18\x02 \x01(\tR\fspirituality\x12/\n" +
@@ -2896,7 +3074,7 @@ const file_persona_proto_rawDesc = "" +
 	"\rsocial_groups\x18\x03 \x03(\tR\fsocialGroups\x12\x16\n" +
 	"\x06causes\x18\x04 \x03(\tR\x06causes\x12%\n" +
 	"\x0evoting_history\x18\x05 \x01(\tR\rvotingHistory\x12+\n" +
-	"\x11media_consumption\x18\x06 \x03(\tR\x10mediaConsumption\"\xeb\x01\n" +
+	"\x11media_consumption\x18\x06 \x03(\tR\x10mediaConsumption\"\x96\x04\n" +
 	"\x06Health\x12'\n" +
 	"\x0fphysical_health\x18\x01 \x01(\tR\x0ephysicalHealth\x12#\n" +
 	"\rmental_health\x18\x02 \x01(\tR\fmentalHealth\x12\"\n" +
@@ -2905,7 +3083,16 @@ const file_persona_proto_rawDesc = "" +
 	"\n" +
 	"addictions\x18\x05 \x03(\tR\n" +
 	"addictions\x12 \n" +
-	"\vmedications\x18\x06 \x03(\tR\vmedications\"\xad\x02\n" +
+	"\vmedications\x18\x06 \x03(\tR\vmedications\x12#\n" +
+	"\rfitness_level\x18\a \x01(\tR\ffitnessLevel\x12-\n" +
+	"\x12exercise_frequency\x18\b \x01(\tR\x11exerciseFrequency\x12\x1b\n" +
+	"\tdiet_type\x18\t \x01(\tR\bdietType\x12#\n" +
+	"\rsleep_quality\x18\n" +
+	" \x01(\tR\fsleepQuality\x12!\n" +
+	"\fstress_level\x18\v \x01(\tR\vstressLevel\x12#\n" +
+	"\rsubstance_use\x18\f \x01(\tR\fsubstanceUse\x12-\n" +
+	"\x12medical_conditions\x18\r \x03(\tR\x11medicalConditions\x12\x1c\n" +
+	"\tallergies\x18\x0e \x03(\tR\tallergies\"\xad\x02\n" +
 	"\vPreferences\x12\x18\n" +
 	"\ahobbies\x18\x01 \x03(\tR\ahobbies\x12\x1c\n" +
 	"\tinterests\x18\x02 \x03(\tR\tinterests\x12%\n" +
@@ -3007,7 +3194,7 @@ const file_persona_proto_rawDesc = "" +
 	"\x0eListIdentities\x12\x1e.persona.ListIdentitiesRequest\x1a\x1f.persona.ListIdentitiesResponse\x12Q\n" +
 	"\x0eUpdateIdentity\x12\x1e.persona.UpdateIdentityRequest\x1a\x1f.persona.UpdateIdentityResponse\x12Q\n" +
 	"\x0eDeleteIdentity\x12\x1e.persona.DeleteIdentityRequest\x1a\x1f.persona.DeleteIdentityResponse\x12i\n" +
-	"\x16GetIdentityWithPersona\x12&.persona.GetIdentityWithPersonaRequest\x1a'.persona.GetIdentityWithPersonaResponseB3Z1github.com/fr0g-vibe/fr0g-ai-aip/internal/grpc/pbb\x06proto3"
+	"\x16GetIdentityWithPersona\x12&.persona.GetIdentityWithPersonaRequest\x1a'.persona.GetIdentityWithPersonaResponseB;Z9github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pbb\x06proto3"
 
 var (
 	file_persona_proto_rawDescOnce sync.Once
