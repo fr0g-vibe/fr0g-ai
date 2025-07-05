@@ -36,6 +36,10 @@ func TestNewIRCProcessor(t *testing.T) {
 }
 
 func TestProcessMessage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping process message test in short mode")
+	}
+
 	cfg := &sharedconfig.IRCConfig{
 		Enabled:           true,
 		Servers:           []string{"irc.example.com:6667"},

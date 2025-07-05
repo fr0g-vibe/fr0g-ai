@@ -145,7 +145,7 @@ func (p *Processor) initializeThreatPatterns() {
 		"malware_url":      `(?i)(bit\.ly|tinyurl|t\.co|goo\.gl|short\.link)/[a-zA-Z0-9]+`,
 		"phishing_url":     `(?i)(login|verify|account|security).*\.(tk|ml|ga|cf|pw)`,
 		"bot_pattern":      `(?i)^(bot|service|auto)_?[a-z0-9]*$`,
-		"flood_pattern":    `(.)\1{10,}`, // Repeated characters
+		"flood_pattern":    `(.)\1{10,}|(.{1,3})\2{5,}`, // Repeated characters or patterns
 		"spam_pattern":     `(?i)(free|win|prize|money|cash|earn|work from home)`,
 		"malware_keywords": `(?i)(download|install|exe|zip|rar|torrent)`,
 		"social_eng":       `(?i)(urgent|immediate|click here|verify now|suspended)`,
@@ -563,10 +563,9 @@ func (p *Processor) calculateBotScore(msg IRCMessage) float64 {
 		score += 0.2
 	}
 
-	// Check user info
-	p.mu.RLock()
-	userInfo := p.userHistory[msg.Nick]
-	p.mu.RUnlock()
+	// Check user info (avoid deadlock by not acquiring lock again)
+	key := fmt.Sprintf("%s!%s@%s", msg.Nick, msg.User, msg.Host)
+	userInfo := p.userHistory[key]
 
 	if userInfo != nil {
 		// High message frequency indicates bot
@@ -586,15 +585,29 @@ func (p *Processor) calculateBotScore(msg IRCMessage) float64 {
 func (p *Processor) calculateFloodScore(msg IRCMessage) float64 {
 	score := 0.0
 
-	// Check for repeated characters
-	if p.threatPatterns["flood_pattern"].MatchString(msg.Message) {
-		score += 0.6
+	// Check for repeated characters using simple pattern
+	if len(msg.Message) > 10 {
+		// Count consecutive repeated characters
+		maxRepeats := 0
+		currentRepeats := 1
+		for i := 1; i < len(msg.Message); i++ {
+			if msg.Message[i] == msg.Message[i-1] {
+				currentRepeats++
+			} else {
+				if currentRepeats > maxRepeats {
+					maxRepeats = currentRepeats
+				}
+				currentRepeats = 1
+			}
+		}
+		if maxRepeats > 10 {
+			score += 0.6
+		}
 	}
 
-	// Check message frequency
-	p.mu.RLock()
-	userInfo := p.userHistory[msg.Nick]
-	p.mu.RUnlock()
+	// Check message frequency (avoid deadlock by not acquiring lock again)
+	key := fmt.Sprintf("%s!%s@%s", msg.Nick, msg.User, msg.Host)
+	userInfo := p.userHistory[key]
 
 	if userInfo != nil && len(userInfo.RecentMessages) > 0 {
 		// Check for identical messages
