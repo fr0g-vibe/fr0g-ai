@@ -11,7 +11,7 @@ echo
 # Check if the server is running
 echo "Checking if webhook server is running..."
 if ! curl -s "http://localhost:8080/health" > /dev/null 2>&1; then
-    echo "❌ Webhook server is not running on localhost:8080"
+    echo "FAILED Webhook server is not running on localhost:8080"
     echo ""
     echo "To start the webhook server:"
     echo "1. cd fr0g-ai-master-control"
@@ -21,34 +21,34 @@ if ! curl -s "http://localhost:8080/health" > /dev/null 2>&1; then
     echo "Then run this test script again."
     exit 1
 fi
-echo "✅ Webhook server is running"
+echo "COMPLETED Webhook server is running"
 echo
 
 # Make all test scripts executable
 chmod +x test_scripts/*.sh
 
 # Run IRC tests
-echo "🔄 Running IRC webhook tests..."
+echo "REFRESH Running IRC webhook tests..."
 ./test_scripts/test_irc_webhook.sh
 echo
 
 # Run SMS tests
-echo "🔄 Running SMS webhook tests..."
+echo "REFRESH Running SMS webhook tests..."
 ./test_scripts/test_sms_webhook.sh
 echo
 
 # Run Voice tests
-echo "🔄 Running Voice webhook tests..."
+echo "REFRESH Running Voice webhook tests..."
 ./test_scripts/test_voice_webhook.sh
 echo
 
 # Run ESMTP tests
-echo "🔄 Running ESMTP webhook tests..."
+echo "REFRESH Running ESMTP webhook tests..."
 ./test_scripts/test_esmtp_webhook.sh
 echo
 
 # Run SD Card tests
-echo "🔄 Running SD Card webhook tests..."
+echo "REFRESH Running SD Card webhook tests..."
 ./test_scripts/test_sdcard_webhook.sh
 echo
 

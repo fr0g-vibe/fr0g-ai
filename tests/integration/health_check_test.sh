@@ -83,7 +83,7 @@ check_grpc_health() {
 
 # Function to test service registry
 test_service_registry() {
-    echo -e "\n${BLUE}🏥 Testing Service Registry${NC}"
+    echo -e "\n${BLUE}HEALTH Testing Service Registry${NC}"
     echo "----------------------------"
     
     # Check health
@@ -143,18 +143,18 @@ test_aip_service() {
     # Test personas endpoint
     echo -n "Testing personas API... "
     if curl -sf "$AIP_HTTP_URL/personas" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE${NC}"
+        echo -e "${GREEN}COMPLETED ACCESSIBLE${NC}"
     else
-        echo -e "${RED}❌ INACCESSIBLE${NC}"
+        echo -e "${RED}FAILED INACCESSIBLE${NC}"
         return 1
     fi
     
     # Test identities endpoint
     echo -n "Testing identities API... "
     if curl -sf "$AIP_HTTP_URL/identities" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE${NC}"
+        echo -e "${GREEN}COMPLETED ACCESSIBLE${NC}"
     else
-        echo -e "${RED}❌ INACCESSIBLE${NC}"
+        echo -e "${RED}FAILED INACCESSIBLE${NC}"
         return 1
     fi
     
@@ -162,9 +162,9 @@ test_aip_service() {
     echo -n "Checking persona count... "
     local persona_count=$(curl -s "$AIP_HTTP_URL/personas" 2>/dev/null | jq '. | length' 2>/dev/null)
     if [ -n "$persona_count" ] && [ "$persona_count" -ge 0 ]; then
-        echo -e "${GREEN}✅ $persona_count personas found${NC}"
+        echo -e "${GREEN}COMPLETED $persona_count personas found${NC}"
     else
-        echo -e "${YELLOW}⚠️  Unable to count personas${NC}"
+        echo -e "${YELLOW}WARNING  Unable to count personas${NC}"
     fi
     
     return 0
@@ -176,14 +176,14 @@ test_grpc_reflection_status() {
     
     # Check if grpcurl is available
     if ! command -v grpcurl >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  grpcurl not available${NC}"
+        echo -e "${YELLOW}WARNING  grpcurl not available${NC}"
         return 0
     fi
     
     # Test reflection
     if grpcurl -plaintext "$AIP_GRPC_URL" list >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  REFLECTION ENABLED${NC}"
-        echo -e "${YELLOW}   💡 This should be disabled in production${NC}"
+        echo -e "${YELLOW}WARNING  REFLECTION ENABLED${NC}"
+        echo -e "${YELLOW}   TIP This should be disabled in production${NC}"
         
         # List available services
         local services=$(grpcurl -plaintext "$AIP_GRPC_URL" list 2>/dev/null)
@@ -198,7 +198,7 @@ test_grpc_reflection_status() {
         echo -e "${BLUE}   Health endpoint reports: $reflection_status${NC}"
         
     else
-        echo -e "${GREEN}✅ REFLECTION DISABLED${NC}"
+        echo -e "${GREEN}COMPLETED REFLECTION DISABLED${NC}"
         echo -e "${GREEN}   This is the recommended production setting${NC}"
     fi
 }
@@ -221,9 +221,9 @@ test_bridge_service() {
     if curl -sf "$BRIDGE_HTTP_URL/v1/chat/completions" -X POST \
         -H "Content-Type: application/json" \
         -d '{"model":"test","messages":[{"role":"user","content":"test"}]}' >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE${NC}"
+        echo -e "${GREEN}COMPLETED ACCESSIBLE${NC}"
     else
-        echo -e "${YELLOW}⚠️  ENDPOINT AVAILABLE (may require valid request)${NC}"
+        echo -e "${YELLOW}WARNING  ENDPOINT AVAILABLE (may require valid request)${NC}"
     fi
     
     return 0
@@ -245,9 +245,9 @@ test_io_service() {
     # Test input events endpoint
     echo -n "Testing input events API... "
     if curl -sf "$IO_HTTP_URL/events" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE${NC}"
+        echo -e "${GREEN}COMPLETED ACCESSIBLE${NC}"
     else
-        echo -e "${YELLOW}⚠️  ENDPOINT MAY REQUIRE AUTHENTICATION${NC}"
+        echo -e "${YELLOW}WARNING  ENDPOINT MAY REQUIRE AUTHENTICATION${NC}"
     fi
     
     return 0
@@ -260,16 +260,16 @@ test_mcp_service() {
     
     # Check HTTP health
     if ! check_http_health "Master Control" "$MCP_HTTP_URL"; then
-        echo -e "${YELLOW}⚠️  Master Control service not running${NC}"
+        echo -e "${YELLOW}WARNING  Master Control service not running${NC}"
         return 0  # Don't fail the test suite
     fi
     
     # Test intelligence endpoint
     echo -n "Testing intelligence API... "
     if curl -sf "$MCP_HTTP_URL/intelligence" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ ACCESSIBLE${NC}"
+        echo -e "${GREEN}COMPLETED ACCESSIBLE${NC}"
     else
-        echo -e "${YELLOW}⚠️  INTELLIGENCE ENDPOINT NOT FOUND${NC}"
+        echo -e "${YELLOW}WARNING  INTELLIGENCE ENDPOINT NOT FOUND${NC}"
     fi
     
     return 0
@@ -284,27 +284,27 @@ test_inter_service_communication() {
     echo -n "Testing Bridge -> AIP communication... "
     if curl -sf "$BRIDGE_HTTP_URL/health" >/dev/null 2>&1 && \
        curl -sf "$AIP_HTTP_URL/health" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ SERVICES READY${NC}"
+        echo -e "${GREEN}COMPLETED SERVICES READY${NC}"
     else
-        echo -e "${YELLOW}⚠️  BRIDGE SERVICE NOT RUNNING${NC}"
+        echo -e "${YELLOW}WARNING  BRIDGE SERVICE NOT RUNNING${NC}"
     fi
     
     # Test IO -> Registry communication
     echo -n "Testing IO -> Registry communication... "
     if curl -sf "$IO_HTTP_URL/health" >/dev/null 2>&1 && \
        curl -sf "$REGISTRY_URL/health" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ SERVICES READY${NC}"
+        echo -e "${GREEN}COMPLETED SERVICES READY${NC}"
     else
-        echo -e "${YELLOW}⚠️  IO SERVICE NOT RUNNING${NC}"
+        echo -e "${YELLOW}WARNING  IO SERVICE NOT RUNNING${NC}"
     fi
     
     # Test AIP -> Registry communication
     echo -n "Testing AIP -> Registry communication... "
     if curl -sf "$AIP_HTTP_URL/health" >/dev/null 2>&1 && \
        curl -sf "$REGISTRY_URL/health" >/dev/null 2>&1; then
-        echo -e "${GREEN}✅ SERVICES READY${NC}"
+        echo -e "${GREEN}COMPLETED SERVICES READY${NC}"
     else
-        echo -e "${RED}❌ CORE SERVICES NOT READY${NC}"
+        echo -e "${RED}FAILED CORE SERVICES NOT READY${NC}"
         return 1
     fi
     
@@ -325,7 +325,7 @@ test_container_health() {
     # List running containers
     echo "Running fr0g.ai containers:"
     docker ps --filter "name=fr0g" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || {
-        echo -e "${YELLOW}⚠️  No fr0g.ai containers found${NC}"
+        echo -e "${YELLOW}WARNING  No fr0g.ai containers found${NC}"
         return 0
     }
     

@@ -29,14 +29,14 @@ func main() {
 	testThreatAnalyzer()
 
 	// Test 4: ESMTP Server Lifecycle
-	fmt.Println("\n🚀 Testing ESMTP Server Lifecycle...")
+	fmt.Println("\nSTARTING Testing ESMTP Server Lifecycle...")
 	testESMTPServerLifecycle()
 
 	// Test 5: End-to-End Email Processing
 	fmt.Println("\n🔄 Testing End-to-End Email Processing...")
 	testEndToEndEmailProcessing()
 
-	fmt.Println("\n✅ All tests completed successfully!")
+	fmt.Println("\nCOMPLETED All tests completed successfully!")
 	fmt.Println("🧠 Cognitive Engine: OPERATIONAL")
 	fmt.Println("📧 ESMTP Processor: OPERATIONAL")
 }
@@ -62,7 +62,7 @@ func testCognitiveEngine() {
 	engine := cognitive.NewCognitiveEngine(config, memory, learning)
 	
 	// Test basic functionality
-	fmt.Println("  🔍 Testing basic cognitive functions...")
+	fmt.Println("  CHECKING Testing basic cognitive functions...")
 	if engine != nil {
 		fmt.Println("    Cognitive engine created successfully")
 	}
@@ -80,7 +80,7 @@ func testCognitiveEngine() {
 		}
 	}
 	
-	fmt.Println("  ✅ Cognitive engine metrics operational")
+	fmt.Println("  COMPLETED Cognitive engine metrics operational")
 }
 
 // Test implementations for cognitive engine dependencies
@@ -159,7 +159,7 @@ func testESMTPConfig() {
 	}
 	
 	// Test configuration validation
-	fmt.Println("  ✅ Testing configuration validation...")
+	fmt.Println("  COMPLETED Testing configuration validation...")
 	errors := config.Validate()
 	if len(errors) > 0 {
 		fmt.Printf("    Validation errors: %d\n", len(errors))
@@ -175,7 +175,7 @@ func testESMTPConfig() {
 		log.Fatal("Processor type mismatch")
 	}
 	
-	fmt.Println("  ✅ ESMTP configuration operational")
+	fmt.Println("  COMPLETED ESMTP configuration operational")
 }
 
 func testThreatAnalyzer() {
@@ -261,12 +261,12 @@ func testThreatAnalyzer() {
 		fmt.Printf("    Attachment threats: %d\n", len(analysis.AttachmentThreats))
 	}
 	
-	fmt.Println("  ✅ Threat analyzer operational")
+	fmt.Println("  COMPLETED Threat analyzer operational")
 }
 
 func testESMTPServerLifecycle() {
 	// Create processor with test configuration
-	fmt.Println("  🚀 Creating ESMTP processor...")
+	fmt.Println("  STARTING Creating ESMTP processor...")
 	config := &email.EmailConfig{
 		SMTPPort:          2525, // Use non-standard port for testing
 		SMTPSPort:         4465,
@@ -307,7 +307,7 @@ func testESMTPServerLifecycle() {
 		log.Printf("    Stop error (expected): %v", err)
 	}
 	
-	fmt.Println("  ✅ ESMTP server lifecycle operational")
+	fmt.Println("  COMPLETED ESMTP server lifecycle operational")
 }
 
 func testEndToEndEmailProcessing() {
@@ -339,7 +339,7 @@ It contains normal content without threats.
 	fmt.Printf("    Raw email size: %d bytes\n", len(rawEmailData))
 	
 	// Test threat level calculation
-	fmt.Println("  🎯 Testing threat level calculation...")
+	fmt.Println("  TARGET Testing threat level calculation...")
 	
 	// Low threat email
 	lowThreat := &email.EmailThreatAnalysis{
@@ -368,7 +368,7 @@ It contains normal content without threats.
 	fmt.Printf("    High threat scores - Spam: %.1f, Phishing: %.1f, Malware: %.1f\n", 
 		highThreat.SpamScore, highThreat.PhishingScore, highThreat.MalwareScore)
 	
-	fmt.Println("  ✅ End-to-end email processing operational")
+	fmt.Println("  COMPLETED End-to-end email processing operational")
 }
 
 func sendTestEmail(host string, port int) error {

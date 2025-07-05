@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGISTRY_DIR="$(dirname "$SCRIPT_DIR")"
 PROJECT_ROOT="$(dirname "$REGISTRY_DIR")"
 
-echo "🧪 Starting fr0g-ai-registry integration tests..."
+echo "TESTING Starting fr0g-ai-registry integration tests..."
 
 # Colors for output
 RED='\033[0;31m'

@@ -5,7 +5,7 @@
 
 set -e
 
-echo "🌐 Testing OpenWebUI Integration with fr0g-ai-bridge"
+echo "NETWORK Testing OpenWebUI Integration with fr0g-ai-bridge"
 echo "===================================================="
 
 # Configuration
@@ -61,14 +61,14 @@ test_openwebui_endpoint() {
 }
 
 # Check if Bridge service is running
-echo "🔍 Checking Bridge service availability..."
+echo "CHECKING Checking Bridge service availability..."
 if ! curl -s "$BASE_URL/health" > /dev/null; then
-    echo -e "${RED}❌ Bridge service not running on $BASE_URL${NC}"
+    echo -e "${RED}FAILED Bridge service not running on $BASE_URL${NC}"
     echo "Start with: cd fr0g-ai-bridge && ./main"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Bridge service is running${NC}"
+echo -e "${GREEN}COMPLETED Bridge service is running${NC}"
 echo ""
 
 # Test 1: OpenWebUI Chat Completions (Primary Integration Point)
@@ -87,7 +87,7 @@ test_openwebui_endpoint "Chat completions with system message" "/api/chat/comple
 echo ""
 
 # Test 2: OpenWebUI Models Endpoint
-echo "📋 Testing OpenWebUI Models Integration"
+echo "LIST Testing OpenWebUI Models Integration"
 test_openwebui_endpoint "Models list endpoint" "/api/v1/models" "GET" "" "200"
 echo ""
 
@@ -106,7 +106,7 @@ test_openwebui_endpoint "Persona-aware chat completion" "/api/chat/completions" 
 echo ""
 
 # Test 4: OpenWebUI V1 Chat Endpoint
-echo "🔄 Testing OpenWebUI V1 Chat Endpoint"
+echo "REFRESH Testing OpenWebUI V1 Chat Endpoint"
 v1_request='{
   "message": "Test message for v1 endpoint",
   "model": "gpt-3.5-turbo"
@@ -116,7 +116,7 @@ test_openwebui_endpoint "V1 chat endpoint" "/api/v1/chat" "POST" "$v1_request" "
 echo ""
 
 # Test 5: Error Handling for Invalid Requests
-echo "🚨 Testing Error Handling"
+echo "ALERT Testing Error Handling"
 invalid_request='{"invalid": "request"}'
 test_openwebui_endpoint "Invalid request handling" "/api/chat/completions" "POST" "$invalid_request" "200"
 
@@ -125,7 +125,7 @@ test_openwebui_endpoint "Method not allowed handling" "/api/chat/completions" "G
 echo ""
 
 # Test 6: Large Request Handling
-echo "📦 Testing Large Request Handling"
+echo "INSTALLING Testing Large Request Handling"
 large_content=$(printf 'A%.0s' {1..1000})  # 1000 character string
 large_request="{
   \"model\": \"gpt-3.5-turbo\",
@@ -138,7 +138,7 @@ test_openwebui_endpoint "Large request handling" "/api/chat/completions" "POST" 
 echo ""
 
 # Test 7: Concurrent Request Handling
-echo "⚡ Testing Concurrent Request Handling"
+echo "PERFORMANCE Testing Concurrent Request Handling"
 echo "Sending 5 concurrent requests..."
 
 pids=()
@@ -179,7 +179,7 @@ fi
 echo ""
 
 # Test 8: Response Format Validation
-echo "📋 Testing Response Format Validation"
+echo "LIST Testing Response Format Validation"
 echo -n "Validating OpenAI-compatible response format... "
 
 response=$(curl -s -X POST "$BASE_URL/api/chat/completions" \
@@ -208,7 +208,7 @@ fi
 echo ""
 
 # Test 9: Health Check Integration
-echo "🏥 Testing Health Check Integration"
+echo "HEALTH Testing Health Check Integration"
 echo -n "Testing health endpoint for OpenWebUI monitoring... "
 
 health_response=$(curl -s "$BASE_URL/health")
@@ -226,7 +226,7 @@ echo ""
 rm -f /tmp/openwebui_test_response /tmp/concurrent_test_* /tmp/concurrent_result_*
 
 # Final Results
-echo "📊 OpenWebUI Integration Test Results"
+echo "METRICS OpenWebUI Integration Test Results"
 echo "====================================="
 echo -e "Tests Passed: ${GREEN}$TESTS_PASSED${NC}"
 echo -e "Tests Failed: ${RED}$TESTS_FAILED${NC}"
@@ -234,7 +234,7 @@ echo -e "Total Tests: $((TESTS_PASSED + TESTS_FAILED))"
 
 if [ "$TESTS_FAILED" -eq 0 ]; then
     echo -e "\n${GREEN}🎉 All OpenWebUI integration tests passed!${NC}"
-    echo -e "${GREEN}✅ Bridge service is ready for OpenWebUI integration${NC}"
+    echo -e "${GREEN}COMPLETED Bridge service is ready for OpenWebUI integration${NC}"
     echo ""
     echo "Next steps:"
     echo "1. Configure OpenWebUI to use: $BASE_URL"
@@ -242,7 +242,7 @@ if [ "$TESTS_FAILED" -eq 0 ]; then
     echo "3. Test with actual OpenWebUI instance"
     exit 0
 else
-    echo -e "\n${RED}❌ Some OpenWebUI integration tests failed${NC}"
+    echo -e "\n${RED}FAILED Some OpenWebUI integration tests failed${NC}"
     echo "Please fix the issues before integrating with OpenWebUI"
     exit 1
 fi

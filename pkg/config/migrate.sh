@@ -7,21 +7,21 @@ set -e
 PROJECT_ROOT=$(pwd)
 SHARED_CONFIG_PATH="pkg/config"
 
-echo "🔧 Migrating fr0g-ai subprojects to use shared configuration library..."
+echo "CONFIG Migrating fr0g-ai subprojects to use shared configuration library..."
 
 # Function to backup a file
 backup_file() {
     local file=$1
     if [ -f "$file" ]; then
         cp "$file" "$file.backup.$(date +%Y%m%d_%H%M%S)"
-        echo "📦 Backed up $file"
+        echo "INSTALLING Backed up $file"
     fi
 }
 
 # Function to update go.mod files
 update_go_mod() {
     local project_dir=$1
-    echo "📝 Updating go.mod in $project_dir..."
+    echo "NOTES Updating go.mod in $project_dir..."
     
     cd "$PROJECT_ROOT/$project_dir"
     
@@ -29,41 +29,41 @@ update_go_mod() {
     if ! grep -q "pkg/config" go.mod; then
         echo "" >> go.mod
         echo "replace pkg/config => ../pkg/config" >> go.mod
-        echo "✅ Added pkg/config replace directive to $project_dir/go.mod"
+        echo "COMPLETED Added pkg/config replace directive to $project_dir/go.mod"
     fi
     
     # Run go mod tidy
     go mod tidy
-    echo "✅ Updated dependencies for $project_dir"
+    echo "COMPLETED Updated dependencies for $project_dir"
 }
 
 # Function to check if shared config is properly set up
 check_shared_config() {
-    echo "🔍 Checking shared configuration setup..."
+    echo "CHECKING Checking shared configuration setup..."
     
     if [ ! -d "$PROJECT_ROOT/$SHARED_CONFIG_PATH" ]; then
-        echo "❌ Shared config directory not found at $SHARED_CONFIG_PATH"
+        echo "FAILED Shared config directory not found at $SHARED_CONFIG_PATH"
         exit 1
     fi
     
     required_files=("config.go" "validation.go" "loader.go")
     for file in "${required_files[@]}"; do
         if [ ! -f "$PROJECT_ROOT/$SHARED_CONFIG_PATH/$file" ]; then
-            echo "❌ Required file $SHARED_CONFIG_PATH/$file not found"
+            echo "FAILED Required file $SHARED_CONFIG_PATH/$file not found"
             exit 1
         fi
     done
     
-    echo "✅ Shared configuration files are present"
+    echo "COMPLETED Shared configuration files are present"
 }
 
 # Function to migrate fr0g-ai-aip
 migrate_aip() {
-    echo "🚀 Migrating fr0g-ai-aip..."
+    echo "STARTING Migrating fr0g-ai-aip..."
     
     local aip_dir="fr0g-ai-aip"
     if [ ! -d "$PROJECT_ROOT/$aip_dir" ]; then
-        echo "⚠️  $aip_dir directory not found, skipping..."
+        echo "WARNING  $aip_dir directory not found, skipping..."
         return
     fi
     
@@ -75,7 +75,7 @@ migrate_aip() {
     # Update go.mod
     update_go_mod "$aip_dir"
     
-    echo "✅ fr0g-ai-aip migration completed"
+    echo "COMPLETED fr0g-ai-aip migration completed"
 }
 
 # Function to migrate fr0g-ai-bridge
@@ -84,7 +84,7 @@ migrate_bridge() {
     
     local bridge_dir="fr0g-ai-bridge"
     if [ ! -d "$PROJECT_ROOT/$bridge_dir" ]; then
-        echo "⚠️  $bridge_dir directory not found, skipping..."
+        echo "WARNING  $bridge_dir directory not found, skipping..."
         return
     fi
     
@@ -97,7 +97,7 @@ migrate_bridge() {
     # Update go.mod
     update_go_mod "$bridge_dir"
     
-    echo "✅ fr0g-ai-bridge migration completed"
+    echo "COMPLETED fr0g-ai-bridge migration completed"
 }
 
 # Function to migrate fr0g-ai-master-control
@@ -106,7 +106,7 @@ migrate_master_control() {
     
     local mc_dir="fr0g-ai-master-control"
     if [ ! -d "$PROJECT_ROOT/$mc_dir" ]; then
-        echo "⚠️  $mc_dir directory not found, skipping..."
+        echo "WARNING  $mc_dir directory not found, skipping..."
         return
     fi
     
@@ -119,12 +119,12 @@ migrate_master_control() {
     # Update go.mod
     update_go_mod "$mc_dir"
     
-    echo "✅ fr0g-ai-master-control migration completed"
+    echo "COMPLETED fr0g-ai-master-control migration completed"
 }
 
 # Function to run tests
 run_tests() {
-    echo "🧪 Running tests to verify migration..."
+    echo "TESTING Running tests to verify migration..."
     
     cd "$PROJECT_ROOT"
     
@@ -138,16 +138,16 @@ run_tests() {
         if [ -d "$PROJECT_ROOT/$project" ]; then
             echo "Testing $project..."
             cd "$PROJECT_ROOT/$project"
-            go build ./... || echo "⚠️  Build issues in $project - manual review needed"
+            go build ./... || echo "WARNING  Build issues in $project - manual review needed"
         fi
     done
     
-    echo "✅ Tests completed"
+    echo "COMPLETED Tests completed"
 }
 
 # Main migration process
 main() {
-    echo "🎯 Starting fr0g-ai configuration migration..."
+    echo "TARGET Starting fr0g-ai configuration migration..."
     echo "Project root: $PROJECT_ROOT"
     
     # Check prerequisites
@@ -164,7 +164,7 @@ main() {
     echo ""
     echo "🎉 Migration completed successfully!"
     echo ""
-    echo "📋 Next steps:"
+    echo "LIST Next steps:"
     echo "1. Review the backed up files (*.backup.*) for any custom logic"
     echo "2. Update your application code to use the new shared config types"
     echo "3. Test your applications thoroughly"

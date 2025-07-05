@@ -16,7 +16,7 @@ Postman environment variables for consistent testing.
 ### `test-scenarios.json`
 Comprehensive test scenarios and validation rules.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Using curl (Terminal)
 ```bash
@@ -50,7 +50,7 @@ http POST localhost:8081/webhook/discord \
   channel_id="general"
 ```
 
-## 🧪 Test Categories
+## Test Categories
 
 ### 1. Basic Functionality
 - Health check endpoint
@@ -77,7 +77,7 @@ http POST localhost:8081/webhook/discord \
 - Malformed requests
 - Missing data scenarios
 
-## 📊 Expected Responses
+## Expected Responses
 
 ### Successful Discord Webhook Response
 ```json
@@ -142,7 +142,7 @@ http POST localhost:8081/webhook/discord \
 }
 ```
 
-## 🔍 Monitoring and Validation
+## Monitoring and Validation
 
 ### Key Metrics to Monitor
 - Response times (should be < 2 seconds)
@@ -159,7 +159,7 @@ Cognitive Engine: Discovered pattern 'ai_community_collaboration' (confidence: 0
 Cognitive Engine: Generated insight [consciousness]: The cognitive engine is beginning...
 ```
 
-## 🛠 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -210,7 +210,7 @@ done
 wait
 ```
 
-## 🎯 Test Automation
+## Test Automation
 
 ### CI/CD Integration
 The test artifacts can be integrated into CI/CD pipelines:

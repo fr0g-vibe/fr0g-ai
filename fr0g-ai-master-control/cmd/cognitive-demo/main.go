@@ -34,7 +34,7 @@ func main() {
 		log.Fatalf("Failed to start cognitive engine: %v", err)
 	}
 
-	fmt.Println("✅ Cognitive Engine started successfully")
+	fmt.Println("COMPLETED Cognitive Engine started successfully")
 	fmt.Println()
 
 	// Demonstrate cognitive operations
@@ -49,7 +49,7 @@ func main() {
 }
 
 func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
-	fmt.Println("🔍 Demonstrating Cognitive Operations:")
+	fmt.Println("CHECKING Demonstrating Cognitive Operations:")
 	fmt.Println("-------------------------------------")
 
 	// Wait for cognitive processes to initialize
@@ -100,7 +100,7 @@ func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
 	fmt.Println()
 
 	// Get patterns
-	fmt.Println("🔍 Recognized Patterns:")
+	fmt.Println("CHECKING Recognized Patterns:")
 	patterns := ce.GetPatternsMap()
 	if len(patterns) == 0 {
 		fmt.Println("   No patterns recognized yet (pattern recognition is ongoing)")
@@ -112,7 +112,7 @@ func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
 	fmt.Println()
 
 	// Get insights
-	fmt.Println("💡 Generated Insights:")
+	fmt.Println("TIP Generated Insights:")
 	insights := ce.GetInsights()
 	if len(insights) == 0 {
 		fmt.Println("   No insights generated yet (insight generation is ongoing)")
@@ -132,7 +132,7 @@ func demonstrateCognitiveOperations(ce *cognitive.CognitiveEngine) {
 	fmt.Println()
 
 	// Wait a bit to show ongoing processes
-	fmt.Println("⏳ Waiting 5 seconds to observe cognitive processes...")
+	fmt.Println("WAITING Waiting 5 seconds to observe cognitive processes...")
 	time.Sleep(time.Second * 5)
 
 	// Check updated awareness

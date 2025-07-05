@@ -183,7 +183,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"content\": \"📊 **System Performance Report**\\n\\n🧠 **Cognitive Metrics:**\\n- Pattern Recognition: 15 patterns identified\\n- Insight Generation: 8 new insights\\n- Awareness Level: 0.87\\n\\n⚡ **Performance:**\\n- Response Time: <200ms\\n- Workflow Completion: 100%\\n- Memory Efficiency: 94%\\n\\n🤖 **AI Community Activity:**\\n- Active Personas: 12\\n- Reviews Completed: 47\\n- Consensus Quality: Excellent\",\n  \"author\": {\n    \"username\": \"system_monitor\",\n    \"id\": \"55555\",\n    \"avatar\": \"monitor_avatar\",\n    \"bot\": true\n  },\n  \"channel_id\": \"system-reports\",\n  \"guild_id\": \"operations\",\n  \"timestamp\": \"2025-07-02T13:30:00Z\"\n}"
+          "raw": "{\n  \"content\": \"📊 **System Performance Report**\\n\\n🧠 **Cognitive Metrics:**\\n- Pattern Recognition: 15 patterns identified\\n- Insight Generation: 8 new insights\\n- Awareness Level: 0.87\\n\\nPERFORMANCE **Performance:**\\n- Response Time: <200ms\\n- Workflow Completion: 100%\\n- Memory Efficiency: 94%\\n\\n🤖 **AI Community Activity:**\\n- Active Personas: 12\\n- Reviews Completed: 47\\n- Consensus Quality: Excellent\",\n  \"author\": {\n    \"username\": \"system_monitor\",\n    \"id\": \"55555\",\n    \"avatar\": \"monitor_avatar\",\n    \"bot\": true\n  },\n  \"channel_id\": \"system-reports\",\n  \"guild_id\": \"operations\",\n  \"timestamp\": \"2025-07-02T13:30:00Z\"\n}"
         },
         "url": {
           "raw": "{{base_url}}/webhook/discord",

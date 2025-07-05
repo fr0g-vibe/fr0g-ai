@@ -66,10 +66,10 @@ lint:
 
 # Validate production build (ensure reflection is disabled)
 validate-production:
-	@echo "🔒 Validating Bridge production build security..."
+	@echo "SECURITY Validating Bridge production build security..."
 	@if [ "$$GRPC_ENABLE_REFLECTION" = "true" ] && [ "$$ENVIRONMENT" = "production" ]; then \
-		echo "❌ FATAL: gRPC reflection is enabled in production environment!"; \
+		echo "FAILED FATAL: gRPC reflection is enabled in production environment!"; \
 		echo "   This is a security risk and deployment should be blocked."; \
 		exit 1; \
 	fi
-	@echo "✅ Bridge production validation passed - reflection properly disabled"
+	@echo "COMPLETED Bridge production validation passed - reflection properly disabled"

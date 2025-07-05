@@ -21,7 +21,7 @@ if curl -f http://localhost:8082/health 2>/dev/null; then
     fi
     echo "  Checking gRPC port conflict..."
     if [ -f "logs/fr0g-ai-bridge.log" ] && grep -q "address already in use" logs/fr0g-ai-bridge.log; then
-        echo "❌ Bridge service gRPC port 9091 conflict detected"
+        echo "FAILED Bridge service gRPC port 9091 conflict detected"
     fi
 else
     echo "⚠ Bridge service HTTP down - checking logs..."
@@ -30,7 +30,7 @@ else
         tail -10 logs/fr0g-ai-bridge.log
         echo ""
         if grep -q "address already in use" logs/fr0g-ai-bridge.log; then
-            echo "🔍 DIAGNOSIS: gRPC port 9091 conflict (multiple services trying to use same port)"
+            echo "CHECKING DIAGNOSIS: gRPC port 9091 conflict (multiple services trying to use same port)"
         fi
     fi
 fi
@@ -62,7 +62,7 @@ if curl -f http://localhost:8080/health 2>/dev/null; then
 else
     echo "⚠ AIP service down on port 8080 - checking wrong port..."
     if curl -f http://localhost:8082/health 2>/dev/null; then
-        echo "❌ AIP service running on WRONG PORT 8082 (should be 8080)"
+        echo "FAILED AIP service running on WRONG PORT 8082 (should be 8080)"
     else
         echo "⚠ AIP service not responding on either port - checking logs..."
     fi
@@ -70,7 +70,7 @@ else
         echo "AIP service log (last 10 lines):"
         tail -10 logs/fr0g-ai-aip.log
         echo ""
-        echo "🔍 DIAGNOSIS: AIP service configured for wrong ports (8082/9091 instead of 8080/9090)"
+        echo "CHECKING DIAGNOSIS: AIP service configured for wrong ports (8082/9091 instead of 8080/9090)"
     fi
 fi
 
@@ -89,7 +89,7 @@ else
         tail -10 logs/fr0g-ai-master-control.log
         echo ""
         if grep -q "invalid storage type" logs/fr0g-ai-master-control.log; then
-            echo "🔍 DIAGNOSIS: Storage validation error - 'file' type not accepted"
+            echo "CHECKING DIAGNOSIS: Storage validation error - 'file' type not accepted"
             echo "   Possible fix: Check storage type validation in configuration"
         fi
     fi
@@ -151,7 +151,7 @@ for port in 8080 8081 8082 8083 9090 9091 9092; do
 done
 
 echo ""
-echo "🔍 PORT CONFLICT ANALYSIS:"
+echo "CHECKING PORT CONFLICT ANALYSIS:"
 echo "- Port 9091: Likely conflict between Bridge and AIP services"
 echo "- Expected ports: AIP(8080,9090), Bridge(8082,9091), MCP(8081), I/O(8083,9092)"
 echo "- Actual usage: Check above for current port assignments"
@@ -170,7 +170,7 @@ echo "OPERATIONAL STATUS:"
 echo "- 1/4 services fully operational (I/O)"
 echo "- 3/4 services have configuration issues"
 echo "- 0/4 services have critical failures"
-echo "- Test framework: ✅ WORKING (detecting issues correctly)"
+echo "- Test framework: COMPLETED WORKING (detecting issues correctly)"
 echo ""
 echo "Test Framework Status: ✓ WORKING"
 echo "- Health checks detecting service status correctly"
@@ -178,10 +178,10 @@ echo "- Log analysis providing useful diagnostic information"
 echo "- Service endpoint testing operational"
 echo ""
 echo "Next Steps:"
-echo "1. ✅ IDENTIFIED: AIP service port configuration (using 8082/9091 instead of 8080/9090)"
-echo "2. ✅ IDENTIFIED: gRPC port conflict on 9091 (Bridge and AIP both trying to use it)"
-echo "3. ✅ IDENTIFIED: Master Control storage validation error (invalid storage type)"
-echo "4. ✅ IDENTIFIED: Service Registry not running (optional but affects service discovery)"
+echo "1. COMPLETED IDENTIFIED: AIP service port configuration (using 8082/9091 instead of 8080/9090)"
+echo "2. COMPLETED IDENTIFIED: gRPC port conflict on 9091 (Bridge and AIP both trying to use it)"
+echo "3. COMPLETED IDENTIFIED: Master Control storage validation error (invalid storage type)"
+echo "4. COMPLETED IDENTIFIED: Service Registry not running (optional but affects service discovery)"
 echo ""
 echo "CRITICAL FIXES NEEDED:"
 echo "- AIP service: Configure correct ports (8080 HTTP, 9090 gRPC)"

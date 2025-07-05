@@ -2,7 +2,7 @@
 
 # Default target
 help:
-	@echo "🐸 fr0g.ai - AI-Powered Security Intelligence Platform"
+	@echo "fr0g.ai fr0g.ai - AI-Powered Security Intelligence Platform"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  setup              - Initialize development environment"
@@ -38,16 +38,16 @@ help:
 
 # Setup development environment
 setup:
-	@echo "🚀 Setting up fr0g.ai development environment..."
-	@echo "📦 Installing dependencies for all components..."
+	@echo "STARTING Setting up fr0g.ai development environment..."
+	@echo "INSTALLING Installing dependencies for all components..."
 	@$(MAKE) deps
-	@echo "🔨 Building all components..."
+	@echo "BUILDING Building all components..."
 	@$(MAKE) build-all
-	@echo "✅ Setup complete!"
+	@echo "COMPLETED Setup complete!"
 
 # Build all components
 build-all:
-	@echo "🔨 Building all fr0g.ai components..."
+	@echo "BUILDING Building all fr0g.ai components..."
 	@echo "Building shared configuration..."
 	@cd pkg/config && go build ./...
 	@echo "Building fr0g-ai-aip..."
@@ -60,21 +60,21 @@ build-all:
 	@cd fr0g-ai-io && $(MAKE) build
 	@echo "Building fr0g-ai-registry..."
 	@cd fr0g-ai-registry && $(MAKE) build
-	@echo "✅ All components built successfully!"
+	@echo "COMPLETED All components built successfully!"
 
 # Clean all build artifacts
 clean-all:
-	@echo "🧹 Cleaning all build artifacts..."
+	@echo "CLEANING Cleaning all build artifacts..."
 	@cd fr0g-ai-aip && $(MAKE) clean || true
 	@cd fr0g-ai-bridge && $(MAKE) clean || true
 	@cd fr0g-ai-master-control && $(MAKE) clean || true
 	@cd fr0g-ai-io && $(MAKE) clean || true
 	@rm -rf bin/ || true
-	@echo "✅ All artifacts cleaned!"
+	@echo "COMPLETED All artifacts cleaned!"
 
 # Run tests for all components
 test-all:
-	@echo "🧪 Running tests for all components..."
+	@echo "TESTING Running tests for all components..."
 	@echo "Testing shared configuration..."
 	@cd pkg/config && go test ./...
 	@echo "Testing fr0g-ai-aip..."
@@ -87,28 +87,28 @@ test-all:
 	@cd fr0g-ai-io && $(MAKE) test
 	@echo "Testing fr0g-ai-registry..."
 	@cd fr0g-ai-registry && $(MAKE) test
-	@echo "✅ All tests completed!"
+	@echo "COMPLETED All tests completed!"
 
 # Run individual services
 run-aip:
-	@echo "🚀 Starting fr0g-ai-aip service..."
+	@echo "STARTING Starting fr0g-ai-aip service..."
 	@cd fr0g-ai-aip && $(MAKE) run
 
 run-bridge:
-	@echo "🚀 Starting fr0g-ai-bridge service..."
+	@echo "STARTING Starting fr0g-ai-bridge service..."
 	@cd fr0g-ai-bridge && $(MAKE) run
 
 run-mcp:
-	@echo "🚀 Starting fr0g-ai-master-control service..."
+	@echo "STARTING Starting fr0g-ai-master-control service..."
 	@cd fr0g-ai-master-control && $(MAKE) run
 
 run-io:
-	@echo "🚀 Starting fr0g-ai-io service..."
+	@echo "STARTING Starting fr0g-ai-io service..."
 	@cd fr0g-ai-io && $(MAKE) run
 
 # Install dependencies for all components
 deps:
-	@echo "📦 Installing dependencies for all components..."
+	@echo "INSTALLING Installing dependencies for all components..."
 	@echo "Installing shared config dependencies..."
 	@cd pkg/config && go mod tidy && go mod download
 	@echo "Installing fr0g-ai-aip dependencies..."
@@ -121,11 +121,11 @@ deps:
 	@cd fr0g-ai-io && $(MAKE) deps
 	@echo "Installing fr0g-ai-registry dependencies..."
 	@cd fr0g-ai-registry && $(MAKE) deps
-	@echo "✅ All dependencies installed!"
+	@echo "COMPLETED All dependencies installed!"
 
 # Code quality checks for all components
 lint:
-	@echo "🔍 Running linters on all components..."
+	@echo "CHECKING Running linters on all components..."
 	@cd pkg/config && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
 	@cd fr0g-ai-aip && $(MAKE) lint
 	@cd fr0g-ai-bridge && $(MAKE) lint
@@ -151,85 +151,85 @@ proto:
 
 # Health check all services
 health:
-	@echo "🏥 Checking all service health..."
+	@echo "HEALTH Checking all service health..."
 	@chmod +x tests/integration/health_check_test.sh
 	@./tests/integration/health_check_test.sh
 
 # Quick health check (simple curl tests)
 health-quick:
-	@echo "🏥 Quick health check..."
+	@echo "HEALTH Quick health check..."
 	@echo "Checking service registry (port 8500)..."
-	@curl -sf http://localhost:8500/health && echo "✅ Registry healthy" || echo "❌ Registry down"
+	@curl -sf http://localhost:8500/health && echo "COMPLETED Registry healthy" || echo "FAILED Registry down"
 	@echo "Checking fr0g-ai-aip (port 8080)..."
-	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
+	@curl -sf http://localhost:8080/health && echo "COMPLETED AIP service healthy" || echo "FAILED AIP service down"
 	@echo "Checking fr0g-ai-bridge (port 8082)..."
-	@curl -sf http://localhost:8082/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
+	@curl -sf http://localhost:8082/health && echo "COMPLETED Bridge service healthy" || echo "FAILED Bridge service down"
 	@echo "Checking fr0g-ai-master-control (port 8081)..."
-	@curl -sf http://localhost:8081/health && echo "✅ MCP service healthy" || echo "❌ MCP service down"
+	@curl -sf http://localhost:8081/health && echo "COMPLETED MCP service healthy" || echo "FAILED MCP service down"
 	@echo "Checking fr0g-ai-io (port 8083)..."
-	@curl -sf http://localhost:8083/health && echo "✅ IO service healthy" || echo "❌ IO service down"
+	@curl -sf http://localhost:8083/health && echo "COMPLETED IO service healthy" || echo "FAILED IO service down"
 
 # AIP-specific testing (delegates to subproject)
 test-aip-service:
-	@echo "🧪 Running AIP service test suite..."
+	@echo "TESTING Running AIP service test suite..."
 	@chmod +x ./test_aip_service.sh
 	@./test_aip_service.sh
 
 test-aip-with-reflection:
-	@echo "🧪 Running AIP tests against running service with gRPC reflection..."
+	@echo "TESTING Running AIP tests against running service with gRPC reflection..."
 	@echo "🔧 gRPC reflection enables MCP integration for dynamic service discovery"
 	@cd fr0g-ai-aip && $(MAKE) test-with-reflection
 
 test-grpc-reflection:
-	@echo "🔍 Testing gRPC reflection for MCP compatibility..."
+	@echo "CHECKING Testing gRPC reflection for MCP compatibility..."
 	@echo "🔧 This enables Model Context Protocol exposure for other gRPC services"
 	@cd fr0g-ai-aip && $(MAKE) test-grpc-reflection
 
 build-aip-test:
-	@echo "🔨 Building AIP service with gRPC reflection for testing and MCP integration..."
+	@echo "BUILDING Building AIP service with gRPC reflection for testing and MCP integration..."
 	@cd fr0g-ai-aip && $(MAKE) build-test
 
 run-aip-test:
-	@echo "🚀 Starting AIP service with reflection enabled for MCP exposure..."
+	@echo "STARTING Starting AIP service with reflection enabled for MCP exposure..."
 	@echo "🔧 Other gRPC clients can now discover AIP services dynamically"
 	@cd fr0g-ai-aip && $(MAKE) run-test
 
 # Global validation (checks all services)
 validate-production:
-	@echo "🔒 Validating production build security for all services..."
+	@echo "SECURITY Validating production build security for all services..."
 	@cd fr0g-ai-aip && $(MAKE) validate-production
 	@cd fr0g-ai-bridge && $(MAKE) validate-production
 	@cd fr0g-ai-io && $(MAKE) validate-production
 	@cd fr0g-ai-master-control && $(MAKE) validate-production
 	@cd fr0g-ai-registry && $(MAKE) validate-production
-	@echo "✅ Production validation completed for all services"
+	@echo "COMPLETED Production validation completed for all services"
 
 # Global environment setup
 setup-dev-env:
-	@echo "🛠️  Setting up development environment..."
+	@echo "SETUP️  Setting up development environment..."
 	@echo "export GRPC_ENABLE_REFLECTION=true" > .env.development
 	@echo "export ENVIRONMENT=development" >> .env.development
 	@echo "export LOG_LEVEL=debug" >> .env.development
-	@echo "✅ Development environment configured (.env.development)"
-	@echo "💡 Source with: source .env.development"
-	@echo "💡 Individual services may have additional setup - check their Makefiles"
+	@echo "COMPLETED Development environment configured (.env.development)"
+	@echo "TIP Source with: source .env.development"
+	@echo "TIP Individual services may have additional setup - check their Makefiles"
 
 setup-prod-env:
-	@echo "🔒 Setting up production environment..."
+	@echo "SECURITY Setting up production environment..."
 	@echo "export GRPC_ENABLE_REFLECTION=false" > .env.production
 	@echo "export ENVIRONMENT=production" >> .env.production
 	@echo "export LOG_LEVEL=info" >> .env.production
-	@echo "✅ Production environment configured (.env.production)"
-	@echo "💡 Source with: source .env.production"
+	@echo "COMPLETED Production environment configured (.env.production)"
+	@echo "TIP Source with: source .env.production"
 
 # Integration testing targets
 test-integration:
-	@echo "🧪 Running integration tests..."
+	@echo "TESTING Running integration tests..."
 	@chmod +x tests/integration/*.sh
 	@./tests/integration/end_to_end_test.sh
 
 test-registry:
-	@echo "🔍 Running service registry tests..."
+	@echo "CHECKING Running service registry tests..."
 	@chmod +x tests/integration/service_registry_test.sh
 	@./tests/integration/service_registry_test.sh
 
@@ -239,12 +239,12 @@ test-api:
 	@./tests/integration/api_test.sh
 
 test-performance:
-	@echo "⚡ Running performance tests..."
+	@echo "PERFORMANCE Running performance tests..."
 	@chmod +x tests/integration/performance_test.sh
 	@./tests/integration/performance_test.sh
 
 test-deployment:
-	@echo "🚀 Running deployment tests..."
+	@echo "STARTING Running deployment tests..."
 	@chmod +x scripts/test-deployment.sh
 	@./scripts/test-deployment.sh
 
@@ -253,52 +253,52 @@ test-all-integration: test-integration test-registry test-api test-performance t
 
 # Docker operations with error handling
 docker-build:
-	@echo "🐳 Building Docker images..."
+	@echo "DOCKER Building Docker images..."
 	@if docker-compose build >/dev/null 2>&1; then \
-		echo "✅ Docker images built successfully!"; \
+		echo "COMPLETED Docker images built successfully!"; \
 	else \
-		echo "❌ Docker build failed. Running with verbose output:"; \
+		echo "FAILED Docker build failed. Running with verbose output:"; \
 		docker-compose build; \
 		exit 1; \
 	fi
 
 docker-up:
-	@echo "🐳 Starting services with Docker Compose..."
+	@echo "DOCKER Starting services with Docker Compose..."
 	@if docker-compose up -d >/dev/null 2>&1; then \
-		echo "✅ Services started successfully!"; \
-		echo "⏳ Waiting for services to be ready..."; \
+		echo "COMPLETED Services started successfully!"; \
+		echo "WAITING Waiting for services to be ready..."; \
 		sleep 10; \
 		$(MAKE) health; \
 	else \
-		echo "❌ Failed to start services. Check logs with: docker-compose logs"; \
+		echo "FAILED Failed to start services. Check logs with: docker-compose logs"; \
 		exit 1; \
 	fi
 
 docker-up-core:
-	@echo "🐳 Starting core services (Registry + AIP)..."
+	@echo "DOCKER Starting core services (Registry + AIP)..."
 	@docker-compose up -d service-registry fr0g-ai-aip
-	@echo "⏳ Waiting for core services to be ready..."
+	@echo "WAITING Waiting for core services to be ready..."
 	@sleep 10
 	@$(MAKE) health-quick
 
 docker-up-all:
-	@echo "🐳 Starting all services..."
+	@echo "DOCKER Starting all services..."
 	@docker-compose up -d
-	@echo "⏳ Waiting for all services to be ready..."
+	@echo "WAITING Waiting for all services to be ready..."
 	@sleep 15
 	@$(MAKE) health
 
 docker-down:
-	@echo "🐳 Stopping Docker Compose services..."
+	@echo "DOCKER Stopping Docker Compose services..."
 	@if docker-compose down >/dev/null 2>&1; then \
-		echo "✅ Services stopped successfully!"; \
+		echo "COMPLETED Services stopped successfully!"; \
 	else \
-		echo "❌ Failed to stop services"; \
+		echo "FAILED Failed to stop services"; \
 		exit 1; \
 	fi
 
 docker-status:
-	@echo "🐳 Docker service status..."
+	@echo "DOCKER Docker service status..."
 	@docker-compose ps
 	@echo ""
 	@$(MAKE) health-quick

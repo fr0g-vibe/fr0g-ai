@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 WAIT_TIME=10
 TEST_RESULTS=()
 
-echo -e "${BLUE}🧪 fr0g.ai Comprehensive Test Suite${NC}"
+echo -e "${BLUE}TESTING fr0g.ai Comprehensive Test Suite${NC}"
 echo "===================================="
 echo "Running all test suites in sequence..."
 echo ""
@@ -28,10 +28,10 @@ log_result() {
     local message="$3"
     
     if [ "$result" = "PASS" ]; then
-        echo -e "${GREEN}✅ $test_name: PASSED${NC}"
+        echo -e "${GREEN}COMPLETED $test_name: PASSED${NC}"
         TEST_RESULTS+=("PASS: $test_name")
     elif [ "$result" = "FAIL" ]; then
-        echo -e "${RED}❌ $test_name: FAILED - $message${NC}"
+        echo -e "${RED}FAILED $test_name: FAILED - $message${NC}"
         TEST_RESULTS+=("FAIL: $test_name - $message")
     elif [ "$result" = "SKIP" ]; then
         echo -e "${YELLOW}⏭️  $test_name: SKIPPED - $message${NC}"
@@ -72,24 +72,24 @@ check_prerequisites() {
     
     # Check if curl is available
     if command -v curl &> /dev/null; then
-        echo -e "${GREEN}✅ curl is available${NC}"
+        echo -e "${GREEN}COMPLETED curl is available${NC}"
     else
-        echo -e "${RED}❌ curl is required but not installed${NC}"
+        echo -e "${RED}FAILED curl is required but not installed${NC}"
         exit 1
     fi
     
     # Check if docker-compose is available
     if command -v docker-compose &> /dev/null; then
-        echo -e "${GREEN}✅ docker-compose is available${NC}"
+        echo -e "${GREEN}COMPLETED docker-compose is available${NC}"
     else
-        echo -e "${YELLOW}⚠️  docker-compose not available (Docker tests will be skipped)${NC}"
+        echo -e "${YELLOW}WARNING  docker-compose not available (Docker tests will be skipped)${NC}"
     fi
     
     # Check if grpcurl is available
     if command -v grpcurl &> /dev/null; then
-        echo -e "${GREEN}✅ grpcurl is available${NC}"
+        echo -e "${GREEN}COMPLETED grpcurl is available${NC}"
     else
-        echo -e "${YELLOW}⚠️  grpcurl not available (gRPC tests will be limited)${NC}"
+        echo -e "${YELLOW}WARNING  grpcurl not available (gRPC tests will be limited)${NC}"
     fi
     
     echo ""
@@ -121,10 +121,10 @@ check_service_availability() {
         IFS=':' read -r service_name service_url <<< "$service_data"
         
         if curl -s --max-time 5 "$service_url/health" > /dev/null 2>&1; then
-            echo -e "${GREEN}✅ $service_name service is available${NC}"
+            echo -e "${GREEN}COMPLETED $service_name service is available${NC}"
             services_available=$((services_available + 1))
         else
-            echo -e "${RED}❌ $service_name service is not available${NC}"
+            echo -e "${RED}FAILED $service_name service is not available${NC}"
         fi
     done
     
@@ -132,13 +132,13 @@ check_service_availability() {
     echo "Services available: $services_available/$total_services"
     
     if [ $services_available -eq 0 ]; then
-        echo -e "${RED}❌ No services are available. Please start the services first.${NC}"
+        echo -e "${RED}FAILED No services are available. Please start the services first.${NC}"
         echo "Try running: make docker-up or ./scripts/start-services.sh"
         exit 1
     elif [ $services_available -lt $total_services ]; then
-        echo -e "${YELLOW}⚠️  Some services are not available. Tests may be limited.${NC}"
+        echo -e "${YELLOW}WARNING  Some services are not available. Tests may be limited.${NC}"
     else
-        echo -e "${GREEN}✅ All services are available!${NC}"
+        echo -e "${GREEN}COMPLETED All services are available!${NC}"
     fi
     
     echo ""
@@ -226,7 +226,7 @@ main() {
         echo -e "${GREEN}fr0g.ai is fully operational and ready for production.${NC}"
         exit 0
     else
-        echo -e "\n${RED}❌ Some test suites failed.${NC}"
+        echo -e "\n${RED}FAILED Some test suites failed.${NC}"
         echo -e "${RED}Please review the failed tests and fix any issues.${NC}"
         exit 1
     fi

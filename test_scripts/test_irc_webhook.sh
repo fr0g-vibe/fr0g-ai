@@ -135,7 +135,7 @@ curl -X POST "$IRC_ENDPOINT" \
       "type": "PRIVMSG",
       "from": "crypto_bot_2023",
       "to": "#trading",
-      "message": "🚀🚀🚀 PUMP ALERT! 🚀🚀🚀 $SCAMCOIN is going TO THE MOON! 🌙 Buy now before its too late! Only 24 hours left! 💰💰💰",
+      "message": "STARTINGSTARTINGSTARTING PUMP ALERT! STARTINGSTARTINGSTARTING $SCAMCOIN is going TO THE MOON! 🌙 Buy now before its too late! Only 24 hours left! 💰💰💰",
       "channel": "#trading",
       "server": "irc.example.com",
       "is_private": false,

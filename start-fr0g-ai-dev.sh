@@ -11,24 +11,24 @@ PROJECT_ROOT="$(pwd)"
 AIDER_CMD="aider --dark-mode"
 
 
-echo "🚀 Starting fr0g-ai Development Environment..."
+echo "STARTING Starting fr0g-ai Development Environment..."
 echo "📁 Project Root: $PROJECT_ROOT"
 
 # Verify we're in the right directory
 if [[ ! -f "docker-compose.yml" ]] || [[ ! -f "Makefile" ]] || [[ ! -f ".env.example" ]]; then
-    echo "❌ Error: Please run this script from the fr0g-ai project root directory"
+    echo "FAILED Error: Please run this script from the fr0g-ai project root directory"
     echo "   Expected files: docker-compose.yml, Makefile, .env.example"
     exit 1
 fi
 
 # Check if .env exists, if not copy from .env.example
 if [[ ! -f ".env" ]]; then
-    echo "⚠️  No .env file found. Creating from .env.example..."
+    echo "WARNING  No .env file found. Creating from .env.example..."
     cp .env.example .env
-    echo "✅ Created .env file from .env.example"
-    echo "📝 Please edit .env file with your specific configuration"
+    echo "COMPLETED Created .env file from .env.example"
+    echo "NOTES Please edit .env file with your specific configuration"
 else
-    echo "✅ Existing .env file found - preserving your configuration"
+    echo "COMPLETED Existing .env file found - preserving your configuration"
 fi
 
 # Kill existing session if it exists
@@ -56,7 +56,7 @@ tmux send-keys -t $SESSION_NAME:0 "echo 'PROJECT LEAD & ARCHITECTURE AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Role: Overall project coordination, architecture decisions, cross-component integration'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Focus: README.md, docker-compose.yml, Makefile, project-wide decisions'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Key Files: README.md, docker-compose.yml, Makefile, TODO.md, .env.example'" C-m
-tmux send-keys -t $SESSION_NAME:0 "echo 'Environment: .env file ready ✅'" C-m
+tmux send-keys -t $SESSION_NAME:0 "echo 'Environment: .env file ready COMPLETED'" C-m
 tmux send-keys -t $SESSION_NAME:0 "$AIDER_CMD README.md docker-compose.yml Makefile TODO.md .env.example" C-m
 
 # ============================================================================
@@ -68,7 +68,7 @@ tmux new-window -t $SESSION_NAME -n "AIP" -c "$PROJECT_ROOT/fr0g-ai-aip"
 tmux send-keys -t $SESSION_NAME:1 "echo 'FR0G-AI-AIP AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Role: Core AI processing engine, persona management, identity processing'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Ports: HTTP :8080, gRPC :9090'" C-m
-tmux send-keys -t $SESSION_NAME:1 "echo 'Status: Demographics ✅, Other attributes need implementation'" C-m
+tmux send-keys -t $SESSION_NAME:1 "echo 'Status: Demographics COMPLETED, Other attributes need implementation'" C-m
 tmux send-keys -t $SESSION_NAME:1 "$AIDER_CMD TODO.md" C-m
 
 # Window 2: fr0g-ai-bridge (Integration Service)
@@ -76,7 +76,7 @@ tmux new-window -t $SESSION_NAME -n "Bridge" -c "$PROJECT_ROOT/fr0g-ai-bridge"
 tmux send-keys -t $SESSION_NAME:2 "echo 'FR0G-AI-BRIDGE AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Role: OpenWebUI integration, REST/gRPC bridge services'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Ports: HTTP :8082, gRPC :9091'" C-m
-tmux send-keys -t $SESSION_NAME:2 "echo 'Status: Fully operational ✅'" C-m
+tmux send-keys -t $SESSION_NAME:2 "echo 'Status: Fully operational COMPLETED'" C-m
 tmux send-keys -t $SESSION_NAME:2 "$AIDER_CMD TODO.md" C-m
 
 # Window 3: fr0g-ai-master-control (Cognitive Engine)
@@ -84,7 +84,7 @@ tmux new-window -t $SESSION_NAME -n "MCP" -c "$PROJECT_ROOT/fr0g-ai-master-contr
 tmux send-keys -t $SESSION_NAME:3 "echo 'FR0G-AI-MASTER-CONTROL AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Role: System orchestration, cognitive engine, threat processing'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Port: HTTP :8081'" C-m
-tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL ✅ (Learning Rate: 0.100+)'" C-m
+tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL COMPLETED (Learning Rate: 0.100+)'" C-m
 tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD TODO.md" C-m
 
 # Window 4: fr0g-ai-io (Input/Output Processing)
@@ -151,9 +151,9 @@ tmux select-window -t $SESSION_NAME:0
 
 # Display session info
 echo ""
-echo "✅ fr0g-ai Development Environment Created!"
+echo "COMPLETED fr0g-ai Development Environment Created!"
 echo ""
-echo "📋 TMUX SESSION OVERVIEW:"
+echo "LIST TMUX SESSION OVERVIEW:"
 echo "Session Name: $SESSION_NAME"
 echo "Total Windows: 10"
 echo ""
@@ -169,7 +169,7 @@ echo "  7: Registry          - Service discovery & registration :8500"
 echo "  8: Build-Test        - Build & test automation"
 echo "  9: Shell             - Interactive shell"
 echo ""
-echo "🚀 USAGE:"
+echo "STARTING USAGE:"
 echo "  tmux attach-session -t $SESSION_NAME"
 echo "  Ctrl+b + [0-9]   - Switch to window"
 echo "  Ctrl+b + n       - Next window"

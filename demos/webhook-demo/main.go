@@ -29,7 +29,7 @@ func main() {
 		log.Fatalf("Failed to start MCP: %v", err)
 	}
 	
-	fmt.Println("✅ MCP with webhook input system started successfully")
+	fmt.Println("COMPLETED MCP with webhook input system started successfully")
 	fmt.Printf("🌐 Webhook server listening on http://%s:%d\n", 
 		config.Input.Webhook.Host, config.Input.Webhook.Port)
 	fmt.Println()
@@ -44,7 +44,7 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	
-	fmt.Println("🎯 Webhook system is running...")
+	fmt.Println("TARGET Webhook system is running...")
 	fmt.Println("   Available endpoints:")
 	fmt.Printf("   - POST http://localhost:%d/webhook/discord\n", config.Input.Webhook.Port)
 	fmt.Printf("   - GET  http://localhost:%d/health\n", config.Input.Webhook.Port)
@@ -65,7 +65,7 @@ func main() {
 }
 
 func demonstrateWebhooks(port int) {
-	fmt.Println("🔍 Demonstrating Webhook Functionality:")
+	fmt.Println("CHECKING Demonstrating Webhook Functionality:")
 	fmt.Println("---------------------------------------")
 	
 	baseURL := fmt.Sprintf("http://localhost:%d", port)
@@ -105,9 +105,9 @@ func testHealthEndpoint(baseURL string) error {
 	defer resp.Body.Close()
 	
 	if resp.StatusCode == http.StatusOK {
-		fmt.Println("✅ Health endpoint responding correctly")
+		fmt.Println("COMPLETED Health endpoint responding correctly")
 	} else {
-		fmt.Printf("❌ Health endpoint returned status: %d\n", resp.StatusCode)
+		fmt.Printf("FAILED Health endpoint returned status: %d\n", resp.StatusCode)
 	}
 	
 	return nil
@@ -123,7 +123,7 @@ func testStatusEndpoint(baseURL string) error {
 	if resp.StatusCode == http.StatusOK {
 		var status map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&status); err == nil {
-			fmt.Println("✅ Status endpoint responding correctly")
+			fmt.Println("COMPLETED Status endpoint responding correctly")
 			if processors, ok := status["processors"].(map[string]interface{}); ok {
 				fmt.Printf("   Registered processors: %d\n", len(processors))
 				for tag, desc := range processors {
@@ -132,7 +132,7 @@ func testStatusEndpoint(baseURL string) error {
 			}
 		}
 	} else {
-		fmt.Printf("❌ Status endpoint returned status: %d\n", resp.StatusCode)
+		fmt.Printf("FAILED Status endpoint returned status: %d\n", resp.StatusCode)
 	}
 	
 	return nil
@@ -167,7 +167,7 @@ func testDiscordWebhook(baseURL string) error {
 	}
 	
 	if resp.StatusCode == http.StatusOK {
-		fmt.Println("✅ Discord webhook processed successfully")
+		fmt.Println("COMPLETED Discord webhook processed successfully")
 		if success, ok := response["success"].(bool); ok && success {
 			if data, ok := response["data"].(map[string]interface{}); ok {
 				if action, ok := data["action"].(string); ok {
@@ -179,7 +179,7 @@ func testDiscordWebhook(baseURL string) error {
 			}
 		}
 	} else {
-		fmt.Printf("❌ Discord webhook failed with status: %d\n", resp.StatusCode)
+		fmt.Printf("FAILED Discord webhook failed with status: %d\n", resp.StatusCode)
 		fmt.Printf("   Response: %v\n", response)
 	}
 	
@@ -203,9 +203,9 @@ func testUnknownWebhook(baseURL string) error {
 	defer resp.Body.Close()
 	
 	if resp.StatusCode == http.StatusNotFound {
-		fmt.Println("✅ Unknown webhook tag correctly rejected")
+		fmt.Println("COMPLETED Unknown webhook tag correctly rejected")
 	} else {
-		fmt.Printf("❌ Expected 404 for unknown tag, got: %d\n", resp.StatusCode)
+		fmt.Printf("FAILED Expected 404 for unknown tag, got: %d\n", resp.StatusCode)
 	}
 	
 	return nil

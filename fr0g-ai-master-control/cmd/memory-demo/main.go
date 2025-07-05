@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("Failed to start memory manager: %v", err)
 	}
 	
-	fmt.Println("✅ Memory Manager started successfully")
+	fmt.Println("COMPLETED Memory Manager started successfully")
 	fmt.Println()
 	
 	// Demonstrate memory operations
@@ -39,7 +39,7 @@ func main() {
 }
 
 func demonstrateMemoryOperations(mm *memory.MemoryManager) {
-	fmt.Println("🔍 Demonstrating Memory Operations:")
+	fmt.Println("CHECKING Demonstrating Memory Operations:")
 	fmt.Println("-----------------------------------")
 	
 	// Store some short-term memories
@@ -103,22 +103,22 @@ func demonstrateMemoryOperations(mm *memory.MemoryManager) {
 	fmt.Println()
 	
 	// Retrieve memories
-	fmt.Println("🔍 Retrieving memories...")
+	fmt.Println("CHECKING Retrieving memories...")
 	
 	if userPref, err := mm.Retrieve("user_preference"); err == nil {
-		fmt.Printf("✅ Retrieved user preferences: %+v\n", userPref)
+		fmt.Printf("COMPLETED Retrieved user preferences: %+v\n", userPref)
 	}
 	
 	if sessionData, err := mm.Retrieve("session_data"); err == nil {
-		fmt.Printf("✅ Retrieved session data: %+v\n", sessionData)
+		fmt.Printf("COMPLETED Retrieved session data: %+v\n", sessionData)
 	}
 	
 	if tempCalc, err := mm.Retrieve("temp_calculation"); err == nil {
-		fmt.Printf("✅ Retrieved calculation: %v\n", tempCalc)
+		fmt.Printf("COMPLETED Retrieved calculation: %v\n", tempCalc)
 	}
 	
 	if sysConfig, err := mm.Retrieve("system_config"); err == nil {
-		fmt.Printf("✅ Retrieved system config: %+v\n", sysConfig)
+		fmt.Printf("COMPLETED Retrieved system config: %+v\n", sysConfig)
 	}
 	
 	fmt.Println()
@@ -127,13 +127,13 @@ func demonstrateMemoryOperations(mm *memory.MemoryManager) {
 	fmt.Println("📖 Retrieving episodic memories...")
 	episodes := mm.GetEpisodes([]string{"weather"}, 5)
 	for _, ep := range episodes {
-		fmt.Printf("✅ Episode: %s - %s (Importance: %.2f)\n", ep.ID, ep.Event, ep.Importance)
+		fmt.Printf("COMPLETED Episode: %s - %s (Importance: %.2f)\n", ep.ID, ep.Event, ep.Importance)
 	}
 	
 	// Get semantic memory
 	fmt.Println("🧩 Retrieving semantic memory...")
 	if weatherConcept, err := mm.GetConcept("weather"); err == nil {
-		fmt.Printf("✅ Concept 'weather': %s (Confidence: %.2f)\n", weatherConcept.Definition, weatherConcept.Confidence)
+		fmt.Printf("COMPLETED Concept 'weather': %s (Confidence: %.2f)\n", weatherConcept.Definition, weatherConcept.Confidence)
 		fmt.Printf("   Relations: %+v\n", weatherConcept.Relations)
 	}
 	
@@ -154,9 +154,9 @@ func demonstrateMemoryOperations(mm *memory.MemoryManager) {
 	// Demonstrate memory promotion
 	fmt.Println("⬆️  Promoting important memory to long-term...")
 	if err := mm.PromoteToLongTerm("user_preference"); err == nil {
-		fmt.Println("✅ Successfully promoted user preferences to long-term memory")
+		fmt.Println("COMPLETED Successfully promoted user preferences to long-term memory")
 	} else {
-		fmt.Printf("❌ Failed to promote memory: %v\n", err)
+		fmt.Printf("FAILED Failed to promote memory: %v\n", err)
 	}
 	
 	// Show updated stats
@@ -193,7 +193,7 @@ func main() {
 		log.Fatalf("Failed to start memory manager: %v", err)
 	}
 	
-	fmt.Println("✅ Memory Manager started successfully")
+	fmt.Println("COMPLETED Memory Manager started successfully")
 	fmt.Println()
 	
 	// Demonstrate memory operations
@@ -208,7 +208,7 @@ func main() {
 }
 
 func demonstrateMemoryOperations(mm *memory.MemoryManager) {
-	fmt.Println("🔍 Demonstrating Memory Operations:")
+	fmt.Println("CHECKING Demonstrating Memory Operations:")
 	fmt.Println("-----------------------------------")
 	
 	// Store some short-term memories
@@ -272,22 +272,22 @@ func demonstrateMemoryOperations(mm *memory.MemoryManager) {
 	fmt.Println()
 	
 	// Retrieve memories
-	fmt.Println("🔍 Retrieving memories...")
+	fmt.Println("CHECKING Retrieving memories...")
 	
 	if userPref, err := mm.Retrieve("user_preference"); err == nil {
-		fmt.Printf("✅ Retrieved user preferences: %+v\n", userPref)
+		fmt.Printf("COMPLETED Retrieved user preferences: %+v\n", userPref)
 	}
 	
 	if sessionData, err := mm.Retrieve("session_data"); err == nil {
-		fmt.Printf("✅ Retrieved session data: %+v\n", sessionData)
+		fmt.Printf("COMPLETED Retrieved session data: %+v\n", sessionData)
 	}
 	
 	if tempCalc, err := mm.Retrieve("temp_calculation"); err == nil {
-		fmt.Printf("✅ Retrieved calculation: %v\n", tempCalc)
+		fmt.Printf("COMPLETED Retrieved calculation: %v\n", tempCalc)
 	}
 	
 	if sysConfig, err := mm.Retrieve("system_config"); err == nil {
-		fmt.Printf("✅ Retrieved system config: %+v\n", sysConfig)
+		fmt.Printf("COMPLETED Retrieved system config: %+v\n", sysConfig)
 	}
 	
 	fmt.Println()
@@ -296,13 +296,13 @@ func demonstrateMemoryOperations(mm *memory.MemoryManager) {
 	fmt.Println("📖 Retrieving episodic memories...")
 	episodes := mm.GetEpisodes([]string{"weather"}, 5)
 	for _, ep := range episodes {
-		fmt.Printf("✅ Episode: %s - %s (Importance: %.2f)\n", ep.ID, ep.Event, ep.Importance)
+		fmt.Printf("COMPLETED Episode: %s - %s (Importance: %.2f)\n", ep.ID, ep.Event, ep.Importance)
 	}
 	
 	// Get semantic memory
 	fmt.Println("🧩 Retrieving semantic memory...")
 	if weatherConcept, err := mm.GetConcept("weather"); err == nil {
-		fmt.Printf("✅ Concept 'weather': %s (Confidence: %.2f)\n", weatherConcept.Definition, weatherConcept.Confidence)
+		fmt.Printf("COMPLETED Concept 'weather': %s (Confidence: %.2f)\n", weatherConcept.Definition, weatherConcept.Confidence)
 		fmt.Printf("   Relations: %+v\n", weatherConcept.Relations)
 	}
 	
@@ -323,9 +323,9 @@ func demonstrateMemoryOperations(mm *memory.MemoryManager) {
 	// Demonstrate memory promotion
 	fmt.Println("⬆️  Promoting important memory to long-term...")
 	if err := mm.PromoteToLongTerm("user_preference"); err == nil {
-		fmt.Println("✅ Successfully promoted user preferences to long-term memory")
+		fmt.Println("COMPLETED Successfully promoted user preferences to long-term memory")
 	} else {
-		fmt.Printf("❌ Failed to promote memory: %v\n", err)
+		fmt.Printf("FAILED Failed to promote memory: %v\n", err)
 	}
 	
 	// Show updated stats

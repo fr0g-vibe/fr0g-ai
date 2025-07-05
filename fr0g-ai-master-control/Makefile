@@ -32,10 +32,10 @@ lint:
 
 # Validate production build (ensure reflection is disabled)
 validate-production:
-	@echo "🔒 Validating Master Control production build security..."
+	@echo "SECURITY Validating Master Control production build security..."
 	@if [ "$$GRPC_ENABLE_REFLECTION" = "true" ] && [ "$$ENVIRONMENT" = "production" ]; then \
-		echo "❌ FATAL: gRPC reflection is enabled in production environment!"; \
+		echo "FAILED FATAL: gRPC reflection is enabled in production environment!"; \
 		echo "   This is a security risk and deployment should be blocked."; \
 		exit 1; \
 	fi
-	@echo "✅ Master Control production validation passed - reflection properly disabled"
+	@echo "COMPLETED Master Control production validation passed - reflection properly disabled"

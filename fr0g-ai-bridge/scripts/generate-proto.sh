@@ -85,4 +85,4 @@ if [ ! -f internal/pb/bridge_grpc.pb.go ]; then
     exit 1
 fi
 
-echo "✅ Protobuf generation successful"
+echo "COMPLETED Protobuf generation successful"

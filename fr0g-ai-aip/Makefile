@@ -135,7 +135,7 @@ docs-mcp:
 
 # Run the service (for main project integration)
 run: build
-	@echo "🚀 Starting fr0g-ai-aip service..."
+	@echo "STARTING Starting fr0g-ai-aip service..."
 	@echo "HTTP server will start on port 8080"
 	@echo "gRPC server will start on port 9090"
 	@echo "Service registry will register at http://localhost:8500"
@@ -143,30 +143,30 @@ run: build
 
 # gRPC Reflection and Testing Support
 test-grpc-reflection:
-	@echo "🔍 Testing gRPC reflection..."
+	@echo "CHECKING Testing gRPC reflection..."
 	@if ! command -v grpcurl >/dev/null 2>&1; then \
-		echo "❌ grpcurl not found. Install with: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"; \
+		echo "FAILED grpcurl not found. Install with: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"; \
 		exit 1; \
 	fi
-	@echo "✅ grpcurl found"
+	@echo "COMPLETED grpcurl found"
 	@echo "Testing reflection endpoint..."
 	@if grpcurl -plaintext localhost:9090 list >/dev/null 2>&1; then \
-		echo "✅ gRPC reflection is working"; \
+		echo "COMPLETED gRPC reflection is working"; \
 		echo "📋 Available services:"; \
 		grpcurl -plaintext localhost:9090 list; \
 		echo ""; \
 		echo "🔧 MCP Integration Ready: Services can be discovered dynamically"; \
-		echo "🔍 Service Methods:"; \
+		echo "CHECKING Service Methods:"; \
 		grpcurl -plaintext localhost:9090 list persona.PersonaService; \
 	else \
-		echo "❌ gRPC reflection not available"; \
-		echo "💡 Start service with reflection: make run-test"; \
+		echo "FAILED gRPC reflection not available"; \
+		echo "TIP Start service with reflection: make run-test"; \
 		echo "🔧 For MCP integration, enable reflection in development mode"; \
 	fi
 
 # Build and run with reflection enabled for testing
 build-test:
-	@echo "🔨 Building AIP service with gRPC reflection enabled for testing..."
+	@echo "BUILDING Building AIP service with gRPC reflection enabled for testing..."
 	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
 	@export GRPC_ENABLE_REFLECTION=true && \
 	export ENVIRONMENT=development && \
@@ -175,7 +175,7 @@ build-test:
 	go build -o bin/fr0g-ai-aip ./cmd
 
 run-test: build-test
-	@echo "🚀 Starting AIP service with reflection enabled..."
+	@echo "STARTING Starting AIP service with reflection enabled..."
 	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
 	@export GRPC_ENABLE_REFLECTION=true && \
 	export ENVIRONMENT=development && \
@@ -185,8 +185,8 @@ run-test: build-test
 
 # Run tests with reflection enabled
 test-with-reflection:
-	@echo "🧪 Running AIP tests against running service..."
-	@echo "💡 Make sure the service is running with reflection enabled:"
+	@echo "TESTING Running AIP tests against running service..."
+	@echo "TIP Make sure the service is running with reflection enabled:"
 	@echo "   GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development docker-compose up fr0g-ai-aip -d"
 	@echo ""
 	@chmod +x ../test_aip_service.sh
@@ -194,35 +194,35 @@ test-with-reflection:
 
 # Validate production build (ensure reflection is disabled)
 validate-production:
-	@echo "🔒 Validating AIP production build security..."
+	@echo "SECURITY Validating AIP production build security..."
 	@if [ "$$GRPC_ENABLE_REFLECTION" = "true" ] && [ "$$ENVIRONMENT" = "production" ]; then \
-		echo "❌ FATAL: gRPC reflection is enabled in production environment!"; \
+		echo "FAILED FATAL: gRPC reflection is enabled in production environment!"; \
 		echo "   This is a security risk and deployment should be blocked."; \
 		exit 1; \
 	fi
-	@echo "✅ AIP production validation passed - reflection properly disabled"
+	@echo "COMPLETED AIP production validation passed - reflection properly disabled"
 
 # Development environment setup for AIP
 setup-dev:
-	@echo "🛠️  Setting up AIP development environment..."
+	@echo "SETUP️  Setting up AIP development environment..."
 	@echo "export GRPC_ENABLE_REFLECTION=true" > .env.aip.development
 	@echo "export ENVIRONMENT=development" >> .env.aip.development
 	@echo "export LOG_LEVEL=debug" >> .env.aip.development
 	@echo "export AIP_HTTP_PORT=8080" >> .env.aip.development
 	@echo "export AIP_GRPC_PORT=9090" >> .env.aip.development
-	@echo "✅ AIP development environment configured (.env.aip.development)"
-	@echo "💡 Source with: source .env.aip.development"
+	@echo "COMPLETED AIP development environment configured (.env.aip.development)"
+	@echo "TIP Source with: source .env.aip.development"
 
 # Production environment setup for AIP
 setup-prod:
-	@echo "🔒 Setting up AIP production environment..."
+	@echo "SECURITY Setting up AIP production environment..."
 	@echo "export GRPC_ENABLE_REFLECTION=false" > .env.aip.production
 	@echo "export ENVIRONMENT=production" >> .env.aip.production
 	@echo "export LOG_LEVEL=info" >> .env.aip.production
 	@echo "export AIP_HTTP_PORT=8080" >> .env.aip.production
 	@echo "export AIP_GRPC_PORT=9090" >> .env.aip.production
-	@echo "✅ AIP production environment configured (.env.aip.production)"
-	@echo "💡 Source with: source .env.aip.production"
+	@echo "COMPLETED AIP production environment configured (.env.aip.production)"
+	@echo "TIP Source with: source .env.aip.production"
 
 # Show help
 help:
@@ -273,9 +273,9 @@ help:
 	@echo ""
 	@echo "gRPC Reflection & MCP Integration:"
 	@echo "  🔧 gRPC reflection enables Model Context Protocol (MCP) exposure"
-	@echo "  🔍 Other services can discover AIP methods dynamically"
+	@echo "  CHECKING Other services can discover AIP methods dynamically"
 	@echo "  🛡️  Reflection is disabled by default in production for security"
-	@echo "  🧪 Enable reflection for development: GRPC_ENABLE_REFLECTION=true"
+	@echo "  TESTING Enable reflection for development: GRPC_ENABLE_REFLECTION=true"
 	@echo ""
 	@echo "Quick Start Examples:"
 	@echo "  # Generate sample data"

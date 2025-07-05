@@ -40,10 +40,10 @@ func main() {
 		cancel()
 	}()
 
-	log.Printf("🐸 fr0g.ai Service Registry starting on %s", *addr)
+	log.Printf("fr0g.ai fr0g.ai Service Registry starting on %s", *addr)
 	if err := server.Start(ctx, *addr); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 
-	log.Println("✅ fr0g.ai Service Registry stopped")
+	log.Println("COMPLETED fr0g.ai Service Registry stopped")
 }

@@ -201,9 +201,9 @@ curl -X POST "$ESMTP_ENDPOINT" \
       "to": ["investor@example.com"],
       "cc": [],
       "bcc": [],
-      "subject": "🚀 Exclusive Bitcoin Giveaway - Limited Time! 🚀",
+      "subject": "STARTING Exclusive Bitcoin Giveaway - Limited Time! STARTING",
       "body": "Greetings,\n\nI am excited to announce an exclusive Bitcoin giveaway! To participate:\n\n1. Send 0.1 to 2 BTC to: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa\n2. Receive 2x to 20x back within 30 minutes!\n\nThis is a limited time offer to celebrate Tesla reaching $1 trillion market cap.\n\nDont miss this opportunity!\n\nElon Musk\nCEO, Tesla & SpaceX",
-      "html_body": "<html><body><h1>🚀 Exclusive Bitcoin Giveaway! 🚀</h1><p>Send Bitcoin and receive 2x-20x back!</p><p><strong>Bitcoin Address:</strong> 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</p></body></html>",
+      "html_body": "<html><body><h1>STARTING Exclusive Bitcoin Giveaway! STARTING</h1><p>Send Bitcoin and receive 2x-20x back!</p><p><strong>Bitcoin Address:</strong> 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</p></body></html>",
       "headers": {
         "Return-Path": "bounce@tesla-crypto.com",
         "Received": "from mail.tesla-crypto.com",

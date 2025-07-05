@@ -94,7 +94,7 @@ curl -X POST "$SMS_ENDPOINT" \
       "id": "sms_003",
       "from": "+15553456789",
       "to": "+15559876543",
-      "body": "🚀 BITCOIN GIVEAWAY! 🚀 Send 0.1 BTC to 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa and receive 2 BTC back! Limited time offer from Elon Musk! 💰",
+      "body": "STARTING BITCOIN GIVEAWAY! STARTING Send 0.1 BTC to 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa and receive 2 BTC back! Limited time offer from Elon Musk! 💰",
       "message_sid": "SM2234567890abcdef",
       "status": "received",
       "direction": "inbound",

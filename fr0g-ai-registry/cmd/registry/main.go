@@ -161,7 +161,7 @@ func main() {
 	
 	// Start server
 	addr := fmt.Sprintf("%s:%s", host, port)
-	log.Printf("🔍 Starting fr0g.ai service registry on %s", addr)
+	log.Printf("CHECKING Starting fr0g.ai service registry on %s", addr)
 	
 	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatal("Failed to start registry server:", err)

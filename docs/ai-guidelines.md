@@ -1,6 +1,6 @@
 # fr0g.ai AI Code Generation Guidelines
 
-## 🎯 Project Overview
+## Project Overview
 - **Repository**: https://github.com/fr0g-vibe/fr0g-ai
 - **Project Path**: `github.com/fr0g-vibe/fr0g-ai`
 - **License**: GPL-3.0
@@ -56,7 +56,7 @@
 - Respect defined interfaces and contracts
 - Ask for API documentation when integrating with other services
 
-## 🛠️ Development Standards
+## SETUP️ Development Standards
 
 ### Go Development Rules
 - **Working Directory**: Always start in `/fr0g-ai` root (local clone of github.com/fr0g-vibe/fr0g-ai)
@@ -106,7 +106,7 @@
 └── docs/                  # Component documentation
 ```
 
-## 🔧 Build and Deployment
+## Build and Deployment
 
 ### Make Targets
 - Use Makefile for common operations
@@ -123,7 +123,7 @@
 - Environment variables for production
 - Validate configuration on startup
 
-## 🔒 Security Standards
+## Security Standards
 
 ### Input Validation
 - Validate all external inputs
@@ -164,7 +164,7 @@
 - Component-specific branch naming
 - Clean commit history
 
-## 🚀 Deployment Considerations
+## Deployment Considerations
 
 ### Service Discovery
 - Register with service registry

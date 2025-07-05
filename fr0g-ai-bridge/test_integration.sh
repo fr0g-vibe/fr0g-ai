@@ -5,7 +5,7 @@
 
 set -e
 
-echo "🧪 Starting fr0g-ai-bridge Integration Tests"
+echo "TESTING Starting fr0g-ai-bridge Integration Tests"
 echo "=============================================="
 
 # Configuration
@@ -97,18 +97,18 @@ test_json_response() {
 }
 
 # Check if Bridge service is running
-echo "🔍 Checking if Bridge service is running..."
+echo "CHECKING Checking if Bridge service is running..."
 if ! curl -s "$BASE_URL/health" > /dev/null; then
-    echo -e "${RED}❌ Bridge service is not running on $BASE_URL${NC}"
+    echo -e "${RED}FAILED Bridge service is not running on $BASE_URL${NC}"
     echo "Please start the service with: cd fr0g-ai-bridge && ./main"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Bridge service is running${NC}"
+echo -e "${GREEN}COMPLETED Bridge service is running${NC}"
 echo ""
 
 # Test 1: Health Check Endpoint
-echo "📋 Testing Health Check Endpoint"
+echo "LIST Testing Health Check Endpoint"
 test_http_endpoint "/health" "GET" "200" "Health endpoint availability"
 test_json_response "/health" "GET" "status" "ok" "Health status response"
 test_json_response "/health" "GET" "service" "fr0g-ai-bridge" "Service name in health response"
@@ -122,7 +122,7 @@ test_http_endpoint "/api/v1/chat" "POST" "200" "V1 chat endpoint"
 echo ""
 
 # Test 3: HTTP Method Validation
-echo "🔒 Testing HTTP Method Validation"
+echo "SECURITY Testing HTTP Method Validation"
 test_http_endpoint "/api/chat/completions" "GET" "405" "Chat completions GET rejection"
 test_http_endpoint "/api/v1/chat" "GET" "405" "V1 chat GET rejection"
 echo ""
@@ -177,7 +177,7 @@ fi
 echo ""
 
 # Test 6: Performance and Response Time
-echo "⚡ Testing Performance"
+echo "PERFORMANCE Testing Performance"
 echo -n "Testing response time... "
 start_time=$(date +%s%N)
 curl -s "$BASE_URL/health" > /dev/null
@@ -194,12 +194,12 @@ fi
 echo ""
 
 # Test 7: Error Handling
-echo "🚨 Testing Error Handling"
+echo "ALERT Testing Error Handling"
 test_http_endpoint "/nonexistent" "GET" "404" "404 for non-existent endpoints"
 echo ""
 
 # Test 8: Content-Type Headers
-echo "📋 Testing Content-Type Headers"
+echo "LIST Testing Content-Type Headers"
 echo -n "Testing JSON content-type headers... "
 headers=$(curl -s -I "$BASE_URL/health" | grep -i content-type)
 if echo "$headers" | grep -q "application/json"; then
@@ -213,7 +213,7 @@ fi
 echo ""
 
 # Test Summary
-echo "📊 Test Results Summary"
+echo "METRICS Test Results Summary"
 echo "======================"
 echo -e "Tests Passed: ${GREEN}$TESTS_PASSED${NC}"
 echo -e "Tests Failed: ${RED}$TESTS_FAILED${NC}"
@@ -223,6 +223,6 @@ if [ "$TESTS_FAILED" -eq 0 ]; then
     echo -e "\n${GREEN}🎉 All tests passed! Bridge service integration is working correctly.${NC}"
     exit 0
 else
-    echo -e "\n${RED}❌ Some tests failed. Please check the Bridge service implementation.${NC}"
+    echo -e "\n${RED}FAILED Some tests failed. Please check the Bridge service implementation.${NC}"
     exit 1
 fi

@@ -52,7 +52,7 @@ check_service_health() {
     # Check if HTTP port is listening first
     if ! nc -z localhost 8080 2>/dev/null; then
         log_test "HTTP Port Check" "FAIL" "Port 8080 not listening - service not running"
-        echo -e "${YELLOW}💡 To start the AIP service, run:${NC}"
+        echo -e "${YELLOW}TIP To start the AIP service, run:${NC}"
         echo -e "${YELLOW}   docker-compose up fr0g-ai-aip${NC}"
         echo -e "${YELLOW}   OR${NC}"
         echo -e "${YELLOW}   cd fr0g-ai-aip && make run${NC}"
@@ -80,7 +80,7 @@ check_service_health() {
         log_test "gRPC Port Check" "PASS" "Port 9090 is listening"
     else
         log_test "gRPC Port Check" "FAIL" "Port 9090 not accessible - check if gRPC server is started"
-        echo -e "${YELLOW}💡 Debug: Check container logs with: docker logs fr0g-ai-fr0g-ai-aip-1${NC}"
+        echo -e "${YELLOW}TIP Debug: Check container logs with: docker logs fr0g-ai-fr0g-ai-aip-1${NC}"
         return 1
     fi
     
@@ -207,9 +207,9 @@ test_grpc_direct_calls() {
         # Clean up: delete the test persona
         echo -n "Cleaning up gRPC test persona... "
         if echo "{\"id\":\"$grpc_id\"}" | grpcurl -plaintext -d @ "$AIP_GRPC_ENDPOINT" persona.PersonaService/DeletePersona > /dev/null 2>&1; then
-            echo -e "${GREEN}✅ CLEANED UP${NC}"
+            echo -e "${GREEN}COMPLETED CLEANED UP${NC}"
         else
-            echo -e "${YELLOW}⚠️  CLEANUP FAILED${NC}"
+            echo -e "${YELLOW}WARNING  CLEANUP FAILED${NC}"
         fi
         
     else
@@ -234,7 +234,7 @@ test_grpc_api() {
     local reflection_status=$(echo "$health_response" | grep -o '"grpc_reflection":"[^"]*"' | cut -d'"' -f4)
     
     if [ "$reflection_status" = "enabled" ]; then
-        echo -e "${BLUE}💡 Health endpoint reports gRPC reflection is enabled${NC}"
+        echo -e "${BLUE}TIP Health endpoint reports gRPC reflection is enabled${NC}"
         
         # Test gRPC service reflection with better error handling
         if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list > "$TEST_OUTPUT_DIR/grpc_services.txt" 2>"$TEST_OUTPUT_DIR/grpc_error.txt"; then
@@ -272,7 +272,7 @@ test_grpc_api() {
         local error_msg=$(cat "$TEST_OUTPUT_DIR/grpc_error.txt" 2>/dev/null | head -1)
         if echo "$error_msg" | grep -q "does not support the reflection API" || [ "$reflection_status" = "disabled" ]; then
             log_test "gRPC Service Reflection" "SKIP" "Reflection disabled (health reports: $reflection_status)"
-            echo -e "${YELLOW}💡 Info: gRPC reflection is disabled for security${NC}"
+            echo -e "${YELLOW}TIP Info: gRPC reflection is disabled for security${NC}"
             echo -e "${YELLOW}   To test with reflection enabled, restart with:${NC}"
             echo -e "${YELLOW}   GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development docker-compose up fr0g-ai-aip -d${NC}"
             # Continue with direct service testing
@@ -280,7 +280,7 @@ test_grpc_api() {
             # Don't return error code from direct calls - reflection test passed
         else
             log_test "gRPC Service Reflection" "FAIL" "Reflection failed: $error_msg"
-            echo -e "${YELLOW}💡 Debug: gRPC server may not have reflection enabled${NC}"
+            echo -e "${YELLOW}TIP Debug: gRPC server may not have reflection enabled${NC}"
             echo -e "${YELLOW}   Check if the server implements grpc.reflection.v1alpha.ServerReflection${NC}"
             return 1
         fi
@@ -411,7 +411,7 @@ generate_report() {
     if [ $failed_tests -eq 0 ]; then
         echo -e "${GREEN}🎉 All tests passed! AIP service is fully operational.${NC}"
     else
-        echo -e "${RED}❌ Some tests failed. Check the detailed results in $TEST_OUTPUT_DIR/${NC}"
+        echo -e "${RED}FAILED Some tests failed. Check the detailed results in $TEST_OUTPUT_DIR/${NC}"
     fi
     
     echo ""

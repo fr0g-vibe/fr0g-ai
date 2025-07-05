@@ -86,7 +86,7 @@ func runWebhookMode(config *input.ESMTPConfig) {
 		log.Printf("Error during shutdown: %v", err)
 	}
 
-	log.Println("✅ fr0g.ai ESMTP Webhook Processor stopped")
+	log.Println("COMPLETED fr0g.ai ESMTP Webhook Processor stopped")
 }
 
 func runSMTPMode(config *input.ESMTPConfig) {
@@ -123,7 +123,7 @@ func runSMTPMode(config *input.ESMTPConfig) {
 		log.Printf("Error during shutdown: %v", err)
 	}
 
-	log.Println("✅ fr0g.ai ESMTP Interceptor stopped")
+	log.Println("COMPLETED fr0g.ai ESMTP Interceptor stopped")
 }
 
 func loadConfig(path string) (*input.ESMTPConfig, error) {
@@ -163,7 +163,7 @@ func printBanner(mode string) {
 	banner := `
 	╔═══════════════════════════════════════════════════════════════╗
 	║                                                               ║
-	║    🐸 fr0g.ai - ESMTP Threat Vector Interceptor v1.0         ║
+	║    fr0g.ai fr0g.ai - ESMTP Threat Vector Interceptor v1.0         ║
 	║                                                               ║
 	║    "Eliminating human-computer interaction vulnerabilities"   ║
 	║                                                               ║

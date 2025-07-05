@@ -9,27 +9,27 @@ cd "$(dirname "$0")/.." || exit 1
 
 # Ensure we're in the right directory
 if [ ! -f "go.mod" ]; then
-    echo "❌ Error: Not in fr0g-ai-master-control directory"
+    echo "FAILED Error: Not in fr0g-ai-master-control directory"
     exit 1
 fi
 
 echo "📁 Working directory: $(pwd)"
 
 # Build the test program
-echo "🔨 Building test program..."
+echo "BUILDING Building test program..."
 if ! go build -o bin/test-esmtp ./cmd/test-esmtp/; then
-    echo "❌ Build failed"
+    echo "FAILED Build failed"
     exit 1
 fi
 
-echo "✅ Build successful"
+echo "COMPLETED Build successful"
 
 # Run the test
-echo "🚀 Running ESMTP processor tests..."
+echo "STARTING Running ESMTP processor tests..."
 echo ""
 
 if ! ./bin/test-esmtp; then
-    echo "❌ Tests failed"
+    echo "FAILED Tests failed"
     exit 1
 fi
 

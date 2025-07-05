@@ -15,7 +15,7 @@ def send_test_email(smtp_host="localhost", smtp_port=2525,
                    test_name="Generic Test"):
     """Send a test email through the ESMTP interceptor"""
     
-    print(f"\n🧪 {test_name}")
+    print(f"\nTESTING {test_name}")
     print(f"   From: {from_addr}")
     print(f"   To: {to_addr}")
     print(f"   Subject: {subject}")
@@ -37,15 +37,15 @@ def send_test_email(smtp_host="localhost", smtp_port=2525,
         server.sendmail(from_addr, [to_addr], text)
         server.quit()
         
-        print(f"   ✅ Email sent successfully")
+        print(f"   COMPLETED Email sent successfully")
         return True
         
     except Exception as e:
-        print(f"   ❌ Failed to send email: {e}")
+        print(f"   FAILED Failed to send email: {e}")
         return False
 
 def main():
-    print("🔒 fr0g.ai ESMTP Threat Vector Interceptor Test Suite")
+    print("SECURITY fr0g.ai ESMTP Threat Vector Interceptor Test Suite")
     print("=" * 60)
     
     # Test 1: Legitimate business email
@@ -101,8 +101,8 @@ def main():
         test_name="Social Engineering Attempt"
     )
     
-    print(f"\n✅ ESMTP Test Suite Completed!")
-    print(f"\n💡 Tips:")
+    print(f"\nCOMPLETED ESMTP Test Suite Completed!")
+    print(f"\nTIP Tips:")
     print(f"   - Check MCP logs for threat analysis results")
     print(f"   - Monitor AI community reviews for each email")
     print(f"   - Watch for threat level classifications")
