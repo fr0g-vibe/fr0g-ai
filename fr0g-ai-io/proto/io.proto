@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package fr0g.ai.io;
 
-option go_package = "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/pb";
+option go_package = "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/pb/proto";
 
 import "google/protobuf/timestamp.proto";
 
