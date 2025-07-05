@@ -52,6 +52,13 @@
 - **REAL VALIDATION**: Implement comprehensive data validation, not placeholder checks
 - **PRODUCTION READY**: All AIP functionality must handle real-world data and scale
 
+### CODE QUALITY REQUIREMENTS - AIP COMPONENT
+- **MANDATORY LINTING**: Always run `make lint` before committing any code changes
+- **ZERO LINT ERRORS**: All code must pass golangci-lint without errors or warnings
+- **FIX BEFORE COMMIT**: Never commit code that fails linting - fix all issues first
+- **LINT EARLY**: Run `make lint` frequently during development, not just at the end
+- **SHARED CONFIG**: Use centralized configuration from `pkg/config/` to avoid import errors
+
 ### CENTRALIZED CONFIGURATION RULES - AIP COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create `internal/config/validation.go` or similar files

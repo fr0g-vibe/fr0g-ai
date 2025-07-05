@@ -49,6 +49,13 @@
 - **REAL RATE LIMITING**: Implement actual rate limiting with real storage backends
 - **PRODUCTION READY**: All bridge functionality must be production-ready for real traffic
 
+### CODE QUALITY REQUIREMENTS - BRIDGE COMPONENT
+- **MANDATORY LINTING**: Always run `make lint` before committing any code changes
+- **ZERO LINT ERRORS**: All code must pass golangci-lint without errors or warnings
+- **FIX BEFORE COMMIT**: Never commit code that fails linting - fix all issues first
+- **LINT EARLY**: Run `make lint` frequently during development, not just at the end
+- **SHARED CONFIG**: Use centralized configuration from `pkg/config/` to avoid import errors
+
 ### CENTRALIZED CONFIGURATION RULES - BRIDGE COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create bridge-specific config/validation libraries

@@ -40,6 +40,13 @@
 - **REAL AUTHENTICATION**: Implement actual API key validation and OAuth flows
 - **PRODUCTION READY**: All I/O functionality must handle real-world traffic and scale
 
+### CODE QUALITY REQUIREMENTS - I/O COMPONENT
+- **MANDATORY LINTING**: Always run `make lint` before committing any code changes
+- **ZERO LINT ERRORS**: All code must pass golangci-lint without errors or warnings
+- **FIX BEFORE COMMIT**: Never commit code that fails linting - fix all issues first
+- **LINT EARLY**: Run `make lint` frequently during development, not just at the end
+- **SHARED CONFIG**: Use centralized configuration from `pkg/config/` to avoid import errors
+
 ### CENTRALIZED CONFIGURATION RULES - I/O COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create I/O-specific config/validation libraries
