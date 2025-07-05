@@ -1,59 +1,142 @@
-.PHONY: help build clean test run deps lint fmt health
+.PHONY: help setup build build-all clean clean-all test test-all run run-aip run-bridge run-mcp deps lint fmt health proto docker-build docker-up docker-down
 
 # Default target
 help:
-	@echo "🐸 fr0g.ai MCP - Model Context Protocol Server"
+	@echo "🐸 fr0g.ai - AI-Powered Security Intelligence Platform"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  build              - Build the MCP server"
-	@echo "  clean              - Clean build artifacts"
-	@echo "  test               - Run tests"
-	@echo "  run                - Run the MCP server"
-	@echo "  deps               - Install dependencies"
-	@echo "  lint               - Run code linters"
-	@echo "  fmt                - Format code"
-	@echo "  health             - Check MCP service health"
+	@echo "  setup              - Initialize development environment"
+	@echo "  build-all          - Build all fr0g.ai components"
+	@echo "  clean-all          - Clean all build artifacts"
+	@echo "  test-all           - Run tests for all components"
+	@echo "  run-aip            - Run fr0g-ai-aip service"
+	@echo "  run-bridge         - Run fr0g-ai-bridge service"
+	@echo "  run-mcp            - Run fr0g-ai-master-control service"
+	@echo "  deps               - Install dependencies for all components"
+	@echo "  lint               - Run code linters on all components"
+	@echo "  fmt                - Format code for all components"
+	@echo "  proto              - Generate protobuf files"
+	@echo "  health             - Check all service health"
+	@echo "  docker-build       - Build Docker images"
+	@echo "  docker-up          - Start services with Docker Compose"
+	@echo "  docker-down        - Stop Docker Compose services"
 
-# Build the MCP server
-build:
-	@echo "🔨 Building fr0g.ai MCP server..."
-	@mkdir -p bin
-	go build -o bin/fr0g-ai-mcp ./cmd/mcp
+# Setup development environment
+setup:
+	@echo "🚀 Setting up fr0g.ai development environment..."
+	@echo "📦 Installing dependencies for all components..."
+	@$(MAKE) deps
+	@echo "🔨 Building all components..."
+	@$(MAKE) build-all
+	@echo "✅ Setup complete!"
 
+# Build all components
+build-all:
+	@echo "🔨 Building all fr0g.ai components..."
+	@echo "Building shared configuration..."
+	@cd pkg/config && go build ./...
+	@echo "Building fr0g-ai-aip..."
+	@cd fr0g-ai-aip && $(MAKE) build
+	@echo "Building fr0g-ai-bridge..."
+	@cd fr0g-ai-bridge && $(MAKE) build
+	@echo "Building fr0g-ai-master-control..."
+	@cd fr0g-ai-master-control && $(MAKE) build
+	@echo "✅ All components built successfully!"
 
-# Run the MCP server
-run: build
-	@echo "🚀 Starting fr0g.ai MCP server..."
-	./bin/fr0g-ai-mcp
+# Clean all build artifacts
+clean-all:
+	@echo "🧹 Cleaning all build artifacts..."
+	@cd fr0g-ai-aip && $(MAKE) clean || true
+	@cd fr0g-ai-bridge && $(MAKE) clean || true
+	@cd fr0g-ai-master-control && $(MAKE) clean || true
+	@rm -rf bin/ || true
+	@echo "✅ All artifacts cleaned!"
 
+# Run tests for all components
+test-all:
+	@echo "🧪 Running tests for all components..."
+	@echo "Testing shared configuration..."
+	@cd pkg/config && go test ./...
+	@echo "Testing fr0g-ai-aip..."
+	@cd fr0g-ai-aip && $(MAKE) test
+	@echo "Testing fr0g-ai-bridge..."
+	@cd fr0g-ai-bridge && $(MAKE) test
+	@echo "Testing fr0g-ai-master-control..."
+	@cd fr0g-ai-master-control && $(MAKE) test
+	@echo "✅ All tests completed!"
 
-# Run tests
-test:
-	@echo "🧪 Running tests..."
-	go test ./...
+# Run individual services
+run-aip:
+	@echo "🚀 Starting fr0g-ai-aip service..."
+	@cd fr0g-ai-aip && $(MAKE) run
 
+run-bridge:
+	@echo "🚀 Starting fr0g-ai-bridge service..."
+	@cd fr0g-ai-bridge && $(MAKE) run
 
-# Install dependencies
+run-mcp:
+	@echo "🚀 Starting fr0g-ai-master-control service..."
+	@cd fr0g-ai-master-control && $(MAKE) run
+
+# Install dependencies for all components
 deps:
-	@echo "📦 Installing dependencies..."
-	go mod tidy
-	go mod download
+	@echo "📦 Installing dependencies for all components..."
+	@echo "Installing shared config dependencies..."
+	@cd pkg/config && go mod tidy && go mod download
+	@echo "Installing fr0g-ai-aip dependencies..."
+	@cd fr0g-ai-aip && $(MAKE) deps
+	@echo "Installing fr0g-ai-bridge dependencies..."
+	@cd fr0g-ai-bridge && $(MAKE) deps
+	@echo "Installing fr0g-ai-master-control dependencies..."
+	@cd fr0g-ai-master-control && $(MAKE) deps
+	@echo "✅ All dependencies installed!"
 
-# Clean build artifacts
-clean:
-	@echo "🧹 Cleaning build artifacts..."
-	rm -rf bin/
-
-# Code quality checks
+# Code quality checks for all components
 lint:
-	@echo "🔍 Running linters..."
-	golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
+	@echo "🔍 Running linters on all components..."
+	@cd pkg/config && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
+	@cd fr0g-ai-aip && $(MAKE) lint
+	@cd fr0g-ai-bridge && $(MAKE) lint
+	@cd fr0g-ai-master-control && $(MAKE) lint
 
 fmt:
-	@echo "🎨 Formatting code..."
-	go fmt ./...
+	@echo "🎨 Formatting code for all components..."
+	@cd pkg/config && go fmt ./...
+	@cd fr0g-ai-aip && $(MAKE) fmt
+	@cd fr0g-ai-bridge && $(MAKE) fmt
+	@cd fr0g-ai-master-control && $(MAKE) fmt
 
-# Health check MCP service
+# Generate protobuf files
+proto:
+	@echo "🔧 Generating protobuf files..."
+	@cd fr0g-ai-aip && $(MAKE) proto || echo "⚠️  Protobuf generation failed for AIP"
+	@cd fr0g-ai-bridge && $(MAKE) proto || echo "⚠️  Protobuf generation failed for Bridge"
+
+# Health check all services
 health:
-	@echo "🏥 Checking MCP service health..."
+	@echo "🏥 Checking all service health..."
+	@echo "Checking fr0g-ai-aip (port 8080)..."
+	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
+	@echo "Checking fr0g-ai-bridge (port 8082)..."
+	@curl -sf http://localhost:8082/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
+	@echo "Checking fr0g-ai-master-control (port 8081)..."
 	@curl -sf http://localhost:8081/health && echo "✅ MCP service healthy" || echo "❌ MCP service down"
+
+# Docker operations
+docker-build:
+	@echo "🐳 Building Docker images..."
+	docker-compose build
+
+docker-up:
+	@echo "🐳 Starting services with Docker Compose..."
+	docker-compose up -d
+
+docker-down:
+	@echo "🐳 Stopping Docker Compose services..."
+	docker-compose down
+
+# Legacy targets for backward compatibility
+build: build-all
+clean: clean-all
+test: test-all
+run: run-mcp
