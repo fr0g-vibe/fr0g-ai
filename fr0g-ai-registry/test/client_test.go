@@ -10,6 +10,18 @@ import (
 	"time"
 )
 
+// ServiceDetail represents the detailed service information returned by the registry
+type ServiceDetail struct {
+	ID       string            `json:"id"`
+	Name     string            `json:"name"`
+	Address  string            `json:"address"`
+	Port     int               `json:"port"`
+	Tags     []string          `json:"tags"`
+	Meta     map[string]string `json:"meta"`
+	Health   string            `json:"health"`
+	LastSeen string            `json:"last_seen"`
+}
+
 // RegistryClient provides a simple client for testing registry interactions
 type RegistryClient struct {
 	baseURL    string
@@ -93,6 +105,18 @@ func (rc *RegistryClient) DiscoverServices() (map[string][]string, error) {
 		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 
+	// Try to unmarshal as detailed service information first
+	var detailedServices map[string]ServiceDetail
+	if err := json.Unmarshal(body, &detailedServices); err == nil {
+		// Convert detailed services to simple format
+		services := make(map[string][]string)
+		for _, serviceDetail := range detailedServices {
+			services[serviceDetail.Name] = serviceDetail.Tags
+		}
+		return services, nil
+	}
+
+	// Fallback to simple service list format
 	var services map[string][]string
 	if err := json.Unmarshal(body, &services); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal services: %w", err)

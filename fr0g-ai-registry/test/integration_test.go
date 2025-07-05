@@ -181,6 +181,18 @@ func testServiceRegistration(t *testing.T, registryURL string, service ServiceIn
 	t.Logf("Successfully registered service: %s", service.Name)
 }
 
+// ServiceDetail represents the detailed service information returned by the registry
+type ServiceDetail struct {
+	ID       string            `json:"id"`
+	Name     string            `json:"name"`
+	Address  string            `json:"address"`
+	Port     int               `json:"port"`
+	Tags     []string          `json:"tags"`
+	Meta     map[string]string `json:"meta"`
+	Health   string            `json:"health"`
+	LastSeen string            `json:"last_seen"`
+}
+
 // testServiceDiscovery tests discovering registered services
 func testServiceDiscovery(t *testing.T, registryURL string, expectedServices []ServiceInfo) {
 	resp, err := http.Get(registryURL + "/v1/catalog/services")
@@ -198,9 +210,32 @@ func testServiceDiscovery(t *testing.T, registryURL string, expectedServices []S
 		t.Fatalf("Failed to read discovery response: %v", err)
 	}
 
+	// Try to unmarshal as detailed service information first
+	var detailedServices map[string]ServiceDetail
+	if err := json.Unmarshal(body, &detailedServices); err == nil {
+		// Handle detailed service response format
+		foundServices := make(map[string]bool)
+		for _, serviceDetail := range detailedServices {
+			foundServices[serviceDetail.Name] = true
+		}
+
+		// Verify expected services are discoverable
+		for _, expected := range expectedServices {
+			if foundServices[expected.Name] {
+				t.Logf("Found service %s in detailed discovery", expected.Name)
+			} else {
+				t.Errorf("Expected service %s not found in discovery", expected.Name)
+			}
+		}
+
+		t.Logf("Service discovery completed. Found %d services", len(detailedServices))
+		return
+	}
+
+	// Fallback to simple service list format
 	var services map[string][]string
 	if err := json.Unmarshal(body, &services); err != nil {
-		t.Fatalf("Failed to unmarshal services: %v", err)
+		t.Fatalf("Failed to unmarshal services in any expected format: %v", err)
 	}
 
 	// Verify expected services are discoverable
