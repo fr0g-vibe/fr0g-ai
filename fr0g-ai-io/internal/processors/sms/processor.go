@@ -14,7 +14,7 @@ import (
 
 // Processor handles SMS threat detection and analysis
 type Processor struct {
-	config         *config.SMSConfig
+	config         *sharedconfig.SMSConfig
 	threatPatterns map[string]*regexp.Regexp
 	spamKeywords   []string
 	phoneNumbers   map[string]*PhoneNumberInfo

@@ -14,7 +14,7 @@ import (
 
 // Processor handles voice call threat detection and analysis
 type Processor struct {
-	config          *config.VoiceConfig
+	config          *sharedconfig.VoiceConfig
 	threatPatterns  map[string]*regexp.Regexp
 	suspiciousWords []string
 	callHistory     []VoiceCall
