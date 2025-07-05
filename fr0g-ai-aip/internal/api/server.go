@@ -562,7 +562,7 @@ func StartServer(port string) error {
 	// Create a default service for legacy usage
 	store := storage.NewMemoryStorage()
 	service := persona.NewService(store)
-	server := NewServer(cfg, service)
+	server := NewServer(cfg, service, nil) // No registry client for legacy usage
 	return server.Start()
 }
 
