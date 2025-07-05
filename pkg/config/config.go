@@ -407,12 +407,12 @@ func GetDefaults() *Config {
 	// Read reflection setting from environment
 	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
 	
-	// Override ports based on service defaults if not explicitly set
-	if httpPort == "8083" || httpPort == "8082" {
-		httpPort = "8080" // Force AIP service to use correct port
-	}
-	if grpcPort == "9092" || grpcPort == "9091" {
-		grpcPort = "9090" // Force AIP service to use correct port
+	// Debug output for environment variables
+	if os.Getenv("ENVIRONMENT") == "development" {
+		fmt.Printf("DEBUG: AIP_HTTP_PORT=%s, AIP_GRPC_PORT=%s, GRPC_ENABLE_REFLECTION=%s\n", 
+			os.Getenv("AIP_HTTP_PORT"), os.Getenv("AIP_GRPC_PORT"), os.Getenv("GRPC_ENABLE_REFLECTION"))
+		fmt.Printf("DEBUG: Using HTTP port %s, gRPC port %s, reflection %t\n", 
+			httpPort, grpcPort, enableReflection)
 	}
 	
 	return &Config{
