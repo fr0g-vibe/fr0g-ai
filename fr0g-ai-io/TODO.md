@@ -67,7 +67,8 @@
 - **✅ VERIFY BEFORE EXECUTION**: Double-check ALL system commands before suggesting them
 - **✅ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
 - **✅ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
-- **✅ BACKUP CRITICAL FILES**: Always suggest backing up important files before major changes
+- **✅ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
+- **✅ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
 
 ### CENTRALIZED CONFIGURATION RULES - I/O COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs

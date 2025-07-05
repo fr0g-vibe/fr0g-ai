@@ -55,7 +55,8 @@ When starting new AI coding sessions, always include these files:
 - **✅ VERIFY BEFORE EXECUTION**: Double-check ALL system commands before suggesting them
 - **✅ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
 - **✅ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
-- **✅ BACKUP CRITICAL FILES**: Always suggest backing up important files before major changes
+- **✅ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
+- **✅ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
 - **✅ CONFIRM BEFORE PROCEEDING**: Always ask for explicit confirmation before destructive actions
 
 ### SEARCH/REPLACE BLOCK RULES - PROJECT-WIDE
