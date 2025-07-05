@@ -11,43 +11,43 @@ WORKDIR /app
 COPY ../go.mod ../go.sum ./
 COPY ../pkg/ ./pkg/
 
-# Copy fr0g-ai-bridge source
-COPY . ./fr0g-ai-bridge/
+# Copy fr0g-ai-master-control source
+COPY . ./fr0g-ai-master-control/
 
 # Download dependencies
 RUN go mod download
 
 # Build the application
-WORKDIR /app/fr0g-ai-bridge
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-bridge ./cmd/server
+WORKDIR /app/fr0g-ai-master-control
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-master-control ./cmd/server
 
-# Runtime stage
+# Final stage
 FROM alpine:latest
 
 # Install ca-certificates and curl for health checks
 RUN apk --no-cache add ca-certificates curl
 
 # Create non-root user
-RUN adduser -D -s /bin/sh appuser
+RUN adduser -D -s /bin/sh fr0g
 
 # Set working directory
 WORKDIR /app
 
-# Copy binary from builder stage
-COPY --from=builder /app/fr0g-ai-bridge/fr0g-ai-bridge .
+# Copy the binary
+COPY --from=builder /app/fr0g-ai-master-control/fr0g-ai-master-control .
 
-# Create config and logs directories
-RUN mkdir -p /app/config /app/logs && chown -R appuser:appuser /app
+# Create data and logs directories
+RUN mkdir -p /app/data /app/logs && chown -R fr0g:fr0g /app
 
 # Switch to non-root user
-USER appuser
+USER fr0g
 
-# Expose ports
-EXPOSE 8082 9091
+# Expose port
+EXPOSE 8081
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8082/health || exit 1
+  CMD curl -f http://localhost:8081/health || exit 1
 
 # Run the application
-CMD ["./fr0g-ai-bridge"]
+CMD ["./fr0g-ai-master-control"]

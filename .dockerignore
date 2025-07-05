@@ -1,0 +1,63 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Development files
+.env
+.env.local
+.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+bin/
+dist/
+build/
+*/bin/
+**/bin/
+
+# Logs
+*.log
+logs/
+*/logs/
+**/logs/
+
+# Test files
+*_test.go
+test/
+coverage.out
+coverage.txt
+coverage.html
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Node modules (if any)
+node_modules/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker files (except the ones we need)
+docker-compose.override.yml
+Dockerfile.dev
+
+# AI Assistant files
+.aider*
