@@ -100,6 +100,57 @@ services:
       timeout: 10s
       retries: 3
 
+  # AI Input/Output Processing Service
+  fr0g-ai-io:
+    build:
+      context: ./fr0g-ai-io
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+      - "9092:9092"
+    environment:
+      - REGISTRY_URL=http://service-registry:8500
+      - SERVICE_NAME=fr0g-ai-io
+      - SERVICE_ID=io-001
+      - HTTP_PORT=8083
+      - GRPC_PORT=9092
+      - MCP_GRPC_ENDPOINT=fr0g-ai-master-control:8081
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # SMS Configuration
+      - SMS_ENABLED=${SMS_ENABLED:-true}
+      - SMS_PROVIDER=${SMS_PROVIDER:-google_voice}
+      - SMS_API_KEY=${SMS_API_KEY}
+      - SMS_API_SECRET=${SMS_API_SECRET}
+      # Voice Configuration
+      - VOICE_ENABLED=${VOICE_ENABLED:-true}
+      - VOICE_PROVIDER=${VOICE_PROVIDER:-google_voice}
+      - VOICE_API_KEY=${VOICE_API_KEY}
+      - VOICE_API_SECRET=${VOICE_API_SECRET}
+      # IRC Configuration
+      - IRC_ENABLED=${IRC_ENABLED:-true}
+      - IRC_SERVER=${IRC_SERVER:-irc.libera.chat}
+      - IRC_PORT=${IRC_PORT:-6697}
+      - IRC_USE_SSL=${IRC_USE_SSL:-true}
+      # ESMTP Configuration
+      - ESMTP_ENABLED=${ESMTP_ENABLED:-true}
+      - ESMTP_PORT=${ESMTP_PORT:-2525}
+      - ESMTP_HOST=${ESMTP_HOST:-0.0.0.0}
+      # Discord Configuration
+      - DISCORD_ENABLED=${DISCORD_ENABLED:-true}
+    volumes:
+      - io_data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - service-registry
+      - fr0g-ai-master-control
+    networks:
+      - fr0g-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Optional: Add OpenWebUI for complete AI chat interface
   # Uncomment to enable full AI chat capabilities
   # openwebui:
@@ -124,6 +175,8 @@ volumes:
   aip_data:
     driver: local
   bridge_config:
+    driver: local
+  io_data:
     driver: local
   openwebui_data:
     driver: local

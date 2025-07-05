@@ -12,6 +12,7 @@ help:
 	@echo "  run-aip            - Run fr0g-ai-aip service"
 	@echo "  run-bridge         - Run fr0g-ai-bridge service"
 	@echo "  run-mcp            - Run fr0g-ai-master-control service"
+	@echo "  run-io             - Run fr0g-ai-io service"
 	@echo "  deps               - Install dependencies for all components"
 	@echo "  lint               - Run code linters on all components"
 	@echo "  fmt                - Format code for all components"
@@ -41,6 +42,8 @@ build-all:
 	@cd fr0g-ai-bridge && $(MAKE) build
 	@echo "Building fr0g-ai-master-control..."
 	@cd fr0g-ai-master-control && $(MAKE) build
+	@echo "Building fr0g-ai-io..."
+	@cd fr0g-ai-io && $(MAKE) build || echo "⚠️  fr0g-ai-io not yet implemented"
 	@echo "✅ All components built successfully!"
 
 # Clean all build artifacts
@@ -49,6 +52,7 @@ clean-all:
 	@cd fr0g-ai-aip && $(MAKE) clean || true
 	@cd fr0g-ai-bridge && $(MAKE) clean || true
 	@cd fr0g-ai-master-control && $(MAKE) clean || true
+	@cd fr0g-ai-io && $(MAKE) clean || true
 	@rm -rf bin/ || true
 	@echo "✅ All artifacts cleaned!"
 
@@ -63,6 +67,8 @@ test-all:
 	@cd fr0g-ai-bridge && $(MAKE) test
 	@echo "Testing fr0g-ai-master-control..."
 	@cd fr0g-ai-master-control && $(MAKE) test
+	@echo "Testing fr0g-ai-io..."
+	@cd fr0g-ai-io && $(MAKE) test || echo "⚠️  fr0g-ai-io not yet implemented"
 	@echo "✅ All tests completed!"
 
 # Run individual services
@@ -78,6 +84,10 @@ run-mcp:
 	@echo "🚀 Starting fr0g-ai-master-control service..."
 	@cd fr0g-ai-master-control && $(MAKE) run
 
+run-io:
+	@echo "🚀 Starting fr0g-ai-io service..."
+	@cd fr0g-ai-io && $(MAKE) run
+
 # Install dependencies for all components
 deps:
 	@echo "📦 Installing dependencies for all components..."
@@ -89,6 +99,8 @@ deps:
 	@cd fr0g-ai-bridge && $(MAKE) deps
 	@echo "Installing fr0g-ai-master-control dependencies..."
 	@cd fr0g-ai-master-control && $(MAKE) deps
+	@echo "Installing fr0g-ai-io dependencies..."
+	@cd fr0g-ai-io && $(MAKE) deps || echo "⚠️  fr0g-ai-io not yet implemented"
 	@echo "✅ All dependencies installed!"
 
 # Code quality checks for all components
@@ -98,6 +110,7 @@ lint:
 	@cd fr0g-ai-aip && $(MAKE) lint
 	@cd fr0g-ai-bridge && $(MAKE) lint
 	@cd fr0g-ai-master-control && $(MAKE) lint
+	@cd fr0g-ai-io && $(MAKE) lint || echo "⚠️  fr0g-ai-io not yet implemented"
 
 fmt:
 	@echo "🎨 Formatting code for all components..."
@@ -105,6 +118,7 @@ fmt:
 	@cd fr0g-ai-aip && $(MAKE) fmt
 	@cd fr0g-ai-bridge && $(MAKE) fmt
 	@cd fr0g-ai-master-control && $(MAKE) fmt
+	@cd fr0g-ai-io && $(MAKE) fmt || echo "⚠️  fr0g-ai-io not yet implemented"
 
 # Generate protobuf files
 proto:
@@ -121,6 +135,8 @@ health:
 	@curl -sf http://localhost:8082/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
 	@echo "Checking fr0g-ai-master-control (port 8081)..."
 	@curl -sf http://localhost:8081/health && echo "✅ MCP service healthy" || echo "❌ MCP service down"
+	@echo "Checking fr0g-ai-io (port 8083)..."
+	@curl -sf http://localhost:8083/health && echo "✅ IO service healthy" || echo "❌ IO service down"
 
 # Docker operations
 docker-build:

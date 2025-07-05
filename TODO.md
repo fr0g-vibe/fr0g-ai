@@ -15,6 +15,7 @@ When starting new AI coding sessions, always include these files:
 - **fr0g-ai-aip**: Core AI processing engine (ports 8080/9090)
 - **fr0g-ai-bridge**: Integration bridge service (ports 8082/9091)  
 - **fr0g-ai-master-control**: Orchestration and cognitive engine (port 8081)
+- **fr0g-ai-io**: Input/Output processing service (ports 8083/9092)
 - **Project Lead**: Overall coordination, README.md, docker-compose.yml, Makefile
 
 ### Cross-Component Interaction Rules
@@ -97,8 +98,8 @@ tmux send-keys -t fr0g-ai:8 "git status" C-m
 
 ### CRITICAL BLOCKERS:
 1. **Service Registry**: Referenced in docker-compose but not implemented (blocks service discovery)
-2. **IRC Processor**: Framework exists but core implementation missing in master-control
-3. **ESMTP Processor**: Framework exists but needs completion in master-control
+2. **fr0g-ai-io Service**: New component needed to extract I/O processors from master-control
+3. **I/O Processor Migration**: Move SMS, Voice, IRC, ESMTP, Discord processors to fr0g-ai-io
 
 ## COMPLETED ACHIEVEMENTS
 
@@ -249,6 +250,30 @@ Test Execution Time: 0.005s (excellent performance)
 - **ESTIMATE**: 2-3 days per processor
 
 ## 🎯 HIGH PRIORITY TASKS
+
+### 🔥 PRIORITY 1: Create fr0g-ai-io Service
+**ARCHITECTURAL IMPROVEMENT**: Extract I/O processing from master-control
+- **STATUS**: New component needed for better separation of concerns
+- **RATIONALE**: I/O operations should be separate from cognitive processing
+- **BENEFITS**: Improved scalability, reusability, and maintainability
+- **SCOPE**: Extract SMS, Voice, IRC, ESMTP, Discord processors from master-control
+- **ESTIMATE**: 3-5 days for complete extraction and new service setup
+
+### 🔥 PRIORITY 2: I/O Processor Migration
+**EXTRACT FROM MASTER-CONTROL**: Move completed processors to fr0g-ai-io
+- **SMS Processor**: Move comprehensive threat detection (COMPLETED in MCP)
+- **Voice Processor**: Move speech analysis and scam detection (COMPLETED in MCP)
+- **Discord Processor**: Move webhook processing (OPERATIONAL in MCP)
+- **IRC Processor**: Complete implementation in new fr0g-ai-io service
+- **ESMTP Processor**: Complete implementation in new fr0g-ai-io service
+
+### 🔥 PRIORITY 3: Add Output Processors
+**NEW FUNCTIONALITY**: Bidirectional I/O capabilities
+- **SMS Response Processor**: Send threat alerts and notifications
+- **Email Output Processor**: Send reports and alerts via email
+- **Discord Bot Processor**: Send messages and manage channels
+- **Voice Response Processor**: Automated voice responses
+- **Webhook Output Processor**: Send data to external systems
 
 ### ✅ COMPLETED: Build System - ALL COMPONENTS OPERATIONAL
 - [x] **RESOLVED**: Create shared pkg/config module with proper Go module structure

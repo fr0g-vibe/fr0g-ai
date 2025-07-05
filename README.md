@@ -11,21 +11,31 @@ Eliminate human-computer interaction vulnerabilities through AI-driven automated
 ## Architecture
 
 ```
-┌─────────────────┐    gRPC     ┌─────────────────┐
-│   fr0g-ai-aip   │◄───────────►│ fr0g-ai-bridge  │
-│   (Core AI)     │             │  (Integration)  │
-│   :8080/:9090   │             │   :8081/:9091   │
-└─────────────────┘             └─────────────────┘
-         │                               │
-         ▼                               ▼
-   File Storage                    OpenWebUI API
+┌─────────────────┐    Events     ┌─────────────────┐    Analysis    ┌─────────────────┐
+│   fr0g-ai-io    │◄─────────────►│ fr0g-ai-master- │◄──────────────►│   fr0g-ai-aip   │
+│  (I/O Service)  │               │    control      │                │  (Core AI)      │
+│   :8083/:9092   │               │ (Cognitive AI)  │                │   :8080/:9090   │
+└─────────────────┘               └─────────────────┘                └─────────────────┘
+         │                                 │                                   │
+         ▼                                 ▼                                   ▼
+   External I/O                    Intelligence Engine                   AI Processing
+                                           │
+                                           ▼
+                                  ┌─────────────────┐
+                                  │ fr0g-ai-bridge  │
+                                  │  (Integration)  │
+                                  │   :8082/:9091   │
+                                  └─────────────────┘
+                                           │
+                                           ▼
+                                     OpenWebUI API
 ```
 
 ### Components
 - **fr0g-ai-aip**: Core AI processing engine with file-based storage
 - **fr0g-ai-bridge**: Integration bridge connecting to external systems (OpenWebUI)
 - **fr0g-ai-master-control**: Orchestration and cognitive processing engine
-- **ESMTP Threat Vector Interceptor**: Email intelligence gathering and threat analysis
+- **fr0g-ai-io**: Input/Output processing service for threat vector handling
 - **Communication**: High-performance gRPC inter-service communication
 - **Storage**: Configurable storage backends (file system, future: database)
 
@@ -130,6 +140,7 @@ When starting new AI coding sessions, always include these files:
 - **fr0g-ai-aip**: Core AI processing engine (ports 8080/9090)
 - **fr0g-ai-bridge**: Integration bridge service (ports 8082/9091)  
 - **fr0g-ai-master-control**: Orchestration and cognitive engine (port 8081)
+- **fr0g-ai-io**: Input/Output processing service (ports 8083/9092)
 
 ### Repository Information
 - **GitHub URL**: `https://github.com/fr0g-vibe/fr0g-ai`
