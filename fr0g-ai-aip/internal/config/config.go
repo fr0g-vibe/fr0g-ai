@@ -31,6 +31,9 @@ type Config struct {
 	
 	// Logging configuration
 	Logging LoggingConfig `yaml:"logging"`
+	
+	// Validation configuration
+	Validation ValidationConfig `yaml:"validation"`
 }
 
 type HTTPConfig struct {
@@ -74,6 +77,16 @@ type LoggingConfig struct {
 	Format string `yaml:"format"` // json, text
 }
 
+type ValidationConfig struct {
+	StrictMode bool `yaml:"strict_mode"`
+}
+
+// ValidationError represents a validation error
+type ValidationError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
 // Load loads configuration from environment variables with defaults
 func Load() *Config {
 	config := &Config{
@@ -111,6 +124,9 @@ func Load() *Config {
 		Logging: LoggingConfig{
 			Level:  getEnv("FR0G_LOG_LEVEL", "info"),
 			Format: getEnv("FR0G_LOG_FORMAT", "text"),
+		},
+		Validation: ValidationConfig{
+			StrictMode: getBoolEnv("FR0G_VALIDATION_STRICT", false),
 		},
 	}
 	
