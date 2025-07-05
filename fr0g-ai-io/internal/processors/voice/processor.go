@@ -708,7 +708,7 @@ func (p *Processor) GetStats() map[string]interface{} {
 func (p *Processor) convertToVoiceCall(event *types.InputEvent) (*VoiceCall, error) {
 	voiceCall := &VoiceCall{
 		ID:        event.ID,
-		Timestamp: event.Timestamp,
+		StartTime: event.Timestamp,
 		Metadata:  event.Metadata,
 	}
 
