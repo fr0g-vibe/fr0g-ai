@@ -5,6 +5,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/esmtp"
 )
 
 // Manager manages all input processors
@@ -27,8 +28,14 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 		processors: make(map[string]InputProcessor),
 	}
 
-	// Initialize processors here as they're implemented
-	// For now, we'll add them as they're created
+	// Initialize ESMTP processor if configured
+	if cfg.ESMTP != nil && cfg.ESMTP.Enabled {
+		esmtpProcessor := esmtp.NewProcessor(cfg.ESMTP)
+		esmtpAdapter := esmtp.NewProcessorAdapter(esmtpProcessor)
+		mgr.processors["esmtp"] = esmtpAdapter
+	}
+
+	// Initialize other processors here as they're implemented
 	
 	return mgr, nil
 }
