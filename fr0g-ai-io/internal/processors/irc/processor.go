@@ -599,6 +599,11 @@ func (p *Processor) calculateFloodScore(msg IRCMessage) float64 {
 				currentRepeats = 1
 			}
 		}
+		// Check final sequence
+		if currentRepeats > maxRepeats {
+			maxRepeats = currentRepeats
+		}
+		
 		if maxRepeats > 10 {
 			score += 0.6
 		}
