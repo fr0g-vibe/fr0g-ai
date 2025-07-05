@@ -43,8 +43,8 @@ services:
   # AI Identity & Persona Service
   fr0g-ai-aip:
     build:
-      context: ./fr0g-ai-aip
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: fr0g-ai-aip/Dockerfile
     ports:
       - "8080:8080"
       - "9090:9090"
@@ -74,8 +74,8 @@ services:
   # AI Bridge Service
   fr0g-ai-bridge:
     build:
-      context: ./fr0g-ai-bridge
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: fr0g-ai-bridge/Dockerfile
     ports:
       - "8082:8082"
       - "9091:9091"
