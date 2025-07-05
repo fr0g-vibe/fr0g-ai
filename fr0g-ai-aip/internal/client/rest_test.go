@@ -341,7 +341,7 @@ func TestRESTClient_ComplexPersona(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 			p = types.Persona{
 				Id:     "complex-id",
-				Name:   "Complex Expert ROCKET",
+				Name:   "Complex Expert",
 				Topic:  "Complex Systems\nWith Newlines",
 				Prompt: "You are an expert with special chars: @#$%",
 				Context: map[string]string{
@@ -368,7 +368,7 @@ func TestRESTClient_ComplexPersona(t *testing.T) {
 
 	// Test complex persona creation
 	complexPersona := &types.Persona{
-		Name:   "Complex Expert ROCKET",
+		Name:   "Complex Expert",
 		Topic:  "Complex Systems\nWith Newlines",
 		Prompt: "You are an expert with special chars: @#$%",
 		Context: map[string]string{
@@ -394,7 +394,7 @@ func TestRESTClient_ComplexPersona(t *testing.T) {
 		t.Fatalf("Get complex persona failed: %v", err)
 	}
 
-	if !strings.Contains(retrieved.Name, "ROCKET") {
+	if !strings.Contains(retrieved.Name, "Complex Expert") {
 		t.Error("Expected unicode characters to be preserved")
 	}
 

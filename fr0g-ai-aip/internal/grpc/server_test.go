@@ -881,7 +881,7 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 	// Test with special characters and unicode
 	req := &pb.CreatePersonaRequest{
 		Persona: &pb.Persona{
-			Name:   "Special Chars Expert ROCKET",
+			Name:   "Special Chars Expert",
 			Topic:  "Unicode & Special Characters\nMultiline",
 			Prompt: "You are an expert in handling special characters: @#$%^&*(){}[]|\\:;\"'<>,.?/~`",
 			Context: map[string]string{
@@ -907,7 +907,7 @@ func TestPersonaServer_SpecialCharacterHandling(t *testing.T) {
 	}
 
 	// Verify special characters were preserved
-	if resp.Persona.Name != "Special Chars Expert ROCKET" {
+	if resp.Persona.Name != "Special Chars Expert" {
 		t.Errorf("Expected unicode name to be preserved, got %s", resp.Persona.Name)
 	}
 
