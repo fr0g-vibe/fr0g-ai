@@ -6,8 +6,11 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/discord"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/irc"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/sms"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/voice"
 )
 
 // Manager manages all output processors
@@ -26,6 +29,18 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 	// Initialize SMS processor
 	smsProcessor := sms.NewProcessor(cfg)
 	mgr.processors["sms"] = smsProcessor
+
+	// Initialize IRC processor
+	ircProcessor := irc.NewProcessor(cfg)
+	mgr.processors["irc"] = ircProcessor
+
+	// Initialize Discord processor
+	discordProcessor := discord.NewProcessor(cfg)
+	mgr.processors["discord"] = discordProcessor
+
+	// Initialize Voice processor
+	voiceProcessor := voice.NewProcessor(cfg)
+	mgr.processors["voice"] = voiceProcessor
 
 	return mgr, nil
 }
