@@ -67,16 +67,19 @@
 - **UNIQUE MATCHING**: Include enough surrounding lines for unique identification
 - **MULTIPLE BLOCKS**: Use separate blocks for multiple changes in same file
 
-### CRITICAL SAFETY RULES - AIP COMPONENT
-- **⚠️ NEVER EXECUTE PKILL**: NEVER run pkill, killall, or any process termination commands
-- **⚠️ USE START/STOP SCRIPTS**: ONLY use designated start and stop scripts for process management
-- **⚠️ NO DIRECT PROCESS KILLING**: NEVER attempt to kill processes directly through system commands
-- **⚠️ ASK BEFORE DESTRUCTIVE OPERATIONS**: ALWAYS ask before deleting files, directories, or git operations
-- **⚠️ NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, or force push without explicit approval
-- **⚠️ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
-- **⚠️ VERIFY BEFORE EXECUTION**: Double-check all system commands before suggesting them
-- **⚠️ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
-- **⚠️ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
+### 🚨 CRITICAL SAFETY RULES - AIP COMPONENT 🚨
+- **🚫 NEVER EXECUTE PKILL**: NEVER EVER run pkill, killall, kill -9, or ANY process termination commands
+- **🚫 NEVER KILL PROCESSES**: NEVER attempt to kill processes directly through system commands
+- **🚫 NO DESTRUCTIVE FILE OPERATIONS**: NEVER run rm -rf, mv without confirmation, or delete important files
+- **🚫 NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, git push --force without explicit approval
+- **🚫 NO FORCE OPERATIONS**: NEVER suggest destructive operations without stopping and asking first
+- **✅ USE START/STOP SCRIPTS ONLY**: ONLY use designated start and stop scripts for process management
+- **✅ ASK BEFORE DESTRUCTIVE OPERATIONS**: ALWAYS pause and ask before ANY potentially destructive operations
+- **✅ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
+- **✅ VERIFY BEFORE EXECUTION**: Double-check ALL system commands before suggesting them
+- **✅ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
+- **✅ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
+- **✅ BACKUP CRITICAL FILES**: Always suggest backing up important files before major changes
 
 ### CENTRALIZED CONFIGURATION RULES - AIP COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs

@@ -41,17 +41,22 @@ When starting new AI coding sessions, always include these files:
 - **REAL INTEGRATIONS**: Always implement actual API calls, database connections, and service integrations
 - **PRODUCTION READY**: All code must be production-ready, not placeholder or demo code
 
-### CRITICAL SAFETY RULES - PROJECT-WIDE
-- **⚠️ NEVER EXECUTE PKILL**: NEVER run pkill, killall, or any process termination commands
-- **⚠️ USE START/STOP SCRIPTS**: ONLY use designated start and stop scripts for process management
-- **⚠️ NO DIRECT PROCESS KILLING**: NEVER attempt to kill processes directly through system commands
-- **⚠️ ASK BEFORE DESTRUCTIVE OPERATIONS**: ALWAYS ask before deleting files, directories, or git operations
-- **⚠️ NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, or force push without explicit approval
-- **⚠️ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
-- **⚠️ VERIFY BEFORE EXECUTION**: Double-check all system commands before suggesting them
-- **⚠️ NO FORCE OPERATIONS**: Never suggest rm -rf, mv without confirmation, or other destructive file operations
-- **⚠️ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
-- **⚠️ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
+### 🚨 CRITICAL SAFETY RULES - PROJECT-WIDE 🚨
+- **🚫 NEVER EXECUTE PKILL**: NEVER EVER run pkill, killall, kill -9, or ANY process termination commands
+- **🚫 NEVER KILL PROCESSES**: NEVER attempt to kill processes directly through system commands
+- **🚫 NO DESTRUCTIVE FILE OPERATIONS**: NEVER run rm -rf, mv without confirmation, or delete important files
+- **🚫 NO DESTRUCTIVE GIT COMMANDS**: NEVER run git reset --hard, git clean -fd, git push --force without explicit approval
+- **🚫 NO FORCE OPERATIONS**: NEVER suggest destructive operations without stopping and asking first
+- **🚫 NO DIRECTORY DELETION**: NEVER delete directories without explicit confirmation
+- **🚫 NO BULK FILE OPERATIONS**: NEVER perform bulk file moves/deletes without confirmation
+- **✅ USE START/STOP SCRIPTS ONLY**: ONLY use designated start and stop scripts for process management
+- **✅ ASK BEFORE DESTRUCTIVE OPERATIONS**: ALWAYS pause and ask before ANY potentially destructive operations
+- **✅ GRACEFUL SHUTDOWN ONLY**: Always use proper service shutdown mechanisms and scripts
+- **✅ VERIFY BEFORE EXECUTION**: Double-check ALL system commands before suggesting them
+- **✅ PAUSE FOR DESTRUCTIVE ACTIONS**: Always pause and ask before any destructive operations
+- **✅ COMMIT FREQUENTLY**: Use frequent git commits for version control instead of manual backups
+- **✅ BACKUP CRITICAL FILES**: Always suggest backing up important files before major changes
+- **✅ CONFIRM BEFORE PROCEEDING**: Always ask for explicit confirmation before destructive actions
 
 ### SEARCH/REPLACE BLOCK RULES - PROJECT-WIDE
 - **QUADRUPLE BACKTICKS**: Always use ```` as fences, never triple backticks ```
