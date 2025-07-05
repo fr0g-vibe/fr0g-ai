@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 // RegistryConfig holds configuration for the service registry
@@ -224,7 +223,7 @@ func (r *Registry) Stop() {
 // Server provides HTTP API for the service registry
 type Server struct {
 	registry *Registry
-	router   *mux.Router
+	mux      *http.ServeMux
 }
 
 // NewServer creates a new registry server
@@ -232,7 +231,7 @@ func NewServer() *Server {
 	registry := NewRegistry()
 	server := &Server{
 		registry: registry,
-		router:   mux.NewRouter(),
+		mux:      http.NewServeMux(),
 	}
 	
 	server.setupRoutes()
@@ -241,19 +240,17 @@ func NewServer() *Server {
 
 // setupRoutes configures HTTP routes
 func (s *Server) setupRoutes() {
-	api := s.router.PathPrefix("/v1").Subrouter()
-	
 	// Service registration
-	api.HandleFunc("/agent/service/register", s.registerServiceHandler).Methods("PUT")
-	api.HandleFunc("/agent/service/deregister/{serviceId}", s.deregisterServiceHandler).Methods("PUT")
+	s.mux.HandleFunc("/v1/agent/service/register", s.registerServiceHandler)
+	s.mux.HandleFunc("/v1/agent/service/deregister/", s.deregisterServiceHandler)
 	
 	// Service discovery
-	api.HandleFunc("/catalog/services", s.listServicesHandler).Methods("GET")
-	api.HandleFunc("/catalog/service/{serviceName}", s.getServiceHandler).Methods("GET")
-	api.HandleFunc("/health/service/{serviceId}", s.getServiceHealthHandler).Methods("GET")
+	s.mux.HandleFunc("/v1/catalog/services", s.listServicesHandler)
+	s.mux.HandleFunc("/v1/catalog/service/", s.getServiceHandler)
+	s.mux.HandleFunc("/v1/health/service/", s.getServiceHealthHandler)
 	
 	// Health endpoint
-	s.router.HandleFunc("/health", s.healthHandler).Methods("GET")
+	s.mux.HandleFunc("/health", s.healthHandler)
 }
 
 // HTTP Handlers
@@ -273,8 +270,19 @@ func (s *Server) registerServiceHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) deregisterServiceHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	serviceID := vars["serviceId"]
+	if r.Method != http.MethodPUT {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	// Extract service ID from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/v1/agent/service/deregister/")
+	serviceID := strings.TrimSuffix(path, "/")
+	
+	if serviceID == "" {
+		http.Error(w, "Service ID required", http.StatusBadRequest)
+		return
+	}
 	
 	if err := s.registry.DeregisterService(serviceID); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -292,8 +300,14 @@ func (s *Server) listServicesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getServiceHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	serviceName := vars["serviceName"]
+	// Extract service name from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/v1/catalog/service/")
+	serviceName := strings.TrimSuffix(path, "/")
+	
+	if serviceName == "" {
+		http.Error(w, "Service name required", http.StatusBadRequest)
+		return
+	}
 	
 	services := s.registry.GetServicesByName(serviceName)
 	
@@ -302,8 +316,14 @@ func (s *Server) getServiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getServiceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	serviceID := vars["serviceId"]
+	// Extract service ID from URL path
+	path := strings.TrimPrefix(r.URL.Path, "/v1/health/service/")
+	serviceID := strings.TrimSuffix(path, "/")
+	
+	if serviceID == "" {
+		http.Error(w, "Service ID required", http.StatusBadRequest)
+		return
+	}
 	
 	service, err := s.registry.GetService(serviceID)
 	if err != nil {
@@ -333,7 +353,7 @@ func (s *Server) Start(ctx context.Context, addr string) error {
 	
 	server := &http.Server{
 		Addr:    addr,
-		Handler: s.router,
+		Handler: s.mux,
 	}
 	
 	log.Printf("Service registry starting on %s", addr)
