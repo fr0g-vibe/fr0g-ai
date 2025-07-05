@@ -82,54 +82,12 @@ run: build
 	@echo "🚀 Starting fr0g.ai MCP server..."
 	./bin/fr0g-ai-mcp
 
-# Run fr0g-ai-aip server (build then run)
-run-aip:
-	@echo "🚀 Starting fr0g-ai-aip..."
-	@cd fr0g-ai-aip && (make build || go build -o bin/fr0g-ai-aip ./main.go || echo "❌ Build failed") && (test -f bin/fr0g-ai-aip && ./bin/fr0g-ai-aip || echo "❌ Binary not found")
-
-# Run fr0g-ai-master-control server (build then run)
-run-master-control:
-	@echo "🚀 Starting fr0g-ai-master-control..."
-	@cd fr0g-ai-master-control && (make build || go build -o bin/fr0g-ai-master-control ./cmd/master-control || echo "❌ Build failed") && (test -f bin/fr0g-ai-master-control && ./bin/fr0g-ai-master-control || echo "❌ Binary not found")
-
-# Run service registry server (build then run)
-run-registry:
-	@echo "🚀 Starting service registry..."
-	@cd fr0g-ai-master-control && (make build-registry || go build -o bin/registry-server ./cmd/registry || echo "❌ Build failed") && (test -f bin/registry-server && ./bin/registry-server || echo "❌ Binary not found")
-
-# Build registry only
-build-registry:
-	@echo "Building service registry..."
-	@cd fr0g-ai-master-control && go build -o bin/registry-server ./cmd/registry
-
-# Run fr0g-ai-master-control ESMTP interceptor
-run-esmtp: build-all
-	@echo "Starting fr0g-ai ESMTP Threat Vector Interceptor..."
-	cd fr0g-ai-master-control && ./bin/esmtp-interceptor -config configs/esmtp.yaml
 
 # Run tests
 test:
 	@echo "🧪 Running tests..."
 	go test ./...
 
-# Run tests for all projects
-test-all:
-	@echo "Testing fr0g-ai-aip..."
-	cd fr0g-ai-aip && make test
-	@echo "Testing fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && go test ./...
-	@echo "Testing fr0g-ai-master-control..."
-	cd fr0g-ai-master-control && go test ./...
-
-# Generate protobuf code for bridge
-proto:
-	@echo "Generating protobuf code for fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && protoc --go_out=. --go-grpc_out=. proto/bridge.proto
-
-# Generate protobuf code for AIP
-proto-aip:
-	@echo "Generating protobuf code for fr0g-ai-aip..."
-	cd fr0g-ai-aip && protoc --proto_path=internal/grpc/proto --go_out=internal/grpc/pb --go_opt=paths=source_relative --go-grpc_out=internal/grpc/pb --go-grpc_opt=paths=source_relative internal/grpc/proto/persona.proto
 
 # Install dependencies
 deps:
@@ -142,127 +100,16 @@ clean:
 	@echo "🧹 Cleaning build artifacts..."
 	rm -rf bin/
 
-# Build Docker images
-docker:
-	@echo "Building Docker images..."
-	docker-compose build
-
-# Build Docker images for all
-docker-build-all:
-	@echo "Building Docker image for fr0g-ai-aip..."
-	cd fr0g-ai-aip && docker build -t fr0g-ai-aip .
-	@echo "Building Docker image for fr0g-ai-bridge..."
-	cd fr0g-ai-bridge && docker build -t fr0g-ai-bridge .
-
 # Code quality checks
 lint:
 	@echo "🔍 Running linters..."
-	@cd fr0g-ai-aip && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
-	@cd fr0g-ai-bridge && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
-	@cd fr0g-ai-master-control && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
+	golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
 
 fmt:
 	@echo "🎨 Formatting code..."
-	@cd fr0g-ai-aip && go fmt ./...
-	@cd fr0g-ai-bridge && go fmt ./...
-	@cd fr0g-ai-master-control && go fmt ./...
+	go fmt ./...
 
-# Health check all services
+# Health check MCP service
 health:
-	@echo "🏥 Checking service health..."
-	@curl -sf http://localhost:8500/health && echo "✅ Service registry healthy" || echo "❌ Service registry down"
-	@curl -sf http://localhost:8080/health && echo "✅ AIP service healthy" || echo "❌ AIP service down"
-	@curl -sf http://localhost:8082/health && echo "✅ Bridge service healthy" || echo "❌ Bridge service down"
-	@curl -sf http://localhost:8081/health && echo "✅ Master-control service healthy" || echo "❌ Master-control service down"
-	@(command -v nc >/dev/null 2>&1 && nc -z localhost 2525 && echo "✅ ESMTP Interceptor healthy") || echo "❌ ESMTP Interceptor down"
-
-# Quick health summary
-health-summary:
-	@echo "🎉 fr0g.ai Service Status Summary:"
-	@echo "=================================="
-	@curl -sf http://localhost:8080/health | jq -r '"AIP: \(.status) - \(.persona_count) personas loaded"' 2>/dev/null || echo "❌ AIP: Down"
-	@curl -sf http://localhost:8082/health | jq -r '"Bridge: \(.status) - \(.service)"' 2>/dev/null || echo "❌ Bridge: Down"
-	@curl -sf http://localhost:8081/health | jq -r '"Master-Control: \(.status) - Intelligence: \(.intelligence.status)"' 2>/dev/null || echo "❌ Master-Control: Down"
-	@echo "=================================="
-	@echo "✅ All core services operational!"
-
-# Detailed health check with verbose output
-health-verbose:
-	@echo "🏥 Detailed service health check..."
-	@echo "Checking AIP service (port 8080)..."
-	@curl -v http://localhost:8080/health 2>&1 || echo "❌ AIP service connection failed"
-	@echo "Checking Bridge service (port 8082)..."
-	@curl -v http://localhost:8082/health 2>&1 || echo "❌ Bridge service connection failed"
-	@echo "Checking Master-control service (port 8081)..."
-	@curl -v http://localhost:8081/health 2>&1 || echo "❌ Master-control service connection failed"
-	@echo "Checking ESMTP port (2525)..."
-	@nc -z localhost 2525 && echo "✅ ESMTP port open" || echo "❌ ESMTP port closed"
-
-# Start all services in background for testing
-start-services:
-	@echo "🚀 Starting all fr0g.ai services..."
-	@cd fr0g-ai-aip && ./bin/fr0g-ai-aip -server &
-	@cd fr0g-ai-bridge && ./bin/fr0g-ai-bridge &
-	@cd fr0g-ai-master-control && ./bin/fr0g-ai-master-control &
-	@echo "✅ All services started in background"
-	@echo "💡 Use 'make health' to check status"
-	@echo "💡 Use 'make stop-services' to stop all services"
-
-# Stop all services
-stop-services:
-	@echo "🛑 Stopping all fr0g.ai services..."
-	@pkill -f fr0g-ai-aip || true
-	@pkill -f fr0g-ai-bridge || true
-	@pkill -f fr0g-ai-master-control || true
-	@echo "✅ All services stopped"
-
-# Development helpers
-dev-deps:
-	@echo "Installing development dependencies..."
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-# Test endpoints
-test-rest:
-	@echo "Testing REST endpoints..."
-	curl -X POST http://localhost:8081/api/v1/chat \
-		-H "Content-Type: application/json" \
-		-d '{"message": "Hello from fr0g.ai!", "model": "gpt-3.5-turbo"}' | jq .
-
-test-grpc:
-	@echo "Testing gRPC endpoints..."
-	grpcurl -plaintext localhost:9091 list
-
-# Docker utilities
-docker-logs:
-	@echo "📋 Viewing Docker container logs..."
-	docker-compose logs -f
-
-docker-clean:
-	@echo "🧹 Cleaning Docker containers and volumes..."
-	docker-compose down -v
-	docker system prune -f
-
-# Production deployment
-prod-up:
-	@echo "🚀 Starting production environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-
-prod-down:
-	@echo "🛑 Stopping production environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
-
-# Testing
-test-deployment:
-	@echo "🧪 Running deployment tests..."
-	@chmod +x scripts/test-deployment.sh
-	@./scripts/test-deployment.sh
-
-# Monitoring
-monitoring-up:
-	@echo "📊 Starting monitoring stack..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d prometheus grafana
-
-monitoring-down:
-	@echo "📊 Stopping monitoring stack..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml stop prometheus grafana
+	@echo "🏥 Checking MCP service health..."
+	@curl -sf http://localhost:8081/health && echo "✅ MCP service healthy" || echo "❌ MCP service down"
