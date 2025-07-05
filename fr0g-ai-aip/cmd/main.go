@@ -19,7 +19,10 @@ import (
 
 func main() {
 	// Load configuration using shared config system
-	cfg := sharedconfig.LoadConfig()
+	cfg, err := sharedconfig.LoadConfig("")
+	if err != nil {
+		log.Fatalf("Failed to load configuration: %v", err)
+	}
 
 	// Validate configuration
 	if err := cfg.Validate(); err != nil {
