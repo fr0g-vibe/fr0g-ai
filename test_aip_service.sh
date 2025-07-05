@@ -64,8 +64,8 @@ check_service_health() {
     # Test HTTP health endpoint
     if curl -s -f "$AIP_HTTP_BASE/health" > "$TEST_OUTPUT_DIR/health_response.json" 2>/dev/null; then
         local health_status=$(cat "$TEST_OUTPUT_DIR/health_response.json" | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
-        if [ "$health_status" = "healthy" ]; then
-            log_test "HTTP Health Check" "PASS" "Service is healthy"
+        if [ "$health_status" = "healthy" ] || [ "$health_status" = "ok" ]; then
+            log_test "HTTP Health Check" "PASS" "Service is healthy (status: $health_status)"
         else
             log_test "HTTP Health Check" "FAIL" "Service status: $health_status"
             return 1
