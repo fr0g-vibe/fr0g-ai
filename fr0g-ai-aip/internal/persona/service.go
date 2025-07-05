@@ -13,9 +13,9 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/preferences"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/psychographics"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/middleware"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"github.com/google/uuid"
 )
 
@@ -232,25 +232,25 @@ func (s *Service) GetIdentityWithPersona(id string) (types.IdentityWithPersona, 
 
 // validatePersona validates a persona using business rules
 func (s *Service) validatePersona(persona *types.Persona) error {
-	var errors []config.ValidationError
+	var errors []sharedconfig.ValidationError
 
 	// Required fields
 	if persona.Name == "" {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "name",
 			Message: "persona name is required",
 		})
 	}
 
 	if persona.Topic == "" {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "topic",
 			Message: "persona topic is required",
 		})
 	}
 
 	if persona.Prompt == "" {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "prompt",
 			Message: "persona prompt is required",
 		})
@@ -258,21 +258,21 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 
 	// Length validations
 	if len(persona.Name) > 100 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "name",
 			Message: "persona name must be 100 characters or less",
 		})
 	}
 
 	if len(persona.Topic) > 200 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "topic",
 			Message: "persona topic must be 200 characters or less",
 		})
 	}
 
 	if len(persona.Prompt) > 10000 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "prompt",
 			Message: "persona prompt must be 10000 characters or less",
 		})
@@ -280,7 +280,7 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 
 	// Context validation
 	if len(persona.Context) > 50 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "context",
 			Message: "persona context cannot have more than 50 entries",
 		})
@@ -288,13 +288,13 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 
 	for key, value := range persona.Context {
 		if len(key) > 100 {
-			errors = append(errors, config.ValidationError{
+			errors = append(errors, sharedconfig.ValidationError{
 				Field:   "context." + key,
 				Message: "context key must be 100 characters or less",
 			})
 		}
 		if len(value) > 1000 {
-			errors = append(errors, config.ValidationError{
+			errors = append(errors, sharedconfig.ValidationError{
 				Field:   "context." + key,
 				Message: "context value must be 1000 characters or less",
 			})
@@ -303,7 +303,7 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 
 	// RAG validation
 	if len(persona.Rag) > 100 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "rag",
 			Message: "persona RAG cannot have more than 100 entries",
 		})
@@ -311,7 +311,7 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 
 	for i, rag := range persona.Rag {
 		if len(rag) > 500 {
-			errors = append(errors, config.ValidationError{
+			errors = append(errors, sharedconfig.ValidationError{
 				Field:   fmt.Sprintf("rag[%d]", i),
 				Message: "RAG entry must be 500 characters or less",
 			})
@@ -319,7 +319,7 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 	}
 
 	if len(errors) > 0 {
-		return &middleware.ValidationErrors{Errors: convertValidationErrors(errors)}
+		return sharedconfig.ValidationErrors(errors)
 	}
 
 	return nil
@@ -327,18 +327,18 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 
 // validateIdentity validates an identity using business rules
 func (s *Service) validateIdentity(identity *types.Identity) error {
-	var errors []config.ValidationError
+	var errors []sharedconfig.ValidationError
 
 	// Required fields
 	if identity.PersonaId == "" {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "persona_id",
 			Message: "persona ID is required",
 		})
 	}
 
 	if identity.Name == "" {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "name",
 			Message: "identity name is required",
 		})
@@ -346,21 +346,21 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 
 	// Length validations
 	if len(identity.Name) > 100 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "name",
 			Message: "identity name must be 100 characters or less",
 		})
 	}
 
 	if len(identity.Description) > 1000 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "description",
 			Message: "identity description must be 1000 characters or less",
 		})
 	}
 
 	if len(identity.Background) > 5000 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "background",
 			Message: "identity background must be 5000 characters or less",
 		})
@@ -368,7 +368,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 
 	// Tags validation
 	if len(identity.Tags) > 20 {
-		errors = append(errors, config.ValidationError{
+		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "tags",
 			Message: "identity cannot have more than 20 tags",
 		})
@@ -376,7 +376,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 
 	for i, tag := range identity.Tags {
 		if len(tag) > 50 {
-			errors = append(errors, config.ValidationError{
+			errors = append(errors, sharedconfig.ValidationError{
 				Field:   fmt.Sprintf("tags[%d]", i),
 				Message: "tag must be 50 characters or less",
 			})
@@ -386,7 +386,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 	// Verify persona exists
 	if identity.PersonaId != "" {
 		if _, err := s.storage.Get(identity.PersonaId); err != nil {
-			errors = append(errors, config.ValidationError{
+			errors = append(errors, sharedconfig.ValidationError{
 				Field:   "persona_id",
 				Message: "referenced persona does not exist",
 			})
@@ -394,7 +394,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 	}
 
 	if len(errors) > 0 {
-		return &middleware.ValidationErrors{Errors: convertValidationErrors(errors)}
+		return sharedconfig.ValidationErrors(errors)
 	}
 
 	return nil
@@ -402,7 +402,7 @@ func (s *Service) validateIdentity(identity *types.Identity) error {
 
 // processRichAttributes validates and processes all rich attributes
 func (s *Service) processRichAttributes(attrs *types.RichAttributes) error {
-	var allErrors []config.ValidationError
+	var allErrors []sharedconfig.ValidationError
 
 	// Process Demographics
 	if attrs.Demographics != nil {
@@ -461,22 +461,10 @@ func (s *Service) processRichAttributes(attrs *types.RichAttributes) error {
 	}
 
 	if len(allErrors) > 0 {
-		return &middleware.ValidationErrors{Errors: convertValidationErrors(allErrors)}
+		return sharedconfig.ValidationErrors(allErrors)
 	}
 
 	return nil
-}
-
-// convertValidationErrors converts config.ValidationError to middleware.ValidationError
-func convertValidationErrors(configErrors []config.ValidationError) []middleware.ValidationError {
-	var middlewareErrors []middleware.ValidationError
-	for _, err := range configErrors {
-		middlewareErrors = append(middlewareErrors, middleware.ValidationError{
-			Field:   err.Field,
-			Message: err.Message,
-		})
-	}
-	return middlewareErrors
 }
 
 // ANALYSIS AND INSIGHTS METHODS
