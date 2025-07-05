@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"fr0g-ai-master-control/internal/discovery"
-	"fr0g-ai-master-control/internal/mastercontrol"
-	"fr0g-ai-master-control/internal/mastercontrol/input"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/discovery"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/input"
 )
 
 func main() {
