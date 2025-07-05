@@ -177,6 +177,14 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 
 	health["persona_count"] = personaCount
 	
+	// Add gRPC reflection status for debugging
+	if s.config.GRPC.EnableReflection {
+		health["grpc_reflection"] = "enabled"
+		health["grpc_reflection_warning"] = "Reflection should be disabled in production"
+	} else {
+		health["grpc_reflection"] = "disabled"
+	}
+	
 	// Set appropriate HTTP status code
 	if !isHealthy {
 		w.WriteHeader(http.StatusServiceUnavailable)
