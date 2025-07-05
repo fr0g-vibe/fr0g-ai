@@ -408,14 +408,16 @@ func GetDefaults() *Config {
 			ResponseEnabled:    false,
 		},
 		Voice: VoiceConfig{
-			Enabled:            false,
+			Enabled:            true,
 			MonitoringInterval: 30,
 			MaxHistorySize:     1000,
 			ThreatThreshold:    0.5,
 			ResponseEnabled:    false,
 		},
 		IRC: IRCConfig{
-			Enabled:           false,
+			Enabled:           true,
+			Servers:           []string{"irc.libera.chat:6667"},
+			Channels:          []string{"#fr0g-ai-test"},
 			Nickname:          "fr0g-ai",
 			Username:          "fr0g-ai",
 			Realname:          "fr0g.ai Security Bot",
@@ -431,7 +433,8 @@ func GetDefaults() *Config {
 			ResponseEnabled: false,
 		},
 		Discord: DiscordConfig{
-			Enabled:        false,
+			Enabled:        true,
+			WebhookEnabled: true,
 			WebhookPort:    8084,
 			MaxHistorySize: 1000,
 			ResponseEnabled: false,

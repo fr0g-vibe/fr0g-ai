@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/discord"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/irc"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/sms"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/voice"
@@ -75,8 +76,9 @@ func (m *Manager) initializeProcessors() error {
 
 	// Discord Processor
 	if m.config.Discord.Enabled {
-		// TODO: Create Discord processor
-		log.Println("Discord processor would be initialized here")
+		discordProcessor := discord.NewProcessor(&m.config.Discord)
+		m.processors["discord"] = discordProcessor
+		log.Println("Discord processor initialized")
 	}
 
 	return nil
