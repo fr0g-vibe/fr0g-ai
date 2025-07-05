@@ -1,4 +1,4 @@
-.PHONY: build test clean run-server run-grpc run-both run-cli proto help
+.PHONY: build test clean run-server run-grpc run-both run-cli proto help run
 
 # Build the application
 build: proto-if-needed
@@ -132,6 +132,14 @@ docs-openapi:
 # Generate MCP documentation
 docs-mcp:
 	@echo "MCP integration documentation available at docs/MCP_INTEGRATION.md"
+
+# Run the service (for main project integration)
+run: build
+	@echo "🚀 Starting fr0g-ai-aip service..."
+	@echo "HTTP server will start on port 8080"
+	@echo "gRPC server will start on port 9090"
+	@echo "Service registry will register at http://localhost:8500"
+	@./bin/fr0g-ai-aip
 
 # Show help
 help:
