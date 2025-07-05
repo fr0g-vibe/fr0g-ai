@@ -174,43 +174,6 @@ test_rest_api() {
     fi
 }
 
-# Function to test gRPC endpoints (if grpcurl is available)
-test_grpc_api() {
-    echo -e "${BLUE}--- gRPC API Tests ---${NC}"
-    
-    # Check if grpcurl is available
-    if ! command -v grpcurl &> /dev/null; then
-        log_test "gRPC Tests" "SKIP" "grpcurl not installed"
-        echo -e "${YELLOW}Install grpcurl to test gRPC endpoints: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest${NC}"
-        return 0
-    fi
-    
-    # Test gRPC service reflection with better error handling
-    if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list > "$TEST_OUTPUT_DIR/grpc_services.txt" 2>"$TEST_OUTPUT_DIR/grpc_error.txt"; then
-        local service_count=$(cat "$TEST_OUTPUT_DIR/grpc_services.txt" | wc -l)
-        if [ $service_count -gt 0 ]; then
-            log_test "gRPC Service Reflection" "PASS" "Found $service_count services"
-        else
-            log_test "gRPC Service Reflection" "FAIL" "No services found via reflection"
-            return 1
-        fi
-    else
-        local error_msg=$(cat "$TEST_OUTPUT_DIR/grpc_error.txt" 2>/dev/null | head -1)
-        if echo "$error_msg" | grep -q "does not support the reflection API"; then
-            log_test "gRPC Service Reflection" "SKIP" "Reflection not enabled (expected for production)"
-            echo -e "${YELLOW}💡 Info: gRPC reflection is disabled for security in production${NC}"
-            echo -e "${YELLOW}   This is normal and expected behavior${NC}"
-            # Continue with direct service testing
-            test_grpc_direct_calls
-            return 0
-        else
-            log_test "gRPC Service Reflection" "FAIL" "Reflection failed: $error_msg"
-            echo -e "${YELLOW}💡 Debug: gRPC server may not have reflection enabled${NC}"
-            echo -e "${YELLOW}   Check if the server implements grpc.reflection.v1alpha.ServerReflection${NC}"
-            return 1
-        fi
-    fi
-    
 # Function to test gRPC services directly without reflection
 test_grpc_direct_calls() {
     echo -e "${BLUE}--- Direct gRPC Service Tests ---${NC}"
@@ -249,6 +212,43 @@ test_grpc_direct_calls() {
     fi
 }
 
+# Function to test gRPC endpoints (if grpcurl is available)
+test_grpc_api() {
+    echo -e "${BLUE}--- gRPC API Tests ---${NC}"
+    
+    # Check if grpcurl is available
+    if ! command -v grpcurl &> /dev/null; then
+        log_test "gRPC Tests" "SKIP" "grpcurl not installed"
+        echo -e "${YELLOW}Install grpcurl to test gRPC endpoints: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest${NC}"
+        return 0
+    fi
+    
+    # Test gRPC service reflection with better error handling
+    if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list > "$TEST_OUTPUT_DIR/grpc_services.txt" 2>"$TEST_OUTPUT_DIR/grpc_error.txt"; then
+        local service_count=$(cat "$TEST_OUTPUT_DIR/grpc_services.txt" | wc -l)
+        if [ $service_count -gt 0 ]; then
+            log_test "gRPC Service Reflection" "PASS" "Found $service_count services"
+        else
+            log_test "gRPC Service Reflection" "FAIL" "No services found via reflection"
+            return 1
+        fi
+    else
+        local error_msg=$(cat "$TEST_OUTPUT_DIR/grpc_error.txt" 2>/dev/null | head -1)
+        if echo "$error_msg" | grep -q "does not support the reflection API"; then
+            log_test "gRPC Service Reflection" "SKIP" "Reflection not enabled (expected for production)"
+            echo -e "${YELLOW}💡 Info: gRPC reflection is disabled for security in production${NC}"
+            echo -e "${YELLOW}   This is normal and expected behavior${NC}"
+            # Continue with direct service testing
+            test_grpc_direct_calls
+            return 0
+        else
+            log_test "gRPC Service Reflection" "FAIL" "Reflection failed: $error_msg"
+            echo -e "${YELLOW}💡 Debug: gRPC server may not have reflection enabled${NC}"
+            echo -e "${YELLOW}   Check if the server implements grpc.reflection.v1alpha.ServerReflection${NC}"
+            return 1
+        fi
+    fi
+    
     # Test PersonaService methods (skip if reflection failed)
     if grpcurl -plaintext "$AIP_GRPC_ENDPOINT" list persona.PersonaService > "$TEST_OUTPUT_DIR/persona_methods.txt" 2>/dev/null; then
         log_test "PersonaService Discovery" "PASS" "PersonaService methods available"
