@@ -1,17 +1,27 @@
 FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
-COPY go.mod go.sum ./
+
+# Copy the shared pkg directory first
+COPY pkg/ ./pkg/
+
+# Copy the master-control service
+COPY fr0g-ai-master-control/ ./fr0g-ai-master-control/
+
+# Set working directory to master-control
+WORKDIR /app/fr0g-ai-master-control
+
+# Download dependencies
 RUN go mod download
 
-COPY . .
+# Build the registry service
 RUN CGO_ENABLED=0 GOOS=linux go build -o registry ./cmd/registry
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
-COPY --from=builder /app/registry .
+COPY --from=builder /app/fr0g-ai-master-control/registry .
 
 EXPOSE 8500
 

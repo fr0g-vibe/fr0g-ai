@@ -2,8 +2,8 @@ services:
   # Service Discovery Registry
   service-registry:
     build:
-      context: ./fr0g-ai-master-control
-      dockerfile: Dockerfile.registry
+      context: .
+      dockerfile: fr0g-ai-master-control/Dockerfile.registry
     ports:
       - "8500:8500"
     environment:
@@ -20,8 +20,8 @@ services:
   # Master Control Program
   fr0g-ai-master-control:
     build:
-      context: ./fr0g-ai-master-control
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: fr0g-ai-master-control/Dockerfile
     ports:
       - "8081:8081"
     environment:
