@@ -25,11 +25,37 @@ type Server struct {
 
 // NewServer creates a new HTTP server instance
 func NewServer(cfg *config.Config, service *persona.Service) *Server {
-	return &Server{
+	s := &Server{
 		config:           cfg,
 		service:          service,
-		communityService: community.NewService(service.GetStorage()),
 	}
+	if service != nil {
+		s.communityService = community.NewService(service.GetStorage())
+	}
+	return s
+}
+
+// ServeHTTP implements http.Handler interface
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	
+	// Health check endpoint
+	mux.HandleFunc("/health", s.healthHandler)
+	
+	// Persona endpoints
+	mux.HandleFunc("/personas", s.personasHandler)
+	mux.HandleFunc("/personas/", s.personaHandler)
+	
+	// Identity endpoints
+	mux.HandleFunc("/identities", s.identitiesHandler)
+	mux.HandleFunc("/identities/", s.identityHandler)
+	
+	// Community endpoints
+	mux.HandleFunc("/communities", s.communitiesHandler)
+	mux.HandleFunc("/communities/", s.communityHandler)
+	mux.HandleFunc("/communities/generate", s.generateCommunityHandler)
+	
+	mux.ServeHTTP(w, r)
 }
 
 // Start starts the HTTP server with graceful shutdown support

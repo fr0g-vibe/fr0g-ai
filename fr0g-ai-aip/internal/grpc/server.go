@@ -47,6 +47,11 @@ func StartGRPCServer(port string) error {
 	return s.Serve(lis)
 }
 
+// NewServer creates a new gRPC server instance (simple version for main.go)
+func NewServer() *PersonaServer {
+	return &PersonaServer{}
+}
+
 // NewPersonaServer creates a new gRPC persona server
 func NewPersonaServer(cfg *config.Config, service *persona.Service) *PersonaServer {
 	return &PersonaServer{
