@@ -42,15 +42,14 @@ func (sr *ServiceRegistry) Start(ctx context.Context) error {
 
 // ServiceInfo represents a registered service
 type ServiceInfo struct {
-	ID           string            `json:"id"`
-	Name         string            `json:"name"`
-	Address      string            `json:"address"`
-	Port         int               `json:"port"`
-	Tags         []string          `json:"tags"`
-	Meta         map[string]string `json:"meta"`
-	Health       HealthStatus      `json:"health"`
-	RegisteredAt time.Time         `json:"registered_at"`
-	LastSeen     time.Time         `json:"last_seen"`
+	ID       string            `json:"id"`
+	Name     string            `json:"name"`
+	Address  string            `json:"address"`
+	Port     int               `json:"port"`
+	Tags     []string          `json:"tags"`
+	Meta     map[string]string `json:"meta"`
+	Health   string            `json:"health"` // "passing", "warning", "critical"
+	LastSeen time.Time         `json:"last_seen"`
 }
 
 // HealthStatus represents service health
@@ -86,12 +85,8 @@ func (r *Registry) RegisterService(service *ServiceInfo) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	service.RegisteredAt = time.Now()
 	service.LastSeen = time.Now()
-	service.Health = HealthStatus{
-		Status:      "unknown",
-		LastChecked: time.Now(),
-	}
+	service.Health = "unknown"
 
 	r.services[service.ID] = service
 	log.Printf("Service registered: %s (%s)", service.Name, service.ID)
@@ -190,28 +185,16 @@ func (r *Registry) checkServiceHealth(service *ServiceInfo) {
 	defer r.mu.Unlock()
 
 	if err != nil {
-		service.Health = HealthStatus{
-			Status:      "critical",
-			Output:      fmt.Sprintf("Health check failed: %v", err),
-			LastChecked: time.Now(),
-		}
+		service.Health = "critical"
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		service.Health = HealthStatus{
-			Status:      "passing",
-			Output:      "Health check passed",
-			LastChecked: time.Now(),
-		}
+		service.Health = "passing"
 		service.LastSeen = time.Now()
 	} else {
-		service.Health = HealthStatus{
-			Status:      "warning",
-			Output:      fmt.Sprintf("Health check returned status %d", resp.StatusCode),
-			LastChecked: time.Now(),
-		}
+		service.Health = "warning"
 	}
 }
 
