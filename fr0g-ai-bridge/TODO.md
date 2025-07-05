@@ -129,16 +129,25 @@
 - [ ] Implement streaming gRPC endpoints (deferred - not critical for initial bridging)
 - [ ] Add gRPC middleware for logging/auth (deferred - authentication not implemented yet)
 
-### Service Discovery Integration - HIGH PRIORITY
-- [ ] **CRITICAL**: Implement service registry client
-  - Add service registry client library
-  - Implement automatic service registration on startup
-  - Add service deregistration on shutdown
-  - Implement service discovery for AIP service connection
-- [ ] **HIGH**: Add health checks with dependency status
-  - Check AIP service availability via service registry
-  - Report dependency health in health endpoint
-  - Implement circuit breaker for failed dependencies
+### Service Discovery Integration - COMPLETED
+- [x] **COMPLETED**: Implement service registry client
+  - Service registry client library implemented in internal/registry/client.go
+  - Automatic service registration on startup with health updates
+  - Service deregistration on shutdown with graceful cleanup
+  - Service discovery for AIP and other services with caching
+- [x] **COMPLETED**: Add service discovery helper
+  - Service discovery manager implemented in internal/discovery/discovery.go
+  - Endpoint caching with automatic refresh (60s cache, 30s refresh)
+  - Helper methods for AIP, Master Control, and I/O service endpoints
+  - Background endpoint refresh with graceful shutdown
+- [x] **COMPLETED**: Add dependency health checking
+  - Service health validation through registry
+  - Dependency status reporting for health endpoint integration
+  - Automatic service health monitoring
+- [ ] **HIGH**: Integrate with existing health endpoint
+  - Update health endpoint to report dependency status
+  - Add circuit breaker for failed dependencies
+  - Implement fallback mechanisms for service unavailability
 
 ## COMPLETED - Medium Priority Features
 
