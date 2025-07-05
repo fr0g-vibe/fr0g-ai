@@ -45,6 +45,8 @@ func main() {
 
 	// TODO: Add gRPC server once protobuf generation is fixed
 	log.Println("gRPC server temporarily disabled - protobuf generation needed")
+	log.Printf("Processor manager initialized with %d processors", len(processorMgr.GetProcessors()))
+	log.Printf("Output manager initialized with %d processors", len(outputMgr.GetProcessors()))
 
 	// Start HTTP server
 	ctx, cancel := context.WithCancel(context.Background())
