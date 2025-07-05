@@ -3,7 +3,6 @@ package lifehistory
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
