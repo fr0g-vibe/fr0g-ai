@@ -18,6 +18,7 @@ type MCPConfig struct {
 	PatternRecognitionDepth  int           `yaml:"pattern_recognition_depth"`
 	AdaptiveLearningRate     float64       `yaml:"adaptive_learning_rate"`
 	Fr0gIOService            Fr0gIOConfig  `yaml:"fr0g_io_service"`
+	IOProcessing             IOConfig      `yaml:"io_processing"`
 }
 
 // InputConfig represents input system configuration
@@ -90,6 +91,13 @@ func DefaultMCPConfig() *MCPConfig {
 			GRPCHost:    "localhost",
 			GRPCPort:    9092,
 			ServiceName: "fr0g-ai-io",
+		},
+		IOProcessing: IOConfig{
+			Enabled:                true,
+			InputEventBufferSize:   1000,
+			OutputCommandTimeout:   30 * time.Second,
+			ThreatAnalysisEnabled:  true,
+			MaxConcurrentEvents:    50,
 		},
 	}
 }
