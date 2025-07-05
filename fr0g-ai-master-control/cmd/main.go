@@ -12,8 +12,8 @@ import (
 )
 
 func main() {
-	log.Println("🎛️  fr0g.ai Master Control Program")
-	log.Println("==================================")
+	log.Println("fr0g.ai Master Control Program")
+	log.Println("===============================")
 
 	// Load configuration using shared config system
 	loader := sharedconfig.NewLoader(sharedconfig.LoaderOptions{
@@ -46,10 +46,10 @@ func main() {
 		log.Fatalf("Configuration validation failed: %v", err)
 	}
 
-	log.Println("✅ Configuration loaded and validated successfully")
+	log.Println("Configuration loaded and validated successfully")
 
 	// Create MCP server
-	log.Println("🧠 Initializing Master Control Program...")
+	log.Println("Initializing Master Control Program...")
 	mcpServer := NewMCPServer(cfg)
 
 	// Create context for graceful shutdown
@@ -57,12 +57,12 @@ func main() {
 	defer cancel()
 
 	// Start the server
-	log.Println("🚀 Starting Master Control Program...")
+	log.Println("Starting Master Control Program...")
 	if err := mcpServer.Start(ctx); err != nil {
 		log.Fatalf("Failed to start MCP server: %v", err)
 	}
 
-	log.Println("✅ Master Control Program is now operational!")
+	log.Println("Master Control Program is now operational!")
 	log.Printf("   - HTTP Server: http://localhost:%s", cfg.HTTP.Port)
 	log.Printf("   - Health Check: http://localhost:%s/health", cfg.HTTP.Port)
 
@@ -70,13 +70,13 @@ func main() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	log.Println("🎯 Master Control Program is running...")
+	log.Println("Master Control Program is running...")
 	log.Println("   Press Ctrl+C to shutdown gracefully")
 
 	// Wait for shutdown signal
 	<-sigChan
 
-	log.Println("🛑 Shutdown signal received...")
+	log.Println("Shutdown signal received...")
 
 	// Create shutdown context with timeout
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -87,7 +87,7 @@ func main() {
 		log.Printf("Error during shutdown: %v", err)
 	}
 
-	log.Println("👋 Master Control Program shutdown complete")
+	log.Println("Master Control Program shutdown complete")
 }
 
 // MCPServer represents the main MCP server
@@ -104,15 +104,15 @@ func NewMCPServer(cfg *sharedconfig.Config) *MCPServer {
 
 // Start starts the MCP server
 func (s *MCPServer) Start(ctx context.Context) error {
-	log.Println("🔧 Starting MCP server components...")
+	log.Println("Starting MCP server components...")
 
 	// TODO: Implement actual server startup logic including webhook input system
-	log.Printf("📡 HTTP server would start on port %s", s.config.HTTP.Port)
-	log.Printf("📡 gRPC server would start on port %s", s.config.GRPC.Port)
-	log.Println("🌐 Webhook input system would be initialized")
+	log.Printf("HTTP server would start on port %s", s.config.HTTP.Port)
+	log.Printf("gRPC server would start on port %s", s.config.GRPC.Port)
+	log.Println("Webhook input system would be initialized")
 
 	// Log configuration
-	log.Println("📡 Master Control Program configuration:")
+	log.Println("Master Control Program configuration:")
 	log.Printf("   - HTTP Port: %s", s.config.HTTP.Port)
 	log.Printf("   - gRPC Port: %s", s.config.GRPC.Port)
 	log.Printf("   - Storage Type: %s", s.config.Storage.Type)
@@ -123,10 +123,10 @@ func (s *MCPServer) Start(ctx context.Context) error {
 
 // Stop stops the MCP server
 func (s *MCPServer) Stop(ctx context.Context) error {
-	log.Println("🛑 Stopping MCP server...")
+	log.Println("Stopping MCP server...")
 
 	// TODO: Implement actual server shutdown logic including webhook system
-	log.Println("✅ MCP server stopped")
+	log.Println("MCP server stopped")
 
 	return nil
 }

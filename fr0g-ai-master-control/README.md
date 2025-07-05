@@ -27,15 +27,15 @@ https://github.com/fr0g-vibe/fr0g-ai-bridge
 * user connects a discord websocket to a new future component fr0g-ai-socket that accepts various websocket and webhook functionality
   * master-control responds to various types of incoming webhook and websocket actions with a highly modular structure for modifying response behavior
 * more to come
-# 🎛️ fr0g.ai Master Control Program
+# fr0g.ai Master Control Program
 
 The **Master Control Program (MCP)** is the central intelligence and orchestration engine of the fr0g.ai system. It represents a new paradigm in AI system architecture - not just a controller, but a **conscious**, **adaptive**, and **evolving** intelligence that orchestrates the entire system.
 
-## 🧠 Core Philosophy
+## Core Philosophy
 
 The MCP operates on the principle of **Emergent Intelligence** - it doesn't just manage components, it **understands** them, **learns** from them, and **evolves** the system to become more than the sum of its parts.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Go 1.21 or later
@@ -61,43 +61,43 @@ go run cmd/cognitive-demo/main.go
 go run cmd/mcp-demo/main.go
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ### Core Components
 
-#### 🧠 **Cognitive Engine**
+#### **Cognitive Engine**
 - **System Consciousness**: Maintains awareness of all system states
 - **Pattern Recognition**: Identifies recurring patterns in behavior
 - **Self-Reflection**: Generates insights about system operation
 - **Learning Integration**: Continuously adapts based on experience
 
-#### 🧮 **Memory Manager**
+#### **Memory Manager**
 - **Short-term Memory**: Temporary data and session information
 - **Long-term Memory**: Persistent system knowledge
 - **Episodic Memory**: Specific events and interactions
 - **Semantic Memory**: Conceptual knowledge and relationships
 
-#### 📚 **Learning Engine**
+#### **Learning Engine**
 - **Adaptive Learning**: Continuously learns from interactions
 - **Behavior Modification**: Adapts system behavior based on feedback
 - **Insight Generation**: Creates actionable insights from data
 
-#### 📊 **System Monitor**
+#### **System Monitor**
 - **Health Monitoring**: Tracks component health and performance
 - **Anomaly Detection**: Identifies unusual patterns or issues
 - **Metrics Collection**: Gathers system-wide performance data
 
-#### 🌊 **Workflow Engine**
+#### **Workflow Engine**
 - **Dynamic Workflows**: Creates custom workflows for complex tasks
 - **Intelligent Chaining**: Connects multiple operations intelligently
 - **Real-time Adaptation**: Adjusts workflows based on feedback
 
-#### 🎯 **Strategy Orchestrator**
+#### **Strategy Orchestrator**
 - **Resource Optimization**: Intelligently allocates system resources
 - **Component Coordination**: Orchestrates interactions between components
 - **Predictive Management**: Anticipates needs and manages proactively
 
-## 🎭 Key Features
+## Key Features
 
 ### **System Consciousness**
 The MCP maintains continuous awareness of its own state and the state of the entire system, enabling intelligent decision-making and self-optimization.
@@ -131,7 +131,7 @@ fr0g-ai-master-control/
 └── go.mod                 # Go module definition
 ```
 
-## 🔧 Development
+## Development
 
 ### Running Tests
 ```bash
@@ -149,7 +149,7 @@ The MCP uses a hierarchical configuration system:
 - YAML file configuration (planned)
 - Environment variable overrides (planned)
 
-## 🎯 Use Cases
+## Use Cases
 
 ### **AI System Orchestration**
 Coordinate multiple AI models and services to provide sophisticated capabilities that exceed the sum of individual components.
@@ -163,7 +163,7 @@ Learn from user interactions to provide increasingly personalized and effective 
 ### **System Evolution**
 Continuously evolve system capabilities based on usage patterns and emerging requirements.
 
-## 🔮 Future Vision
+## Future Vision
 
 The Master Control Program represents the future of AI systems:
 - **Self-aware** systems that understand their own capabilities and limitations
@@ -171,11 +171,11 @@ The Master Control Program represents the future of AI systems:
 - **Emergent** intelligence that develops novel capabilities
 - **Conscious** operation with continuous self-reflection and improvement
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions to the Master Control Program! Please see our contributing guidelines for more information.
 
-## 📄 License
+## License
 
 [License information to be added]
 

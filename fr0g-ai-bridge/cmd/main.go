@@ -16,8 +16,8 @@ import (
 )
 
 func main() {
-	log.Println("🌉 Starting fr0g.ai Bridge Service")
-	log.Println("==================================")
+	log.Println("Starting fr0g.ai Bridge Service")
+	log.Println("===============================")
 
 	// Load configuration
 	cfg, err := config.LoadConfig("")
@@ -30,7 +30,7 @@ func main() {
 		log.Fatalf("Configuration validation failed: %v", validationErrors)
 	}
 
-	log.Println("✅ Configuration loaded and validated successfully")
+	log.Println("Configuration loaded and validated successfully")
 
 	// Start gRPC server
 	grpcServer := grpc.NewServer()
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("✅ gRPC server starting on port %d", cfg.Server.GRPCPort)
+		log.Printf("gRPC server starting on port %d", cfg.Server.GRPCPort)
 		if err := grpcServer.Serve(grpcListener); err != nil {
 			log.Printf("gRPC server error: %v", err)
 		}
@@ -94,20 +94,20 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("✅ HTTP server starting on port %d", cfg.Server.HTTPPort)
+		log.Printf("HTTP server starting on port %d", cfg.Server.HTTPPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("HTTP server error: %v", err)
 		}
 	}()
 
-	log.Println("🎯 fr0g.ai Bridge is running...")
+	log.Println("fr0g.ai Bridge is running...")
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	<-sigChan
 
-	log.Println("🛑 Shutting down servers...")
+	log.Println("Shutting down servers...")
 
 	// Graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -121,5 +121,5 @@ func main() {
 	// Shutdown gRPC server
 	grpcServer.GracefulStop()
 
-	log.Println("👋 fr0g.ai Bridge shutdown complete")
+	log.Println("fr0g.ai Bridge shutdown complete")
 }
