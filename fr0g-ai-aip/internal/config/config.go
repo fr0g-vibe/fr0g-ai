@@ -37,8 +37,8 @@ func LoadConfig(configPath string) (*Config, error) {
 			Host: getEnvOrDefault("GRPC_HOST", "0.0.0.0"),
 		},
 		Storage: sharedconfig.StorageConfig{
-			Type:    getEnvOrDefault("STORAGE_TYPE", "file"),
-			DataDir: getEnvOrDefault("DATA_DIR", "./data"),
+			Type:    getEnvOrDefault("FR0G_STORAGE_TYPE", "file"),
+			DataDir: getEnvOrDefault("FR0G_DATA_DIR", "./data"),
 		},
 		Security: sharedconfig.SecurityConfig{
 			EnableAuth:       false,

@@ -29,6 +29,7 @@ services:
       - SERVICE_NAME=fr0g-ai-master-control
       - SERVICE_ID=mcp-001
       - SERVICE_PORT=8081
+      - STORAGE_TYPE=file
     depends_on:
       - service-registry
     networks:

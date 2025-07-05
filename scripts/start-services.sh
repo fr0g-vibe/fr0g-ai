@@ -29,7 +29,7 @@ mkdir -p logs
 # Start services in dependency order
 echo "1. Starting Service Registry..."
 cd fr0g-ai-master-control
-./bin/fr0g-ai-master-control --registry-mode > ../logs/service-registry.log 2>&1 &
+STORAGE_TYPE=file ./bin/fr0g-ai-master-control --registry-mode > ../logs/service-registry.log 2>&1 &
 echo $! > ../logs/service-registry.pid
 cd ..
 sleep 2
@@ -43,7 +43,11 @@ start_service "fr0g-ai-bridge" "fr0g-ai-bridge" "8082"
 sleep 2
 
 echo "4. Starting Master Control..."
-start_service "fr0g-ai-master-control" "fr0g-ai-master-control" "8081"
+cd fr0g-ai-master-control
+STORAGE_TYPE=file ./bin/fr0g-ai-master-control > ../logs/fr0g-ai-master-control.log 2>&1 &
+echo $! > ../logs/fr0g-ai-master-control.pid
+echo "fr0g-ai-master-control started with PID $(cat ../logs/fr0g-ai-master-control.pid)"
+cd ..
 sleep 2
 
 echo "5. Starting I/O Service..."
