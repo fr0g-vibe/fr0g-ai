@@ -35,7 +35,15 @@ type Service struct {
 
 // NewService creates a new persona service with all attribute processors
 func NewService(storage storage.Storage) *Service {
-	cfg := config.Load()
+	cfg, err := config.LoadConfig("")
+	if err != nil {
+		// Use default config if loading fails
+		cfg = &config.Config{
+			Validation: config.ValidationConfig{
+				StrictMode: false,
+			},
+		}
+	}
 
 	return &Service{
 		storage:                 storage,
