@@ -16,65 +16,28 @@ func (c *Config) GetString(key, defaultValue string) string {
 
 // Config holds all application configuration
 type Config struct {
-	// Server configuration
-	HTTP HTTPConfig `yaml:"http"`
-	GRPC GRPCConfig `yaml:"grpc"`
+	// Server configuration using shared types
+	HTTP sharedconfig.HTTPConfig `yaml:"http"`
+	GRPC sharedconfig.GRPCConfig `yaml:"grpc"`
 	
-	// Storage configuration
-	Storage StorageConfig `yaml:"storage"`
+	// Storage configuration using shared types
+	Storage sharedconfig.StorageConfig `yaml:"storage"`
 	
-	// Client configuration
+	// Security configuration using shared types
+	Security sharedconfig.SecurityConfig `yaml:"security"`
+	
+	// Logging configuration using shared types
+	Logging sharedconfig.LoggingConfig `yaml:"logging"`
+	
+	// AIP-specific configuration
 	Client ClientConfig `yaml:"client"`
-	
-	// Security configuration
-	Security SecurityConfig `yaml:"security"`
-	
-	// Logging configuration
-	Logging LoggingConfig `yaml:"logging"`
-	
-	// Validation configuration
 	Validation ValidationConfig `yaml:"validation"`
-}
-
-type HTTPConfig struct {
-	Port            string        `yaml:"port"`
-	ReadTimeout     time.Duration `yaml:"read_timeout"`
-	WriteTimeout    time.Duration `yaml:"write_timeout"`
-	ShutdownTimeout time.Duration `yaml:"shutdown_timeout"`
-	EnableTLS       bool          `yaml:"enable_tls"`
-	CertFile        string        `yaml:"cert_file"`
-	KeyFile         string        `yaml:"key_file"`
-}
-
-type GRPCConfig struct {
-	Port            string        `yaml:"port"`
-	MaxRecvMsgSize  int           `yaml:"max_recv_msg_size"`
-	MaxSendMsgSize  int           `yaml:"max_send_msg_size"`
-	ConnectionTimeout time.Duration `yaml:"connection_timeout"`
-	EnableTLS       bool          `yaml:"enable_tls"`
-	CertFile        string        `yaml:"cert_file"`
-	KeyFile         string        `yaml:"key_file"`
-}
-
-type StorageConfig struct {
-	Type    string `yaml:"type"` // memory, file
-	DataDir string `yaml:"data_dir"`
 }
 
 type ClientConfig struct {
 	Type      string `yaml:"type"`       // local, rest, grpc
 	ServerURL string `yaml:"server_url"`
 	Timeout   time.Duration `yaml:"timeout"`
-}
-
-type SecurityConfig struct {
-	EnableAuth bool   `yaml:"enable_auth"`
-	APIKey     string `yaml:"api_key"`
-}
-
-type LoggingConfig struct {
-	Level  string `yaml:"level"`
-	Format string `yaml:"format"` // json, text
 }
 
 type ValidationConfig struct {
@@ -84,8 +47,9 @@ type ValidationConfig struct {
 // Load loads configuration from environment variables with defaults
 func Load() *Config {
 	config := &Config{
-		HTTP: HTTPConfig{
+		HTTP: sharedconfig.HTTPConfig{
 			Port:            getEnv("FR0G_HTTP_PORT", "8080"),
+			Host:            getEnv("FR0G_HTTP_HOST", "0.0.0.0"),
 			ReadTimeout:     getDurationEnv("FR0G_HTTP_READ_TIMEOUT", 30*time.Second),
 			WriteTimeout:    getDurationEnv("FR0G_HTTP_WRITE_TIMEOUT", 30*time.Second),
 			ShutdownTimeout: getDurationEnv("FR0G_HTTP_SHUTDOWN_TIMEOUT", 10*time.Second),
@@ -93,8 +57,9 @@ func Load() *Config {
 			CertFile:        getEnv("FR0G_HTTP_CERT_FILE", ""),
 			KeyFile:         getEnv("FR0G_HTTP_KEY_FILE", ""),
 		},
-		GRPC: GRPCConfig{
+		GRPC: sharedconfig.GRPCConfig{
 			Port:              getEnv("FR0G_GRPC_PORT", "9090"),
+			Host:              getEnv("FR0G_GRPC_HOST", "0.0.0.0"),
 			MaxRecvMsgSize:    getIntEnv("FR0G_GRPC_MAX_RECV_MSG_SIZE", 4*1024*1024), // 4MB
 			MaxSendMsgSize:    getIntEnv("FR0G_GRPC_MAX_SEND_MSG_SIZE", 4*1024*1024), // 4MB
 			ConnectionTimeout: getDurationEnv("FR0G_GRPC_CONNECTION_TIMEOUT", 5*time.Second),
@@ -102,22 +67,27 @@ func Load() *Config {
 			CertFile:          getEnv("FR0G_GRPC_CERT_FILE", ""),
 			KeyFile:           getEnv("FR0G_GRPC_KEY_FILE", ""),
 		},
-		Storage: StorageConfig{
+		Storage: sharedconfig.StorageConfig{
 			Type:    getEnv("FR0G_STORAGE_TYPE", "file"),
 			DataDir: getEnv("FR0G_DATA_DIR", "./data"),
+		},
+		Security: sharedconfig.SecurityConfig{
+			EnableAuth:       getBoolEnv("FR0G_ENABLE_AUTH", false),
+			APIKey:           getEnv("FR0G_API_KEY", ""),
+			EnableCORS:       getBoolEnv("FR0G_ENABLE_CORS", true),
+			AllowedOrigins:   []string{"*"},
+			RateLimitRPM:     getIntEnv("FR0G_RATE_LIMIT_RPM", 60),
+			RequireAPIKey:    getBoolEnv("FR0G_REQUIRE_API_KEY", false),
+			EnableReflection: getBoolEnv("FR0G_ENABLE_REFLECTION", true),
+		},
+		Logging: sharedconfig.LoggingConfig{
+			Level:  getEnv("FR0G_LOG_LEVEL", "info"),
+			Format: getEnv("FR0G_LOG_FORMAT", "text"),
 		},
 		Client: ClientConfig{
 			Type:      getEnv("FR0G_CLIENT_TYPE", "grpc"),
 			ServerURL: getEnv("FR0G_SERVER_URL", "localhost:9090"),
 			Timeout:   getDurationEnv("FR0G_CLIENT_TIMEOUT", 30*time.Second),
-		},
-		Security: SecurityConfig{
-			EnableAuth: getBoolEnv("FR0G_ENABLE_AUTH", false),
-			APIKey:     getEnv("FR0G_API_KEY", ""),
-		},
-		Logging: LoggingConfig{
-			Level:  getEnv("FR0G_LOG_LEVEL", "info"),
-			Format: getEnv("FR0G_LOG_FORMAT", "text"),
 		},
 		Validation: ValidationConfig{
 			StrictMode: getBoolEnv("FR0G_VALIDATION_STRICT", false),
@@ -134,98 +104,125 @@ func Load() *Config {
 	return config
 }
 
+// LoadConfig loads configuration using shared config loader
+func LoadConfig(configPath string) (*Config, error) {
+	loader := sharedconfig.NewLoader(sharedconfig.LoaderOptions{
+		ConfigPath: configPath,
+		EnvPrefix:  "FR0G_AIP",
+	})
+	
+	// Load environment files
+	if err := loader.LoadEnvFiles(); err != nil {
+		// Non-fatal, just log warning
+	}
+	
+	// Create default config
+	cfg := &Config{
+		HTTP: sharedconfig.HTTPConfig{
+			Port: "8080",
+			Host: "0.0.0.0",
+		},
+		GRPC: sharedconfig.GRPCConfig{
+			Port: "9090",
+			Host: "0.0.0.0",
+		},
+		Storage: sharedconfig.StorageConfig{
+			Type:    "memory",
+			DataDir: "./data",
+		},
+		Security: sharedconfig.SecurityConfig{
+			EnableCORS:       true,
+			AllowedOrigins:   []string{"*"},
+			RateLimitRPM:     60,
+			RequireAPIKey:    false,
+			EnableReflection: true,
+		},
+		Logging: sharedconfig.LoggingConfig{
+			Level:  "info",
+			Format: "json",
+		},
+		Client: ClientConfig{
+			Type:      "grpc",
+			ServerURL: "localhost:9090",
+			Timeout:   30 * time.Second,
+		},
+		Validation: ValidationConfig{
+			StrictMode: false,
+		},
+	}
+	
+	// Load from file
+	if err := loader.LoadFromFile(cfg); err != nil {
+		return nil, err
+	}
+	
+	// Override with environment variables
+	cfg.HTTP.Port = loader.GetEnvString("HTTP_PORT", cfg.HTTP.Port)
+	cfg.HTTP.Host = loader.GetEnvString("HTTP_HOST", cfg.HTTP.Host)
+	cfg.GRPC.Port = loader.GetEnvString("GRPC_PORT", cfg.GRPC.Port)
+	cfg.GRPC.Host = loader.GetEnvString("GRPC_HOST", cfg.GRPC.Host)
+	cfg.Logging.Level = loader.GetEnvString("LOG_LEVEL", cfg.Logging.Level)
+	cfg.Logging.Format = loader.GetEnvString("LOG_FORMAT", cfg.Logging.Format)
+	
+	return cfg, nil
+}
+
 // Validate validates the entire configuration using shared validation
-func (c *Config) Validate() sharedconfig.ValidationErrors {
+func (c *Config) Validate() error {
 	var errors []sharedconfig.ValidationError
 	
-	// Validate HTTP port
-	if err := sharedconfig.ValidatePort(c.HTTP.Port, "http.port"); err != nil {
-		errors = append(errors, *err)
+	// Validate HTTP config
+	if c.HTTP.Port == "" {
+		errors = append(errors, sharedconfig.ValidationError{
+			Field:   "http.port",
+			Message: "HTTP port is required",
+		})
 	}
 	
-	// Validate gRPC port
-	if err := sharedconfig.ValidatePort(c.GRPC.Port, "grpc.port"); err != nil {
-		errors = append(errors, *err)
+	// Validate gRPC config
+	if c.GRPC.Port == "" {
+		errors = append(errors, sharedconfig.ValidationError{
+			Field:   "grpc.port",
+			Message: "gRPC port is required",
+		})
 	}
 	
-	// Validate storage type
-	validStorageTypes := []string{"memory", "file"}
-	if err := sharedconfig.ValidateEnum(c.Storage.Type, validStorageTypes, "storage.type"); err != nil {
-		errors = append(errors, *err)
-	}
-	
-	// Validate data directory if using file storage
-	if c.Storage.Type == "file" {
-		if err := sharedconfig.ValidateRequired(c.Storage.DataDir, "storage.data_dir"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateDirectoryPath(c.Storage.DataDir, "storage.data_dir"); err != nil {
-			errors = append(errors, *err)
-		}
-	}
+	// Validate other components using shared validation
+	errors = append(errors, c.Security.Validate()...)
+	errors = append(errors, c.Storage.Validate()...)
 	
 	// Validate client type
 	validClientTypes := []string{"local", "rest", "grpc"}
-	if err := sharedconfig.ValidateEnum(c.Client.Type, validClientTypes, "client.type"); err != nil {
-		errors = append(errors, *err)
+	if !contains(validClientTypes, c.Client.Type) {
+		errors = append(errors, sharedconfig.ValidationError{
+			Field:   "client.type",
+			Message: "invalid client type, must be one of: local, rest, grpc",
+		})
 	}
 	
 	// Validate timeout
-	if err := sharedconfig.ValidateTimeout(c.Client.Timeout, "client.timeout"); err != nil {
-		errors = append(errors, *err)
+	if c.Client.Timeout <= 0 {
+		errors = append(errors, sharedconfig.ValidationError{
+			Field:   "client.timeout",
+			Message: "timeout must be positive",
+		})
 	}
 	
-	// Validate logging configuration
-	if err := sharedconfig.ValidateLogLevel(c.Logging.Level, "logging.level"); err != nil {
-		errors = append(errors, *err)
+	if len(errors) > 0 {
+		return sharedconfig.ValidationErrors(errors)
 	}
 	
-	if err := sharedconfig.ValidateLogFormat(c.Logging.Format, "logging.format"); err != nil {
-		errors = append(errors, *err)
-	}
-	
-	// Validate TLS configuration
-	if c.HTTP.EnableTLS {
-		if err := sharedconfig.ValidateRequired(c.HTTP.CertFile, "http.cert_file"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateRequired(c.HTTP.KeyFile, "http.key_file"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateFilePath(c.HTTP.CertFile, "http.cert_file"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateFilePath(c.HTTP.KeyFile, "http.key_file"); err != nil {
-			errors = append(errors, *err)
+	return nil
+}
+
+// Helper function to check if slice contains string
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
 		}
 	}
-	
-	if c.GRPC.EnableTLS {
-		if err := sharedconfig.ValidateRequired(c.GRPC.CertFile, "grpc.cert_file"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateRequired(c.GRPC.KeyFile, "grpc.key_file"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateFilePath(c.GRPC.CertFile, "grpc.cert_file"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateFilePath(c.GRPC.KeyFile, "grpc.key_file"); err != nil {
-			errors = append(errors, *err)
-		}
-	}
-	
-	// Validate API key if auth is enabled
-	if c.Security.EnableAuth {
-		if err := sharedconfig.ValidateRequired(c.Security.APIKey, "security.api_key"); err != nil {
-			errors = append(errors, *err)
-		}
-		if err := sharedconfig.ValidateAPIKey(c.Security.APIKey, "security.api_key"); err != nil {
-			errors = append(errors, *err)
-		}
-	}
-	
-	return sharedconfig.ValidationErrors(errors)
+	return false
 }
 
 // Helper functions for environment variable parsing
