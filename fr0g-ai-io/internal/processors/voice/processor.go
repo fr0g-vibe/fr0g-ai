@@ -10,6 +10,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
 
 // Processor handles voice call threat detection and analysis
@@ -119,6 +120,44 @@ func (p *Processor) GetType() string {
 // IsEnabled returns whether the processor is enabled
 func (p *Processor) IsEnabled() bool {
 	return p.config.Enabled
+}
+
+// Process processes an input event
+func (p *Processor) Process(event *types.InputEvent) (*types.InputEventResponse, error) {
+	// Convert InputEvent to VoiceCall
+	voiceCall, err := p.convertToVoiceCall(event)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Process the voice call
+	processedCall, err := p.ProcessCall(*voiceCall)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Convert back to InputEventResponse
+	response := &types.InputEventResponse{
+		EventID:     event.ID,
+		Processed:   true,
+		Actions:     p.generateActions(processedCall),
+		Metadata:    p.convertMetadata(processedCall),
+		ProcessedAt: time.Now(),
+	}
+
+	return response, nil
 }
 
 // initializeThreatPatterns sets up regex patterns for voice threat detection
@@ -663,4 +702,89 @@ func (p *Processor) GetStats() map[string]interface{} {
 		"speech_to_text_enabled": p.config.SpeechToTextEnabled,
 		"call_recording_enabled": p.config.CallRecordingEnabled,
 	}
+}
+
+// convertToVoiceCall converts InputEvent to VoiceCall
+func (p *Processor) convertToVoiceCall(event *types.InputEvent) (*VoiceCall, error) {
+	voiceCall := &VoiceCall{
+		ID:        event.ID,
+		Timestamp: event.Timestamp,
+		Metadata:  event.Metadata,
+	}
+
+	if from, ok := event.Metadata["from"].(string); ok {
+		voiceCall.CallerID = from
+	} else {
+		voiceCall.CallerID = event.Source
+	}
+
+	if to, ok := event.Metadata["to"].(string); ok {
+		voiceCall.RecipientID = to
+	}
+
+	if duration, ok := event.Metadata["duration"].(time.Duration); ok {
+		voiceCall.Duration = duration
+	}
+
+	voiceCall.Transcript = event.Content
+	voiceCall.StartTime = event.Timestamp
+	voiceCall.EndTime = event.Timestamp.Add(voiceCall.Duration)
+
+	return voiceCall, nil
+}
+
+// generateActions generates output actions based on threat analysis
+func (p *Processor) generateActions(call *VoiceCall) []types.OutputAction {
+	actions := []types.OutputAction{}
+
+	if call.Analysis == nil {
+		return actions
+	}
+
+	if call.ThreatLevel >= ThreatLevelHigh {
+		action := types.OutputAction{
+			ID:       fmt.Sprintf("voice-alert-%s", call.ID),
+			Type:     "alert",
+			Target:   "security-team",
+			Content:  p.formatThreatAlert(call),
+			Priority: int(call.ThreatLevel),
+			Metadata: map[string]interface{}{
+				"threat_level": call.ThreatLevel.String(),
+				"confidence":   call.Analysis.Confidence,
+				"caller_id":    call.CallerID,
+			},
+			CreatedAt: time.Now(),
+		}
+		actions = append(actions, action)
+	}
+
+	return actions
+}
+
+// formatThreatAlert formats a threat alert message
+func (p *Processor) formatThreatAlert(call *VoiceCall) string {
+	alert := fmt.Sprintf("VOICE THREAT DETECTED: Call from %s\n", call.CallerID)
+	alert += fmt.Sprintf("Transcript: %s\n", call.Transcript)
+	alert += fmt.Sprintf("Duration: %v\n", call.Duration)
+	alert += fmt.Sprintf("Threat Level: %s\n", call.ThreatLevel.String())
+	alert += fmt.Sprintf("Confidence: %.2f\n", call.Analysis.Confidence)
+	alert += fmt.Sprintf("Threat Types: %v\n", call.Analysis.ThreatTypes)
+	return alert
+}
+
+// convertMetadata converts VoiceCall analysis to metadata
+func (p *Processor) convertMetadata(call *VoiceCall) map[string]interface{} {
+	metadata := make(map[string]interface{})
+
+	if call.Analysis != nil {
+		metadata["threat_analysis"] = call.Analysis
+		metadata["threat_level"] = call.ThreatLevel.String()
+		metadata["confidence"] = call.Analysis.Confidence
+	}
+
+	metadata["caller_id"] = call.CallerID
+	metadata["duration"] = call.Duration.String()
+	metadata["processed_at"] = time.Now()
+
+	return metadata
 }

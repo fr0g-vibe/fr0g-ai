@@ -10,6 +10,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
 
 // Processor handles SMS threat detection and analysis
@@ -113,6 +114,44 @@ func (p *Processor) GetType() string {
 // IsEnabled returns whether the processor is enabled
 func (p *Processor) IsEnabled() bool {
 	return p.config.Enabled
+}
+
+// Process processes an input event
+func (p *Processor) Process(event *types.InputEvent) (*types.InputEventResponse, error) {
+	// Convert InputEvent to SMSMessage
+	smsMsg, err := p.convertToSMSMessage(event)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Process the SMS message
+	processedMsg, err := p.ProcessMessage(*smsMsg)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Convert back to InputEventResponse
+	response := &types.InputEventResponse{
+		EventID:     event.ID,
+		Processed:   true,
+		Actions:     p.generateActions(processedMsg),
+		Metadata:    p.convertMetadata(processedMsg),
+		ProcessedAt: time.Now(),
+	}
+
+	return response, nil
 }
 
 // initializeThreatPatterns sets up regex patterns for threat detection
@@ -561,4 +600,81 @@ func (p *Processor) GetStats() map[string]interface{} {
 		"google_voice_enabled": p.config.GoogleVoiceEnabled,
 		"webhook_enabled":      p.config.WebhookEnabled,
 	}
+}
+
+// convertToSMSMessage converts InputEvent to SMSMessage
+func (p *Processor) convertToSMSMessage(event *types.InputEvent) (*SMSMessage, error) {
+	smsMsg := &SMSMessage{
+		ID:        event.ID,
+		Timestamp: event.Timestamp,
+		Metadata:  event.Metadata,
+	}
+
+	if from, ok := event.Metadata["from"].(string); ok {
+		smsMsg.From = from
+	} else {
+		smsMsg.From = event.Source
+	}
+
+	if to, ok := event.Metadata["to"].(string); ok {
+		smsMsg.To = to
+	}
+
+	smsMsg.Body = event.Content
+
+	return smsMsg, nil
+}
+
+// generateActions generates output actions based on threat analysis
+func (p *Processor) generateActions(msg *SMSMessage) []types.OutputAction {
+	actions := []types.OutputAction{}
+
+	if msg.Analysis == nil {
+		return actions
+	}
+
+	if msg.ThreatLevel >= ThreatLevelHigh {
+		action := types.OutputAction{
+			ID:       fmt.Sprintf("sms-alert-%s", msg.ID),
+			Type:     "alert",
+			Target:   "security-team",
+			Content:  p.formatThreatAlert(msg),
+			Priority: int(msg.ThreatLevel),
+			Metadata: map[string]interface{}{
+				"threat_level": msg.ThreatLevel.String(),
+				"confidence":   msg.Analysis.Confidence,
+				"source_phone": msg.From,
+			},
+			CreatedAt: time.Now(),
+		}
+		actions = append(actions, action)
+	}
+
+	return actions
+}
+
+// formatThreatAlert formats a threat alert message
+func (p *Processor) formatThreatAlert(msg *SMSMessage) string {
+	alert := fmt.Sprintf("SMS THREAT DETECTED: Message from %s\n", msg.From)
+	alert += fmt.Sprintf("Content: %s\n", msg.Body)
+	alert += fmt.Sprintf("Threat Level: %s\n", msg.ThreatLevel.String())
+	alert += fmt.Sprintf("Confidence: %.2f\n", msg.Analysis.Confidence)
+	alert += fmt.Sprintf("Threat Types: %v\n", msg.Analysis.ThreatTypes)
+	return alert
+}
+
+// convertMetadata converts SMSMessage analysis to metadata
+func (p *Processor) convertMetadata(msg *SMSMessage) map[string]interface{} {
+	metadata := make(map[string]interface{})
+
+	if msg.Analysis != nil {
+		metadata["threat_analysis"] = msg.Analysis
+		metadata["threat_level"] = msg.ThreatLevel.String()
+		metadata["confidence"] = msg.Analysis.Confidence
+	}
+
+	metadata["sender"] = msg.From
+	metadata["processed_at"] = time.Now()
+
+	return metadata
 }

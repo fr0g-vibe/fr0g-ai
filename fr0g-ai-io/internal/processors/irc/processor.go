@@ -12,6 +12,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
 
 // Processor handles IRC threat detection and analysis
@@ -137,6 +138,44 @@ func (p *Processor) GetType() string {
 // IsEnabled returns whether the processor is enabled
 func (p *Processor) IsEnabled() bool {
 	return p.config.Enabled
+}
+
+// Process processes an input event
+func (p *Processor) Process(event *types.InputEvent) (*types.InputEventResponse, error) {
+	// Convert InputEvent to IRCMessage
+	ircMsg, err := p.convertToIRCMessage(event)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Process the IRC message
+	processedMsg, err := p.ProcessMessage(*ircMsg)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Convert back to InputEventResponse
+	response := &types.InputEventResponse{
+		EventID:     event.ID,
+		Processed:   true,
+		Actions:     p.generateActions(processedMsg),
+		Metadata:    p.convertMetadata(processedMsg),
+		ProcessedAt: time.Now(),
+	}
+
+	return response, nil
 }
 
 // initializeThreatPatterns sets up regex patterns for threat detection
@@ -830,4 +869,102 @@ func (p *Processor) GetStats() map[string]interface{} {
 		"total_servers":      len(p.config.Servers),
 		"monitored_channels": len(p.config.Channels),
 	}
+}
+
+// convertToIRCMessage converts InputEvent to IRCMessage
+func (p *Processor) convertToIRCMessage(event *types.InputEvent) (*IRCMessage, error) {
+	ircMsg := &IRCMessage{
+		ID:        event.ID,
+		Timestamp: event.Timestamp,
+		Metadata:  event.Metadata,
+	}
+
+	if server, ok := event.Metadata["server"].(string); ok {
+		ircMsg.Server = server
+	}
+
+	if channel, ok := event.Metadata["channel"].(string); ok {
+		ircMsg.Channel = channel
+	}
+
+	if nick, ok := event.Metadata["nick"].(string); ok {
+		ircMsg.Nick = nick
+	} else {
+		ircMsg.Nick = event.Source
+	}
+
+	if user, ok := event.Metadata["user"].(string); ok {
+		ircMsg.User = user
+	}
+
+	if host, ok := event.Metadata["host"].(string); ok {
+		ircMsg.Host = host
+	}
+
+	if msgType, ok := event.Metadata["message_type"].(string); ok {
+		ircMsg.MessageType = msgType
+	} else {
+		ircMsg.MessageType = "PRIVMSG"
+	}
+
+	ircMsg.Message = event.Content
+
+	return ircMsg, nil
+}
+
+// generateActions generates output actions based on threat analysis
+func (p *Processor) generateActions(msg *IRCMessage) []types.OutputAction {
+	actions := []types.OutputAction{}
+
+	if msg.Analysis == nil {
+		return actions
+	}
+
+	if msg.ThreatLevel >= ThreatLevelHigh {
+		action := types.OutputAction{
+			ID:       fmt.Sprintf("irc-alert-%s", msg.ID),
+			Type:     "alert",
+			Target:   "channel-ops",
+			Content:  p.formatThreatAlert(msg),
+			Priority: int(msg.ThreatLevel),
+			Metadata: map[string]interface{}{
+				"threat_level": msg.ThreatLevel.String(),
+				"confidence":   msg.Analysis.Confidence,
+				"nick":         msg.Nick,
+				"channel":      msg.Channel,
+			},
+			CreatedAt: time.Now(),
+		}
+		actions = append(actions, action)
+	}
+
+	return actions
+}
+
+// formatThreatAlert formats a threat alert message
+func (p *Processor) formatThreatAlert(msg *IRCMessage) string {
+	alert := fmt.Sprintf("IRC THREAT DETECTED: Message from %s in %s\n", msg.Nick, msg.Channel)
+	alert += fmt.Sprintf("Message: %s\n", msg.Message)
+	alert += fmt.Sprintf("Threat Level: %s\n", msg.ThreatLevel.String())
+	alert += fmt.Sprintf("Confidence: %.2f\n", msg.Analysis.Confidence)
+	alert += fmt.Sprintf("Threat Types: %v\n", msg.Analysis.ThreatTypes)
+	return alert
+}
+
+// convertMetadata converts IRCMessage analysis to metadata
+func (p *Processor) convertMetadata(msg *IRCMessage) map[string]interface{} {
+	metadata := make(map[string]interface{})
+
+	if msg.Analysis != nil {
+		metadata["threat_analysis"] = msg.Analysis
+		metadata["threat_level"] = msg.ThreatLevel.String()
+		metadata["confidence"] = msg.Analysis.Confidence
+	}
+
+	metadata["nick"] = msg.Nick
+	metadata["channel"] = msg.Channel
+	metadata["server"] = msg.Server
+	metadata["processed_at"] = time.Now()
+
+	return metadata
 }

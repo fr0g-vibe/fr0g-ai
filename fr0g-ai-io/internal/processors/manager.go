@@ -5,7 +5,11 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/discord"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/esmtp"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/irc"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/sms"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/voice"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
 
@@ -29,13 +33,35 @@ func NewManager(cfg *sharedconfig.Config) (*Manager, error) {
 		processors: make(map[string]InputProcessor),
 	}
 
+	// Initialize SMS processor if configured
+	if cfg.SMS.Enabled {
+		smsProcessor := sms.NewProcessor(&cfg.SMS)
+		mgr.processors["sms"] = smsProcessor
+	}
+
+	// Initialize Voice processor if configured
+	if cfg.Voice.Enabled {
+		voiceProcessor := voice.NewProcessor(&cfg.Voice)
+		mgr.processors["voice"] = voiceProcessor
+	}
+
+	// Initialize IRC processor if configured
+	if cfg.IRC.Enabled {
+		ircProcessor := irc.NewProcessor(&cfg.IRC)
+		mgr.processors["irc"] = ircProcessor
+	}
+
+	// Initialize Discord processor if configured
+	if cfg.Discord.Enabled {
+		discordProcessor := discord.NewProcessor(&cfg.Discord)
+		mgr.processors["discord"] = discordProcessor
+	}
+
 	// Initialize ESMTP processor if configured
 	if cfg.ESMTP.Enabled {
 		esmtpProcessor := esmtp.NewProcessor(&cfg.ESMTP)
 		mgr.processors["esmtp"] = esmtpProcessor
 	}
-
-	// Initialize other processors here as they're implemented
 	
 	return mgr, nil
 }

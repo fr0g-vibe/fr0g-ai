@@ -10,6 +10,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/types"
 )
 
 // Processor handles Discord threat detection and analysis
@@ -121,6 +122,44 @@ func (p *Processor) GetType() string {
 // IsEnabled returns whether the processor is enabled
 func (p *Processor) IsEnabled() bool {
 	return p.config.Enabled
+}
+
+// Process processes an input event
+func (p *Processor) Process(event *types.InputEvent) (*types.InputEventResponse, error) {
+	// Convert InputEvent to DiscordMessage
+	discordMsg, err := p.convertToDiscordMessage(event)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Process the Discord message
+	processedMsg, err := p.ProcessMessage(*discordMsg)
+	if err != nil {
+		return &types.InputEventResponse{
+			EventID:     event.ID,
+			Processed:   false,
+			Actions:     []types.OutputAction{},
+			Metadata:    map[string]interface{}{"error": err.Error()},
+			ProcessedAt: time.Now(),
+		}, nil
+	}
+
+	// Convert back to InputEventResponse
+	response := &types.InputEventResponse{
+		EventID:     event.ID,
+		Processed:   true,
+		Actions:     p.generateActions(processedMsg),
+		Metadata:    p.convertMetadata(processedMsg),
+		ProcessedAt: time.Now(),
+	}
+
+	return response, nil
 }
 
 // initializeThreatPatterns sets up regex patterns for threat detection
@@ -625,4 +664,100 @@ func (p *Processor) GetStats() map[string]interface{} {
 		"monitored_guilds":   len(p.config.GuildIDs),
 		"monitored_channels": len(p.config.ChannelIDs),
 	}
+}
+
+// convertToDiscordMessage converts InputEvent to DiscordMessage
+func (p *Processor) convertToDiscordMessage(event *types.InputEvent) (*DiscordMessage, error) {
+	discordMsg := &DiscordMessage{
+		ID:        event.ID,
+		Timestamp: event.Timestamp,
+		Metadata:  event.Metadata,
+	}
+
+	if guildID, ok := event.Metadata["guild_id"].(string); ok {
+		discordMsg.GuildID = guildID
+	}
+
+	if channelID, ok := event.Metadata["channel_id"].(string); ok {
+		discordMsg.ChannelID = channelID
+	}
+
+	if userID, ok := event.Metadata["user_id"].(string); ok {
+		discordMsg.UserID = userID
+	}
+
+	if username, ok := event.Metadata["username"].(string); ok {
+		discordMsg.Username = username
+	} else {
+		discordMsg.Username = event.Source
+	}
+
+	if msgType, ok := event.Metadata["message_type"].(string); ok {
+		discordMsg.MessageType = msgType
+	} else {
+		discordMsg.MessageType = "DEFAULT"
+	}
+
+	discordMsg.Content = event.Content
+
+	return discordMsg, nil
+}
+
+// generateActions generates output actions based on threat analysis
+func (p *Processor) generateActions(msg *DiscordMessage) []types.OutputAction {
+	actions := []types.OutputAction{}
+
+	if msg.Analysis == nil {
+		return actions
+	}
+
+	if msg.ThreatLevel >= ThreatLevelHigh {
+		action := types.OutputAction{
+			ID:       fmt.Sprintf("discord-alert-%s", msg.ID),
+			Type:     "alert",
+			Target:   "moderators",
+			Content:  p.formatThreatAlert(msg),
+			Priority: int(msg.ThreatLevel),
+			Metadata: map[string]interface{}{
+				"threat_level": msg.ThreatLevel.String(),
+				"confidence":   msg.Analysis.Confidence,
+				"username":     msg.Username,
+				"guild_id":     msg.GuildID,
+				"channel_id":   msg.ChannelID,
+			},
+			CreatedAt: time.Now(),
+		}
+		actions = append(actions, action)
+	}
+
+	return actions
+}
+
+// formatThreatAlert formats a threat alert message
+func (p *Processor) formatThreatAlert(msg *DiscordMessage) string {
+	alert := fmt.Sprintf("DISCORD THREAT DETECTED: Message from %s in guild %s\n", msg.Username, msg.GuildID)
+	alert += fmt.Sprintf("Channel: %s\n", msg.ChannelID)
+	alert += fmt.Sprintf("Content: %s\n", msg.Content)
+	alert += fmt.Sprintf("Threat Level: %s\n", msg.ThreatLevel.String())
+	alert += fmt.Sprintf("Confidence: %.2f\n", msg.Analysis.Confidence)
+	alert += fmt.Sprintf("Threat Types: %v\n", msg.Analysis.ThreatTypes)
+	return alert
+}
+
+// convertMetadata converts DiscordMessage analysis to metadata
+func (p *Processor) convertMetadata(msg *DiscordMessage) map[string]interface{} {
+	metadata := make(map[string]interface{})
+
+	if msg.Analysis != nil {
+		metadata["threat_analysis"] = msg.Analysis
+		metadata["threat_level"] = msg.ThreatLevel.String()
+		metadata["confidence"] = msg.Analysis.Confidence
+	}
+
+	metadata["username"] = msg.Username
+	metadata["guild_id"] = msg.GuildID
+	metadata["channel_id"] = msg.ChannelID
+	metadata["processed_at"] = time.Now()
+
+	return metadata
 }
