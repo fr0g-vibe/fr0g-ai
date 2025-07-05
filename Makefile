@@ -87,7 +87,7 @@ run-bridge:
 # Run fr0g-ai-aip server (build then run)
 run-aip:
 	@echo "🚀 Starting fr0g-ai-aip..."
-	@cd fr0g-ai-aip && (make build || go build -o bin/fr0g-ai-aip ./cmd/fr0g-ai-aip || echo "❌ Build failed") && (test -f bin/fr0g-ai-aip && ./bin/fr0g-ai-aip -server -grpc || echo "❌ Binary not found")
+	@cd fr0g-ai-aip && (make build || go build -o bin/fr0g-ai-aip ./main.go || echo "❌ Build failed") && (test -f bin/fr0g-ai-aip && ./bin/fr0g-ai-aip || echo "❌ Binary not found")
 
 # Run fr0g-ai-master-control server (build then run)
 run-master-control:
