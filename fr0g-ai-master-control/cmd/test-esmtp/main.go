@@ -45,11 +45,14 @@ func testCognitiveEngine() {
 	// Create cognitive engine with minimal config
 	fmt.Println("  🧠 Testing cognitive engine creation...")
 	config := &cognitive.CognitiveConfig{
-		LearningEnabled:       true,
-		MaxPatterns:          100,
-		ReflectionInterval:   30 * time.Second,
-		SystemConsciousness:  true,
-		EmergentCapabilities: true,
+		PatternRecognitionEnabled:  true,
+		InsightGenerationEnabled:   true,
+		ReflectionEnabled:          true,
+		AwarenessUpdateInterval:    30 * time.Second,
+		PatternConfidenceThreshold: 0.7,
+		MaxPatterns:                100,
+		MaxInsights:                50,
+		MaxReflections:             25,
 	}
 	
 	// Create simple memory and learning interfaces for testing
@@ -69,9 +72,9 @@ func testCognitiveEngine() {
 	awareness := engine.GetSystemAwareness()
 	if awareness != nil {
 		if sa, ok := awareness.(*cognitive.SystemAwareness); ok {
-			fmt.Printf("    System state: %s\n", sa.CurrentState)
-			fmt.Printf("    Capabilities: %d\n", len(sa.Capabilities))
-			fmt.Printf("    Learning rate: %.3f\n", sa.LearningRate)
+			fmt.Printf("    System state: %v\n", sa.CurrentState)
+			fmt.Printf("    Component map: %d entries\n", len(sa.ComponentMap))
+			fmt.Printf("    Awareness level: %.3f\n", sa.AwarenessLevel)
 		} else {
 			fmt.Println("    System awareness available (interface)")
 		}
@@ -118,9 +121,14 @@ func (l *testLearning) GetLearningRate() float64 {
 	return 0.75
 }
 
-func (l *testLearning) Adapt(feedback float64) error {
+func (l *testLearning) Adapt(feedback interface{}) error {
 	// Simple adaptation logic for testing
 	return nil
+}
+
+func (l *testLearning) GetInsights() []interface{} {
+	// Return empty insights for testing
+	return make([]interface{}, 0)
 }
 
 func testESMTPConfig() {
