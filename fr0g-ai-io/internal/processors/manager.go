@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/irc"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/sms"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors/voice"
 )
@@ -61,8 +62,9 @@ func (m *Manager) initializeProcessors() error {
 
 	// IRC Processor
 	if m.config.IRC.Enabled {
-		// TODO: Create IRC processor
-		log.Println("IRC processor would be initialized here")
+		ircProcessor := irc.NewProcessor(&m.config.IRC)
+		m.processors["irc"] = ircProcessor
+		log.Println("IRC processor initialized")
 	}
 
 	// ESMTP Processor
