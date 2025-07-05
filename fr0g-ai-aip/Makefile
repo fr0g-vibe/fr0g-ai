@@ -141,6 +141,79 @@ run: build
 	@echo "Service registry will register at http://localhost:8500"
 	@./bin/fr0g-ai-aip
 
+# gRPC Reflection and Testing Support
+test-grpc-reflection:
+	@echo "🔍 Testing gRPC reflection..."
+	@if ! command -v grpcurl >/dev/null 2>&1; then \
+		echo "❌ grpcurl not found. Install with: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"; \
+		exit 1; \
+	fi
+	@echo "✅ grpcurl found"
+	@echo "Testing reflection endpoint..."
+	@if grpcurl -plaintext localhost:9090 list >/dev/null 2>&1; then \
+		echo "✅ gRPC reflection is working"; \
+		grpcurl -plaintext localhost:9090 list; \
+	else \
+		echo "❌ gRPC reflection not available"; \
+		echo "💡 Start service with reflection: make run-test"; \
+	fi
+
+# Build and run with reflection enabled for testing
+build-test:
+	@echo "🔨 Building AIP service with gRPC reflection enabled for testing..."
+	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
+	GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development go build -o bin/fr0g-ai-aip ./cmd
+
+run-test: build-test
+	@echo "🚀 Starting AIP service with reflection enabled..."
+	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
+	GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development ./bin/fr0g-ai-aip
+
+# Run tests with reflection enabled
+test-with-reflection:
+	@echo "🧪 Running AIP tests with gRPC reflection enabled..."
+	@echo "⚠️  This will start the service with reflection for testing"
+	@echo "Starting service in background..."
+	@GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development $(MAKE) run &
+	@echo "Waiting for service to start..."
+	@sleep 5
+	@chmod +x ../test_aip_service.sh
+	@../test_aip_service.sh
+	@echo "Stopping test service..."
+	@pkill -f "fr0g-ai-aip" || true
+
+# Validate production build (ensure reflection is disabled)
+validate-production:
+	@echo "🔒 Validating AIP production build security..."
+	@if [ "$$GRPC_ENABLE_REFLECTION" = "true" ] && [ "$$ENVIRONMENT" = "production" ]; then \
+		echo "❌ FATAL: gRPC reflection is enabled in production environment!"; \
+		echo "   This is a security risk and deployment should be blocked."; \
+		exit 1; \
+	fi
+	@echo "✅ AIP production validation passed - reflection properly disabled"
+
+# Development environment setup for AIP
+setup-dev:
+	@echo "🛠️  Setting up AIP development environment..."
+	@echo "export GRPC_ENABLE_REFLECTION=true" > .env.aip.development
+	@echo "export ENVIRONMENT=development" >> .env.aip.development
+	@echo "export LOG_LEVEL=debug" >> .env.aip.development
+	@echo "export AIP_HTTP_PORT=8080" >> .env.aip.development
+	@echo "export AIP_GRPC_PORT=9090" >> .env.aip.development
+	@echo "✅ AIP development environment configured (.env.aip.development)"
+	@echo "💡 Source with: source .env.aip.development"
+
+# Production environment setup for AIP
+setup-prod:
+	@echo "🔒 Setting up AIP production environment..."
+	@echo "export GRPC_ENABLE_REFLECTION=false" > .env.aip.production
+	@echo "export ENVIRONMENT=production" >> .env.aip.production
+	@echo "export LOG_LEVEL=info" >> .env.aip.production
+	@echo "export AIP_HTTP_PORT=8080" >> .env.aip.production
+	@echo "export AIP_GRPC_PORT=9090" >> .env.aip.production
+	@echo "✅ AIP production environment configured (.env.aip.production)"
+	@echo "💡 Source with: source .env.aip.production"
+
 # Show help
 help:
 	@echo "Available targets:"
@@ -148,6 +221,7 @@ help:
 	@echo "Building:"
 	@echo "  build              - Build the application (no external deps)"
 	@echo "  build-with-grpc    - Build with full gRPC support"
+	@echo "  build-test         - Build with gRPC reflection for testing"
 	@echo "  clean              - Clean build artifacts"
 	@echo ""
 	@echo "Protocol Buffers:"
@@ -161,12 +235,20 @@ help:
 	@echo "  test-verbose       - Run tests with verbose output"
 	@echo "  test-race          - Run tests with race detection"
 	@echo "  test-bench         - Run benchmarks"
+	@echo "  test-grpc-reflection - Test gRPC reflection specifically"
+	@echo "  test-with-reflection - Run tests with reflection enabled"
 	@echo ""
 	@echo "Running:"
 	@echo "  run-server         - Run HTTP REST API server"
 	@echo "  run-grpc           - Run gRPC server"
 	@echo "  run-both           - Run both HTTP and gRPC servers"
+	@echo "  run-test           - Run with gRPC reflection enabled"
 	@echo "  run-cli            - Show CLI help"
+	@echo ""
+	@echo "Security:"
+	@echo "  validate-production - Ensure production build is secure"
+	@echo "  setup-dev          - Create development environment file"
+	@echo "  setup-prod         - Create production environment file"
 	@echo ""
 	@echo "Documentation:"
 	@echo "  docs               - Generate all documentation"
@@ -189,6 +271,10 @@ help:
 	@echo ""
 	@echo "  # Start API server"
 	@echo "  make run-server"
+	@echo ""
+	@echo "  # Test with reflection"
+	@echo "  make run-test"
+	@echo "  make test-grpc-reflection"
 	@echo ""
 	@echo "Help:"
 	@echo "  help               - Show this help"

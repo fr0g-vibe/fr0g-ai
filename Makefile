@@ -29,9 +29,9 @@ help:
 	@echo "  test-grpc-reflection - Test gRPC reflection specifically"
 	@echo "  build-aip-test     - Build AIP service with reflection for testing"
 	@echo "  run-aip-test       - Run AIP service with reflection enabled"
-	@echo "  validate-production - Ensure production build is secure"
-	@echo "  setup-dev-env      - Create development environment file"
-	@echo "  setup-prod-env     - Create production environment file"
+	@echo "  validate-production - Validate production security for all services"
+	@echo "  setup-dev-env      - Create global development environment file"
+	@echo "  setup-prod-env     - Create global production environment file"
 	@echo "  docker-build       - Build Docker images"
 	@echo "  docker-up          - Start services with Docker Compose"
 	@echo "  docker-down        - Stop Docker Compose services"
@@ -169,64 +169,37 @@ health-quick:
 	@echo "Checking fr0g-ai-io (port 8083)..."
 	@curl -sf http://localhost:8083/health && echo "✅ IO service healthy" || echo "❌ IO service down"
 
-# gRPC Reflection and Testing Support
-test-grpc-reflection:
-	@echo "🔍 Testing gRPC reflection..."
-	@if ! command -v grpcurl >/dev/null 2>&1; then \
-		echo "❌ grpcurl not found. Install with: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"; \
-		exit 1; \
-	fi
-	@echo "✅ grpcurl found"
-	@echo "Testing reflection endpoint..."
-	@if grpcurl -plaintext localhost:9090 list >/dev/null 2>&1; then \
-		echo "✅ gRPC reflection is working"; \
-		grpcurl -plaintext localhost:9090 list; \
-	else \
-		echo "❌ gRPC reflection not available"; \
-		echo "💡 Start service with reflection: make run-aip-test"; \
-	fi
-
-# Build and run AIP service with reflection enabled for testing
-build-aip-test:
-	@echo "🔨 Building AIP service with gRPC reflection enabled for testing..."
-	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
-	@cd fr0g-ai-aip && GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development $(MAKE) build
-
-run-aip-test: build-aip-test
-	@echo "🚀 Starting AIP service with reflection enabled..."
-	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
-	@cd fr0g-ai-aip && GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development $(MAKE) run
-
-# Run AIP service tests with comprehensive coverage
+# AIP-specific testing (delegates to subproject)
 test-aip-service:
 	@echo "🧪 Running AIP service test suite..."
 	@chmod +x ./test_aip_service.sh
 	@./test_aip_service.sh
 
-# Run AIP tests with reflection enabled
 test-aip-with-reflection:
 	@echo "🧪 Running AIP tests with gRPC reflection enabled..."
-	@echo "⚠️  This will start the service with reflection for testing"
-	@echo "Starting service in background..."
-	@cd fr0g-ai-aip && GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development $(MAKE) run &
-	@echo "Waiting for service to start..."
-	@sleep 5
-	@chmod +x ./test_aip_service.sh
-	@./test_aip_service.sh
-	@echo "Stopping test service..."
-	@pkill -f "aip-service" || true
+	@cd fr0g-ai-aip && $(MAKE) test-with-reflection
 
-# Validate production build (ensure reflection is disabled)
+test-grpc-reflection:
+	@echo "🔍 Testing gRPC reflection..."
+	@cd fr0g-ai-aip && $(MAKE) test-grpc-reflection
+
+build-aip-test:
+	@echo "🔨 Building AIP service with gRPC reflection for testing..."
+	@cd fr0g-ai-aip && $(MAKE) build-test
+
+run-aip-test:
+	@echo "🚀 Starting AIP service with reflection enabled..."
+	@cd fr0g-ai-aip && $(MAKE) run-test
+
+# Global validation (checks all services)
 validate-production:
-	@echo "🔒 Validating production build security..."
-	@if [ "$$GRPC_ENABLE_REFLECTION" = "true" ] && [ "$$ENVIRONMENT" = "production" ]; then \
-		echo "❌ FATAL: gRPC reflection is enabled in production environment!"; \
-		echo "   This is a security risk and deployment should be blocked."; \
-		exit 1; \
-	fi
-	@echo "✅ Production validation passed - reflection properly disabled"
+	@echo "🔒 Validating production build security for all services..."
+	@cd fr0g-ai-aip && $(MAKE) validate-production
+	@cd fr0g-ai-bridge && $(MAKE) validate-production || echo "Bridge validation not implemented"
+	@cd fr0g-ai-io && $(MAKE) validate-production || echo "IO validation not implemented"
+	@echo "✅ Production validation completed"
 
-# Development environment setup
+# Global environment setup
 setup-dev-env:
 	@echo "🛠️  Setting up development environment..."
 	@echo "export GRPC_ENABLE_REFLECTION=true" > .env.development
@@ -234,8 +207,8 @@ setup-dev-env:
 	@echo "export LOG_LEVEL=debug" >> .env.development
 	@echo "✅ Development environment configured (.env.development)"
 	@echo "💡 Source with: source .env.development"
+	@echo "💡 Individual services may have additional setup - check their Makefiles"
 
-# Production environment setup
 setup-prod-env:
 	@echo "🔒 Setting up production environment..."
 	@echo "export GRPC_ENABLE_REFLECTION=false" > .env.production
