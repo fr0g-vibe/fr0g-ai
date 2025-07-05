@@ -387,44 +387,25 @@ func (c *Config) Validate() error {
 
 // GetDefaults returns default configuration values
 func GetDefaults() *Config {
-	// Read environment variables for ports with proper defaults
-	httpPort := os.Getenv("AIP_HTTP_PORT")
-	if httpPort == "" {
-		httpPort = os.Getenv("HTTP_PORT")
-		if httpPort == "" {
-			httpPort = "8080"
-		}
-	}
-	
-	grpcPort := os.Getenv("AIP_GRPC_PORT")
-	if grpcPort == "" {
-		grpcPort = os.Getenv("GRPC_PORT")
-		if grpcPort == "" {
-			grpcPort = "9090"
-		}
-	}
-	
 	// Read reflection setting from environment
 	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
 	
 	// Debug output for environment variables
-	fmt.Printf("DEBUG: Environment variables - AIP_HTTP_PORT=%s, AIP_GRPC_PORT=%s, GRPC_ENABLE_REFLECTION=%s\n", 
-		os.Getenv("AIP_HTTP_PORT"), os.Getenv("AIP_GRPC_PORT"), os.Getenv("GRPC_ENABLE_REFLECTION"))
-	fmt.Printf("DEBUG: Final configuration - HTTP port %s, gRPC port %s, reflection %t\n", 
-		httpPort, grpcPort, enableReflection)
+	fmt.Printf("DEBUG: GRPC_ENABLE_REFLECTION=%s, reflection enabled: %t\n", 
+		os.Getenv("GRPC_ENABLE_REFLECTION"), enableReflection)
 	
 	return &Config{
 		HTTP: HTTPConfig{
-			Address:      "localhost:" + httpPort,
-			Port:         httpPort,
+			Address:      "localhost:8080",
+			Port:         "8080",
 			Host:         "localhost",
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 30 * time.Second,
 			EnableCORS:   true,
 		},
 		GRPC: GRPCConfig{
-			Address:          "localhost:" + grpcPort,
-			Port:             grpcPort,
+			Address:          "localhost:9090",
+			Port:             "9090",
 			Host:             "localhost",
 			TLS:              false,
 			EnableReflection: enableReflection,
