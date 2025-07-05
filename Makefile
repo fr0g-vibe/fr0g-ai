@@ -176,7 +176,7 @@ test-aip-service:
 	@./test_aip_service.sh
 
 test-aip-with-reflection:
-	@echo "🧪 Running AIP tests with gRPC reflection enabled..."
+	@echo "🧪 Running AIP tests against running service with gRPC reflection..."
 	@cd fr0g-ai-aip && $(MAKE) test-with-reflection
 
 test-grpc-reflection:

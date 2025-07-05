@@ -179,17 +179,12 @@ run-test: build-test
 
 # Run tests with reflection enabled
 test-with-reflection:
-	@echo "🧪 Running AIP tests with gRPC reflection enabled..."
-	@echo "⚠️  This will start the service with reflection for testing"
-	@echo "Setting environment variables..."
-	@echo "Starting service in background with environment variables..."
-	@GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development AIP_HTTP_PORT=8080 AIP_GRPC_PORT=9090 $(MAKE) run & \
-	echo "Waiting for service to start..." && \
-	sleep 12 && \
-	chmod +x ../test_aip_service.sh && \
-	../test_aip_service.sh; \
-	echo "Stopping test service..." && \
-	pkill -f "fr0g-ai-aip" || true
+	@echo "🧪 Running AIP tests against running service..."
+	@echo "💡 Make sure the service is running with reflection enabled:"
+	@echo "   GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development docker-compose up fr0g-ai-aip -d"
+	@echo ""
+	@chmod +x ../test_aip_service.sh
+	@../test_aip_service.sh
 
 # Validate production build (ensure reflection is disabled)
 validate-production:
