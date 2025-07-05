@@ -63,7 +63,11 @@ fmt:
 # Generate protobuf files
 proto:
 	@echo "Generating protobuf files..."
-	@echo "No protobuf files to generate yet"
+	@mkdir -p internal/pb
+	@protoc --go_out=internal/pb --go_opt=paths=source_relative \
+		--go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative \
+		proto/io.proto
+	@echo "Protobuf generation complete"
 
 # Check service health
 health:
