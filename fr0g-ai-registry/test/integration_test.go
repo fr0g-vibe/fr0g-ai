@@ -15,7 +15,7 @@ import (
 func TestRegistryIntegration(t *testing.T) {
 	registryURL := "http://localhost:8500"
 	
-	// Test services that should integrate with the registry
+	// Test services that should integrate with the registry - CORRECTED PORTS
 	testServices := []ServiceInfo{
 		{
 			ID:      "fr0g-ai-aip-1",
@@ -26,6 +26,7 @@ func TestRegistryIntegration(t *testing.T) {
 			Meta: map[string]string{
 				"version": "1.0.0",
 				"env":     "test",
+				"grpc_port": "9090",
 			},
 			Check: &HealthCheck{
 				HTTP:     "http://localhost:8080/health",
@@ -37,27 +38,12 @@ func TestRegistryIntegration(t *testing.T) {
 			ID:      "fr0g-ai-bridge-1",
 			Name:    "fr0g-ai-bridge",
 			Address: "localhost",
-			Port:    8081,
+			Port:    8082, // CORRECTED: Bridge is on 8082, not 8081
 			Tags:    []string{"ai", "bridge", "llm"},
 			Meta: map[string]string{
 				"version": "1.0.0",
 				"env":     "test",
-			},
-			Check: &HealthCheck{
-				HTTP:     "http://localhost:8081/health",
-				Interval: "10s",
-				Timeout:  "3s",
-			},
-		},
-		{
-			ID:      "fr0g-ai-io-1",
-			Name:    "fr0g-ai-io",
-			Address: "localhost",
-			Port:    8082,
-			Tags:    []string{"io", "input", "output"},
-			Meta: map[string]string{
-				"version": "1.0.0",
-				"env":     "test",
+				"grpc_port": "9091",
 			},
 			Check: &HealthCheck{
 				HTTP:     "http://localhost:8082/health",
@@ -69,11 +55,29 @@ func TestRegistryIntegration(t *testing.T) {
 			ID:      "fr0g-ai-master-control-1",
 			Name:    "fr0g-ai-master-control",
 			Address: "localhost",
-			Port:    8083,
+			Port:    8081, // CORRECTED: Master-control is on 8081
 			Tags:    []string{"control", "orchestration", "workflow"},
 			Meta: map[string]string{
 				"version": "1.0.0",
 				"env":     "test",
+				"ai_status": "conscious",
+			},
+			Check: &HealthCheck{
+				HTTP:     "http://localhost:8081/health",
+				Interval: "10s",
+				Timeout:  "3s",
+			},
+		},
+		{
+			ID:      "fr0g-ai-io-1",
+			Name:    "fr0g-ai-io",
+			Address: "localhost",
+			Port:    8083, // CORRECTED: I/O is on 8083, not 8082
+			Tags:    []string{"io", "input", "output"},
+			Meta: map[string]string{
+				"version": "1.0.0",
+				"env":     "test",
+				"grpc_port": "9092",
 			},
 			Check: &HealthCheck{
 				HTTP:     "http://localhost:8083/health",
