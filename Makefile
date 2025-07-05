@@ -18,6 +18,12 @@ help:
 	@echo "  fmt                - Format code for all components"
 	@echo "  proto              - Generate protobuf files"
 	@echo "  health             - Check all service health"
+	@echo "  test-integration   - Run end-to-end integration tests"
+	@echo "  test-registry      - Run service registry tests"
+	@echo "  test-api           - Run API integration tests"
+	@echo "  test-performance   - Run performance tests"
+	@echo "  test-deployment    - Run deployment verification tests"
+	@echo "  test-all-integration - Run all integration test suites"
 	@echo "  docker-build       - Build Docker images"
 	@echo "  docker-up          - Start services with Docker Compose"
 	@echo "  docker-down        - Stop Docker Compose services"
@@ -138,6 +144,35 @@ health:
 	@curl -sf http://localhost:8081/health && echo "✅ MCP service healthy" || echo "❌ MCP service down"
 	@echo "Checking fr0g-ai-io (port 8083)..."
 	@curl -sf http://localhost:8083/health && echo "✅ IO service healthy" || echo "❌ IO service down"
+
+# Integration testing targets
+test-integration:
+	@echo "🧪 Running integration tests..."
+	@chmod +x tests/integration/*.sh
+	@./tests/integration/end_to_end_test.sh
+
+test-registry:
+	@echo "🔍 Running service registry tests..."
+	@chmod +x tests/integration/service_registry_test.sh
+	@./tests/integration/service_registry_test.sh
+
+test-api:
+	@echo "🔌 Running API tests..."
+	@chmod +x tests/integration/api_test.sh
+	@./tests/integration/api_test.sh
+
+test-performance:
+	@echo "⚡ Running performance tests..."
+	@chmod +x tests/integration/performance_test.sh
+	@./tests/integration/performance_test.sh
+
+test-deployment:
+	@echo "🚀 Running deployment tests..."
+	@chmod +x scripts/test-deployment.sh
+	@./scripts/test-deployment.sh
+
+# Run all integration tests
+test-all-integration: test-integration test-registry test-api test-performance test-deployment
 
 # Docker operations
 docker-build:
