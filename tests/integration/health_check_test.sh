@@ -137,6 +137,9 @@ test_aip_service() {
     # Check gRPC health
     check_grpc_health "AIP" "$AIP_GRPC_URL"
     
+    # Test gRPC reflection status
+    test_grpc_reflection_status
+    
     # Test personas endpoint
     echo -n "Testing personas API... "
     if curl -sf "$AIP_HTTP_URL/personas" >/dev/null 2>&1; then
@@ -165,6 +168,39 @@ test_aip_service() {
     fi
     
     return 0
+}
+
+# Function to test gRPC reflection status
+test_grpc_reflection_status() {
+    echo -n "Checking gRPC reflection status... "
+    
+    # Check if grpcurl is available
+    if ! command -v grpcurl >/dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️  grpcurl not available${NC}"
+        return 0
+    fi
+    
+    # Test reflection
+    if grpcurl -plaintext "$AIP_GRPC_URL" list >/dev/null 2>&1; then
+        echo -e "${YELLOW}⚠️  REFLECTION ENABLED${NC}"
+        echo -e "${YELLOW}   💡 This should be disabled in production${NC}"
+        
+        # List available services
+        local services=$(grpcurl -plaintext "$AIP_GRPC_URL" list 2>/dev/null)
+        if [ -n "$services" ]; then
+            echo -e "${BLUE}   Available gRPC services:${NC}"
+            echo "$services" | sed 's/^/     /'
+        fi
+        
+        # Check health endpoint for reflection status
+        local health_response=$(curl -s "$AIP_HTTP_URL/health" 2>/dev/null)
+        local reflection_status=$(echo "$health_response" | jq -r '.grpc_reflection // "unknown"' 2>/dev/null)
+        echo -e "${BLUE}   Health endpoint reports: $reflection_status${NC}"
+        
+    else
+        echo -e "${GREEN}✅ REFLECTION DISABLED${NC}"
+        echo -e "${GREEN}   This is the recommended production setting${NC}"
+    fi
 }
 
 # Function to test Bridge service
@@ -360,9 +396,29 @@ generate_summary() {
     echo -e "IO Service: $io_status"
     echo -e "Master Control: $mcp_status"
     
+    # Check gRPC reflection status for security
+    echo -e "\n${BLUE}🔒 Security Status:${NC}"
+    if command -v grpcurl >/dev/null 2>&1; then
+        if grpcurl -plaintext "$AIP_GRPC_URL" list >/dev/null 2>&1; then
+            echo -e "${YELLOW}⚠️  gRPC reflection is ENABLED${NC}"
+            echo -e "${YELLOW}   This should be disabled in production${NC}"
+            echo -e "${YELLOW}   Use: make validate-production${NC}"
+        else
+            echo -e "${GREEN}✅ gRPC reflection is properly disabled${NC}"
+        fi
+    else
+        echo -e "${BLUE}ℹ️  grpcurl not available - cannot check reflection${NC}"
+    fi
+    
     echo -e "\n${BLUE}📋 Service Status Summary:${NC}"
     echo -e "✅ Core services (Registry + AIP) are operational"
     echo -e "⚠️  Additional services need to be started with docker-compose"
+    
+    echo -e "\n${BLUE}🛠️  Testing Commands:${NC}"
+    echo -e "  make test-aip-service       # Run AIP service tests"
+    echo -e "  make test-grpc-reflection   # Test gRPC reflection"
+    echo -e "  make test-aip-with-reflection # Test with reflection enabled"
+    echo -e "  make validate-production    # Validate production security"
 }
 
 # Main test execution
