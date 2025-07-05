@@ -382,3 +382,100 @@ func (c *Config) Validate() error {
 
 	return nil
 }
+
+// GetDefaults returns default configuration values
+func GetDefaults() *Config {
+	return &Config{
+		HTTP: HTTPConfig{
+			Address:      "localhost:8083",
+			Port:         "8083",
+			Host:         "localhost",
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			EnableCORS:   true,
+		},
+		GRPC: GRPCConfig{
+			Address: "localhost:9092",
+			Port:    "9092",
+			Host:    "localhost",
+			TLS:     false,
+		},
+		SMS: SMSConfig{
+			Enabled:            false,
+			ProcessingInterval: 30,
+			MaxHistorySize:     1000,
+			ThreatThreshold:    0.5,
+			ResponseEnabled:    false,
+		},
+		Voice: VoiceConfig{
+			Enabled:            false,
+			MonitoringInterval: 30,
+			MaxHistorySize:     1000,
+			ThreatThreshold:    0.5,
+			ResponseEnabled:    false,
+		},
+		IRC: IRCConfig{
+			Enabled:           false,
+			Nickname:          "fr0g-ai",
+			Username:          "fr0g-ai",
+			Realname:          "fr0g.ai Security Bot",
+			ReconnectInterval: 30,
+			MaxHistorySize:    1000,
+			ResponseEnabled:   false,
+		},
+		ESMTP: ESMTPConfig{
+			Enabled:        false,
+			ListenAddress:  "0.0.0.0",
+			Port:           2525,
+			MaxMessageSize: 10 * 1024 * 1024, // 10MB
+			ResponseEnabled: false,
+		},
+		Discord: DiscordConfig{
+			Enabled:        false,
+			WebhookPort:    8084,
+			MaxHistorySize: 1000,
+			ResponseEnabled: false,
+		},
+		Webhook: WebhookConfig{
+			Enabled:        true,
+			Port:           8085,
+			Host:           "0.0.0.0",
+			ReadTimeout:    30 * time.Second,
+			WriteTimeout:   30 * time.Second,
+			MaxRequestSize: 1024 * 1024, // 1MB
+			EnableLogging:  true,
+		},
+		Queue: QueueConfig{
+			Type:          "memory",
+			MaxSize:       10000,
+			RetryAttempts: 3,
+			RetryDelay:    5 * time.Second,
+		},
+		MasterControl: MasterControlConfig{
+			Address:    "localhost:8081",
+			Port:       8081,
+			TLS:        false,
+			Timeout:    30 * time.Second,
+			RetryCount: 3,
+			RetryDelay: 5 * time.Second,
+		},
+		Logging: LoggingConfig{
+			Level:      "info",
+			Format:     "json",
+			Output:     "stdout",
+			MaxSize:    100,
+			MaxBackups: 3,
+			MaxAge:     28,
+		},
+		Security: SecurityConfig{
+			EnableAuth:     false,
+			EnableCORS:     true,
+			RateLimitRPM:   1000,
+			RequireAPIKey:  false,
+		},
+		Storage: StorageConfig{
+			Type:    "memory",
+			DataDir: "/tmp/fr0g-ai-io",
+		},
+	}
+}
