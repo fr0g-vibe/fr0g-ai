@@ -58,21 +58,29 @@ The project lead can dispatch commands to specialized agent windows:
 # Command Format:
 tmux send-keys -t fr0g-ai:WINDOW_NUMBER "COMMAND" C-m
 
-# Agent Window Mapping:
-# Window 0: Project-Lead (architecture and coordination)
-# Window 1: AIP (fr0g-ai-aip core AI service)
-# Window 2: Bridge (fr0g-ai-bridge integration service) 
-# Window 3: MCP (fr0g-ai-master-control cognitive engine)
-# Window 4: Config (configuration and environment management)
-# Window 5: DevOps (infrastructure and deployment)
-# Window 6: Build-Test (build automation and testing)
-# Window 7: Monitor (system monitoring and logs)
-# Window 8: Shell (general purpose interactive shell)
+# Agent Window Mapping (Aider Chat Clients):
+# Window 0: Project-Lead (architecture and coordination) - AIDER
+# Window 1: AIP (fr0g-ai-aip core AI service) - AIDER
+# Window 2: Bridge (fr0g-ai-bridge integration service) - AIDER
+# Window 3: MCP (fr0g-ai-master-control cognitive engine) - AIDER
+# Window 4: Config (configuration and environment management) - AIDER
+# Window 5: DevOps (infrastructure and deployment) - AIDER
+
+# Shell Windows (Direct Commands):
+# Window 6: Build-Test (build automation and testing) - SHELL
+# Window 7: Monitor (system monitoring and logs) - SHELL
+# Window 8: Shell (general purpose interactive shell) - SHELL
 
 # Example Dispatch Commands:
+# To Aider agents (windows 0-5):
 tmux send-keys -t fr0g-ai:1 "Implement persona service with CRUD operations" C-m
 tmux send-keys -t fr0g-ai:2 "Add health check validation" C-m
 tmux send-keys -t fr0g-ai:3 "Verify learning rate metrics" C-m
+
+# To shell windows (windows 6-8):
+tmux send-keys -t fr0g-ai:6 "make build-all" C-m
+tmux send-keys -t fr0g-ai:7 "docker-compose logs -f" C-m
+tmux send-keys -t fr0g-ai:8 "git status" C-m
 ```
 
 **Dispatch Limitations:**
