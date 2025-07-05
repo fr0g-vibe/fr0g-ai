@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
@@ -78,6 +80,21 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 	// Register the persona service
 	personaServer := NewPersonaServer(cfg, service)
 	pb.RegisterPersonaServiceServer(s, personaServer)
+
+	// Conditionally enable gRPC reflection
+	enableReflection := cfg.GRPC.EnableReflection
+	
+	// Also check environment variable directly
+	if os.Getenv("GRPC_ENABLE_REFLECTION") == "true" {
+		enableReflection = true
+	}
+	
+	if enableReflection {
+		fmt.Println("⚠️  gRPC reflection ENABLED - DO NOT use in production!")
+		reflection.Register(s)
+	} else {
+		fmt.Println("✅ gRPC reflection disabled (production safe)")
+	}
 
 	fmt.Printf("gRPC server listening on port %s\n", cfg.GRPC.Port)
 	fmt.Println("Using real gRPC with protobuf")

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/community"
@@ -180,6 +181,11 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	// Add gRPC reflection status for debugging
 	enableReflection := false
 	if s.config != nil && s.config.GRPC.EnableReflection {
+		enableReflection = true
+	}
+	
+	// Also check environment variable directly
+	if os.Getenv("GRPC_ENABLE_REFLECTION") == "true" {
 		enableReflection = true
 	}
 	

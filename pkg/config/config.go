@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 )
@@ -386,20 +387,35 @@ func (c *Config) Validate() error {
 
 // GetDefaults returns default configuration values
 func GetDefaults() *Config {
+	// Read environment variables for ports
+	httpPort := os.Getenv("AIP_HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "8080"
+	}
+	
+	grpcPort := os.Getenv("AIP_GRPC_PORT")
+	if grpcPort == "" {
+		grpcPort = "9090"
+	}
+	
+	// Read reflection setting from environment
+	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
+	
 	return &Config{
 		HTTP: HTTPConfig{
-			Address:      "localhost:8083",
-			Port:         "8083",
+			Address:      "localhost:" + httpPort,
+			Port:         httpPort,
 			Host:         "localhost",
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 30 * time.Second,
 			EnableCORS:   true,
 		},
 		GRPC: GRPCConfig{
-			Address: "localhost:9092",
-			Port:    "9092",
-			Host:    "localhost",
-			TLS:     false,
+			Address:          "localhost:" + grpcPort,
+			Port:             grpcPort,
+			Host:             "localhost",
+			TLS:              false,
+			EnableReflection: enableReflection,
 		},
 		SMS: SMSConfig{
 			Enabled:            true,
