@@ -197,14 +197,20 @@ test_grpc_direct_calls() {
         log_test "gRPC CreatePersona" "PASS" "Created persona via gRPC: $grpc_id"
         
         # Test GetPersona gRPC method
-        if echo "{\"id\":\"$grpc_id\"}" | grpcurl -plaintext -d @ "$AIP_GRPC_ENDPOINT" persona.PersonaService/GetPersona > "$TEST_OUTPUT_DIR/grpc_get_response.json" 2>/dev/null; then
+        if echo "{\"id\":\"$grpc_id\"}" | grpcurl -plaintext -d @ "$AIP_GRPC_ENDPOINT" persona.PersonaService/GetPersona > "$TEST_OUTPUT_DIR/grpc_get_response.json" 2>"$TEST_OUTPUT_DIR/grpc_get_error.txt"; then
             log_test "gRPC GetPersona" "PASS" "Retrieved persona via gRPC"
         else
-            log_test "gRPC GetPersona" "SKIP" "GetPersona test skipped due to service issues"
+            local get_error=$(cat "$TEST_OUTPUT_DIR/grpc_get_error.txt" 2>/dev/null | head -1)
+            log_test "gRPC GetPersona" "SKIP" "GetPersona test skipped: $get_error"
         fi
         
         # Clean up: delete the test persona
-        echo "{\"id\":\"$grpc_id\"}" | grpcurl -plaintext -d @ "$AIP_GRPC_ENDPOINT" persona.PersonaService/DeletePersona > /dev/null 2>&1
+        echo -n "Cleaning up gRPC test persona... "
+        if echo "{\"id\":\"$grpc_id\"}" | grpcurl -plaintext -d @ "$AIP_GRPC_ENDPOINT" persona.PersonaService/DeletePersona > /dev/null 2>&1; then
+            echo -e "${GREEN}✅ CLEANED UP${NC}"
+        else
+            echo -e "${YELLOW}⚠️  CLEANUP FAILED${NC}"
+        fi
         
     else
         local create_error=$(cat "$TEST_OUTPUT_DIR/grpc_create_error.txt" 2>/dev/null | head -1)
@@ -251,7 +257,7 @@ test_grpc_api() {
                 
                 # Test actual gRPC calls
                 test_grpc_direct_calls
-                return 0
+                # Don't return error code from direct calls - reflection is working
             else
                 log_test "gRPC Service Reflection" "FAIL" "No services found via reflection"
                 return 1
@@ -271,7 +277,7 @@ test_grpc_api() {
             echo -e "${YELLOW}   GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development docker-compose up fr0g-ai-aip -d${NC}"
             # Continue with direct service testing
             test_grpc_direct_calls
-            return 0
+            # Don't return error code from direct calls - reflection test passed
         else
             log_test "gRPC Service Reflection" "FAIL" "Reflection failed: $error_msg"
             echo -e "${YELLOW}💡 Debug: gRPC server may not have reflection enabled${NC}"
@@ -279,6 +285,8 @@ test_grpc_api() {
             return 1
         fi
     fi
+    
+    return 0
     
 }
 
