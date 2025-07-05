@@ -131,24 +131,20 @@ func (p *Processor) GetHealthProfile(health *pb.Health) map[string]interface{} {
 		profile["mental_health_support"] = p.getMentalHealthSupport(health.MentalHealth)
 	}
 
-	// Fitness and activity
-	if health.FitnessLevel != "" || health.ExerciseFrequency != "" {
-		profile["fitness_profile"] = p.getFitnessProfile(health)
-	}
+	// Note: FitnessLevel and ExerciseFrequency are not in the protobuf Health message
+	// Skipping fitness profile for now
 
 	// Lifestyle factors
 	profile["lifestyle_factors"] = p.getLifestyleFactors(health)
 
-	// Medical information
-	if len(health.MedicalConditions) > 0 {
-		profile["condition_categories"] = p.categorizeConditions(health.MedicalConditions)
-		profile["chronic_conditions"] = p.hasChronicConditions(health.MedicalConditions)
+	// Medical information - using ChronicConditions from protobuf
+	if len(health.ChronicConditions) > 0 {
+		profile["condition_categories"] = p.categorizeConditions(health.ChronicConditions)
+		profile["chronic_conditions"] = p.hasChronicConditions(health.ChronicConditions)
 	}
 
-	if len(health.Allergies) > 0 {
-		profile["allergy_categories"] = p.categorizeAllergies(health.Allergies)
-		profile["allergy_severity"] = p.getAllergySeverity(health.Allergies)
-	}
+	// Note: Allergies field is not in the protobuf Health message
+	// Skipping allergy analysis for now
 
 	return profile
 }
@@ -222,22 +218,8 @@ func (p *Processor) getOverallHealth(health *pb.Health) string {
 		}
 	}
 
-	// Fitness level
-	if health.FitnessLevel != "" {
-		factors++
-		switch p.normalizeString(health.FitnessLevel) {
-		case "athlete", "extremely-active":
-			score += 5
-		case "very-active":
-			score += 4
-		case "moderately-active":
-			score += 3
-		case "lightly-active":
-			score += 2
-		case "sedentary":
-			score += 1
-		}
-	}
+	// Note: FitnessLevel is not in the protobuf Health message
+	// Skipping fitness level scoring for now
 
 	if factors == 0 {
 		return "unknown"
@@ -261,34 +243,17 @@ func (p *Processor) getOverallHealth(health *pb.Health) string {
 func (p *Processor) getHealthRiskFactors(health *pb.Health) []string {
 	var risks []string
 
-	// Substance use risks
-	substanceUse := p.normalizeString(health.SubstanceUse)
-	if strings.Contains(substanceUse, "heavy") {
-		risks = append(risks, "heavy-substance-use")
-	} else if strings.Contains(substanceUse, "regular") && !strings.Contains(substanceUse, "prescription") {
-		risks = append(risks, "regular-substance-use")
-	}
-
-	// Sedentary lifestyle
-	if p.normalizeString(health.FitnessLevel) == "sedentary" {
-		risks = append(risks, "sedentary-lifestyle")
-	}
-
-	// Poor sleep
-	sleepQuality := p.normalizeString(health.SleepQuality)
-	if sleepQuality == "poor" || sleepQuality == "very-poor" || strings.Contains(sleepQuality, "insomnia") {
-		risks = append(risks, "poor-sleep")
-	}
-
-	// High stress
-	stressLevel := p.normalizeString(health.StressLevel)
-	if stressLevel == "high" || stressLevel == "very-high" || stressLevel == "chronic" {
-		risks = append(risks, "high-stress")
-	}
+	// Note: SubstanceUse, FitnessLevel, SleepQuality, StressLevel are not in protobuf
+	// Using available fields only
 
 	// Chronic conditions
-	if p.hasChronicConditions(health.MedicalConditions) {
+	if p.hasChronicConditions(health.ChronicConditions) {
 		risks = append(risks, "chronic-conditions")
+	}
+
+	// Addictions as risk factor
+	if len(health.Addictions) > 0 {
+		risks = append(risks, "substance-addictions")
 	}
 
 	return risks
@@ -325,17 +290,8 @@ func (p *Processor) getWellnessScore(health *pb.Health) int {
 		score -= 10
 	}
 
-	// Fitness level
-	switch p.normalizeString(health.FitnessLevel) {
-	case "athlete", "extremely-active":
-		score += 15
-	case "very-active":
-		score += 10
-	case "moderately-active":
-		score += 5
-	case "sedentary":
-		score -= 10
-	}
+	// Note: FitnessLevel is not in the protobuf Health message
+	// Skipping fitness level scoring for now
 
 	// Apply risk factor penalties
 	risks := p.getHealthRiskFactors(health)
@@ -515,21 +471,8 @@ func (p *Processor) categorizeConditions(conditions []string) map[string][]strin
 }
 
 func (p *Processor) hasChronicConditions(conditions []string) bool {
-	chronicConditions := []string{
-		"diabetes", "hypertension", "heart", "asthma", "copd", 
-		"arthritis", "depression", "anxiety", "bipolar", "cancer",
-		"kidney", "liver", "thyroid", "migraine", "epilepsy",
-	}
-
-	for _, condition := range conditions {
-		normalized := p.normalizeString(condition)
-		for _, chronic := range chronicConditions {
-			if strings.Contains(normalized, chronic) {
-				return true
-			}
-		}
-	}
-	return false
+	// Any condition in the ChronicConditions list is by definition chronic
+	return len(conditions) > 0
 }
 
 func (p *Processor) categorizeAllergies(allergies []string) map[string][]string {
