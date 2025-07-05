@@ -1,6 +1,86 @@
 # fr0g.ai PROJECT STATUS - COMPREHENSIVE REVIEW
 
-## 🎯 EXECUTIVE SUMMARY
+## PROJECT-WIDE AI DEVELOPMENT RULES
+
+### Essential Context Files for AI Sessions
+When starting new AI coding sessions, always include these files:
+- `README.md` (project overview and component boundaries)
+- `docker-compose.yml` (service configuration)
+- `Makefile` (build commands)
+- `.env.example` (configuration template)
+- `TODO.md` (this file - project status and rules)
+- Component-specific TODO.md file for the service being worked on
+
+### Component Boundaries and Responsibilities
+- **fr0g-ai-aip**: Core AI processing engine (ports 8080/9090)
+- **fr0g-ai-bridge**: Integration bridge service (ports 8082/9091)  
+- **fr0g-ai-master-control**: Orchestration and cognitive engine (port 8081)
+- **Project Lead**: Overall coordination, README.md, docker-compose.yml, Makefile
+
+### Cross-Component Interaction Rules
+- **DO NOT** edit files outside your assigned component directory
+- **DO NOT** modify other components' TODO.md files
+- **ASK FIRST** if you need to modify shared files (docker-compose.yml, Makefile, etc.)
+- **ASK FIRST** if changes affect interfaces that other services consume
+
+### Repository Information
+- **GitHub URL**: `https://github.com/fr0g-vibe/fr0g-ai`
+- **Project Path**: `github.com/fr0g-vibe/fr0g-ai`
+- **Working Directory**: AI agents start in `/fr0g-ai` root (local clone)
+- **Module Navigation**: Must `cd` into component directory before Go commands
+
+### No Unicode Icons Policy
+- Never use unicode icons in any files
+- Use plain text alternatives: "RESOLVED", "MISSING", "CRITICAL", etc.
+- Apply this rule to all documentation, configuration, and code files
+
+### No Mocking Policy
+- **NEVER CREATE MOCKS**: Always implement real functionality, never mock implementations
+- **REPLACE EXISTING MOCKS**: If you find mock implementations, replace them with real working code
+- **REAL INTEGRATIONS**: Always implement actual API calls, database connections, and service integrations
+- **PRODUCTION READY**: All code must be production-ready, not placeholder or demo code
+
+### Centralized Configuration Rules
+- **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
+- **NO LOCAL CONFIG**: Never create component-specific config/validation libraries
+- **IMPORT PATTERN**: Always `import sharedconfig "pkg/config"`
+- **VALIDATION STANDARD**: Use `sharedconfig.ValidationErrors` for all validation responses
+- **EXTEND WHEN NEEDED**: Add component-specific validation to `pkg/config/` if required
+
+### Protobuf Generation Rules
+- **NEVER EDIT**: Do not manually edit any `.pb.go` files marked "DO NOT EDIT"
+- **Use Build Commands**: Always use `make proto` or `protoc` commands for protobuf generation
+- **Generated Files**: Treat all `.pb.go` files as build artifacts, not source code
+
+### Tmux Agent Dispatch Capability (Project Lead Only)
+The project lead can dispatch commands to specialized agent windows:
+```bash
+# Command Format:
+tmux send-keys -t fr0g-ai:WINDOW_NUMBER "COMMAND" C-m
+
+# Agent Window Mapping:
+# Window 0: Project-Lead (architecture and coordination)
+# Window 1: AIP (fr0g-ai-aip core AI service)
+# Window 2: Bridge (fr0g-ai-bridge integration service) 
+# Window 3: MCP (fr0g-ai-master-control cognitive engine)
+# Window 4: Config (configuration and environment management)
+# Window 5: DevOps (infrastructure and deployment)
+# Window 6: Build-Test (build automation and testing)
+# Window 7: Monitor (system monitoring and logs)
+# Window 8: Shell (general purpose interactive shell)
+
+# Example Dispatch Commands:
+tmux send-keys -t fr0g-ai:1 "Implement persona service with CRUD operations" C-m
+tmux send-keys -t fr0g-ai:2 "Add health check validation" C-m
+tmux send-keys -t fr0g-ai:3 "Verify learning rate metrics" C-m
+```
+
+**Dispatch Limitations:**
+- Commands are fire-and-forget (no return data visibility)
+- Cannot see agent responses or command results
+- Use for task assignment and coordination only
+
+## EXECUTIVE SUMMARY
 
 ### BREAKTHROUGH ACHIEVEMENTS:
 - **fr0g-ai-bridge**: FULLY OPERATIONAL - Production-ready integration service
