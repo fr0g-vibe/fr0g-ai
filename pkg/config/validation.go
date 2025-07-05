@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"net"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -178,6 +179,68 @@ func Contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+// ValidateEnum validates that a value is in a list of allowed values
+func ValidateEnum(value string, allowedValues []string, fieldName string) *ValidationError {
+	if value == "" {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "value is required",
+		}
+	}
+	
+	for _, allowed := range allowedValues {
+		if value == allowed {
+			return nil
+		}
+	}
+	
+	return &ValidationError{
+		Field:   fieldName,
+		Message: fmt.Sprintf("invalid value, must be one of: %s", strings.Join(allowedValues, ", ")),
+	}
+}
+
+// ValidateLength validates string length
+func ValidateLength(value string, min, max int, fieldName string) *ValidationError {
+	length := len(value)
+	if length < min {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: fmt.Sprintf("must be at least %d characters", min),
+		}
+	}
+	if length > max {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: fmt.Sprintf("must be at most %d characters", max),
+		}
+	}
+	return nil
+}
+
+// ValidateDirectoryPath validates that a directory path is valid
+func ValidateDirectoryPath(path string, fieldName string) *ValidationError {
+	if path == "" {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "directory path is required",
+		}
+	}
+	
+	// Check if path exists or can be created
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// Try to create the directory
+		if err := os.MkdirAll(path, 0755); err != nil {
+			return &ValidationError{
+				Field:   fieldName,
+				Message: fmt.Sprintf("cannot create directory: %v", err),
+			}
+		}
+	}
+	
+	return nil
 }
 
 // ValidateURL validates a URL format
