@@ -64,9 +64,12 @@ fmt:
 proto:
 	@echo "Generating protobuf files..."
 	@mkdir -p internal/pb
+	@if [ ! -f proto/io.proto ]; then echo "Error: proto/io.proto not found"; exit 1; fi
 	@protoc --go_out=internal/pb --go_opt=paths=source_relative \
 		--go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative \
 		proto/io.proto
+	@echo "Generated files:"
+	@ls -la internal/pb/ || echo "No files generated"
 	@echo "Protobuf generation complete"
 
 # Check service health
