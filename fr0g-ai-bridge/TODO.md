@@ -91,6 +91,7 @@
 
 ### BRIDGE SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Integration bridge between OpenWebUI and fr0g-ai-aip
+- **Ports**: HTTP :8082, gRPC :9091 (verified operational, no conflicts)
 - **Communication**: REST API inbound, gRPC outbound to AIP service
 - **Validation**: Comprehensive request/response validation required
 - **Error Handling**: Graceful degradation when AIP service unavailable
@@ -261,16 +262,16 @@
 ## CURRENT STATUS - FULLY FUNCTIONAL
 
 ### Bridge is Live and Working
-- **HTTP REST Server**: Running on 0.0.0.0:8081
-- **gRPC Server**: Running on 0.0.0.0:9091
+- **HTTP REST Server**: Running on 0.0.0.0:8082 (verified operational)
+- **gRPC Server**: Running on 0.0.0.0:9091 (verified operational, no port conflicts)
 - **Health Checks**: Both REST (/health) and gRPC (HealthCheck) working
 - **Chat Completions**: Both REST (/api/chat/completions) and gRPC (ChatCompletion) working
 - **OpenWebUI Integration**: Full client implementation ready
 - **Security**: Rate limiting, CORS, API key auth, security headers
-- **Graceful Shutdown**: Clean server lifecycle management
+- **Graceful Shutdown**: Clean server lifecycle management (verified)
 
 ### Configuration
-- **Default Ports**: HTTP 8081, gRPC 9091 (configurable via environment)
+- **Verified Ports**: HTTP 8082, gRPC 9091 (runtime verified, no conflicts)
 - **OpenWebUI**: Configured for http://localhost:3000 (configurable)
 - **Security**: Development-friendly defaults (CORS *, reflection enabled)
 - **Rate Limiting**: 60 requests/minute per IP (configurable)
