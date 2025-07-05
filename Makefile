@@ -43,7 +43,7 @@ build-all:
 	@echo "Building fr0g-ai-master-control..."
 	@cd fr0g-ai-master-control && $(MAKE) build
 	@echo "Building fr0g-ai-io..."
-	@cd fr0g-ai-io && $(MAKE) build || echo "⚠️  fr0g-ai-io not yet implemented"
+	@cd fr0g-ai-io && $(MAKE) build
 	@echo "✅ All components built successfully!"
 
 # Clean all build artifacts
@@ -68,7 +68,7 @@ test-all:
 	@echo "Testing fr0g-ai-master-control..."
 	@cd fr0g-ai-master-control && $(MAKE) test
 	@echo "Testing fr0g-ai-io..."
-	@cd fr0g-ai-io && $(MAKE) test || echo "⚠️  fr0g-ai-io not yet implemented"
+	@cd fr0g-ai-io && $(MAKE) test
 	@echo "✅ All tests completed!"
 
 # Run individual services
@@ -100,7 +100,7 @@ deps:
 	@echo "Installing fr0g-ai-master-control dependencies..."
 	@cd fr0g-ai-master-control && $(MAKE) deps
 	@echo "Installing fr0g-ai-io dependencies..."
-	@cd fr0g-ai-io && $(MAKE) deps || echo "⚠️  fr0g-ai-io not yet implemented"
+	@cd fr0g-ai-io && $(MAKE) deps
 	@echo "✅ All dependencies installed!"
 
 # Code quality checks for all components
@@ -110,7 +110,7 @@ lint:
 	@cd fr0g-ai-aip && $(MAKE) lint
 	@cd fr0g-ai-bridge && $(MAKE) lint
 	@cd fr0g-ai-master-control && $(MAKE) lint
-	@cd fr0g-ai-io && $(MAKE) lint || echo "⚠️  fr0g-ai-io not yet implemented"
+	@cd fr0g-ai-io && $(MAKE) lint
 
 fmt:
 	@echo "🎨 Formatting code for all components..."
@@ -118,7 +118,7 @@ fmt:
 	@cd fr0g-ai-aip && $(MAKE) fmt
 	@cd fr0g-ai-bridge && $(MAKE) fmt
 	@cd fr0g-ai-master-control && $(MAKE) fmt
-	@cd fr0g-ai-io && $(MAKE) fmt || echo "⚠️  fr0g-ai-io not yet implemented"
+	@cd fr0g-ai-io && $(MAKE) fmt
 
 # Generate protobuf files
 proto:
