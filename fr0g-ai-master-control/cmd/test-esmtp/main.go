@@ -112,8 +112,10 @@ type testLearning struct {
 	experiences []cognitive.Experience
 }
 
-func (l *testLearning) Learn(experience *cognitive.Experience) error {
-	l.experiences = append(l.experiences, *experience)
+func (l *testLearning) Learn(data interface{}) error {
+	if experience, ok := data.(*cognitive.Experience); ok {
+		l.experiences = append(l.experiences, *experience)
+	}
 	return nil
 }
 
