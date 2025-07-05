@@ -13,6 +13,7 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // Server holds the HTTP server configuration and dependencies
@@ -113,13 +114,13 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // handleError provides consistent error response handling
 func (s *Server) handleError(w http.ResponseWriter, err error, defaultStatus int) {
-	if validationErr, ok := err.(middleware.ValidationErrors); ok {
+	if validationErr, ok := err.(sharedconfig.ValidationErrors); ok {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error":   "validation_failed",
 			"message": "Input validation failed",
-			"details": validationErr.Errors,
+			"details": validationErr,
 		})
 		return
 	}
@@ -177,12 +178,12 @@ func (s *Server) personasHandler(w http.ResponseWriter, r *http.Request) {
 		
 		if err := s.service.CreatePersona(&p); err != nil {
 			// Check if it's a validation error
-			if validationErr, ok := err.(middleware.ValidationErrors); ok {
+			if validationErr, ok := err.(sharedconfig.ValidationErrors); ok {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
 				json.NewEncoder(w).Encode(map[string]interface{}{
 					"error":   "Validation failed",
-					"details": validationErr.Errors,
+					"details": validationErr,
 				})
 				return
 			}
@@ -226,12 +227,12 @@ func (s *Server) personaHandler(w http.ResponseWriter, r *http.Request) {
 		
 		if err := s.service.UpdatePersona(id, p); err != nil {
 			// Check if it's a validation error
-			if validationErr, ok := err.(middleware.ValidationErrors); ok {
+			if validationErr, ok := err.(sharedconfig.ValidationErrors); ok {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
 				json.NewEncoder(w).Encode(map[string]interface{}{
 					"error":   "Validation failed",
-					"details": validationErr.Errors,
+					"details": validationErr,
 				})
 				return
 			}
