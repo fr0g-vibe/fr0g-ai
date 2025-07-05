@@ -1,4 +1,4 @@
-.PHONY: build clean test run
+.PHONY: build clean test run deps fmt lint
 
 # Build the master-control binary
 build:

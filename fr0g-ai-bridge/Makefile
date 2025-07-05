@@ -1,4 +1,4 @@
-.PHONY: help build run test clean proto proto-if-needed build-with-grpc
+.PHONY: help build run test clean proto proto-if-needed build-with-grpc deps fmt lint
 
 # Default target
 help:
@@ -50,3 +50,16 @@ clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf bin/
 	rm -rf internal/pb/*.pb.go
+
+# Install dependencies
+deps:
+	go mod tidy
+	go mod download
+
+# Format code
+fmt:
+	go fmt ./...
+
+# Lint code
+lint:
+	golangci-lint run || echo "Install golangci-lint for better linting"
