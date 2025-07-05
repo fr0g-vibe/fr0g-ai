@@ -17,9 +17,9 @@ COPY fr0g-ai-master-control/ ./fr0g-ai-master-control/
 # Download dependencies
 RUN go mod download
 
-# Build the registry service
+# Build the registry service (using main server as registry)
 WORKDIR /app/fr0g-ai-master-control
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o registry-server ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o registry-server .
 
 # Final stage
 FROM alpine:latest

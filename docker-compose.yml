@@ -105,8 +105,8 @@ services:
   # AI Input/Output Processing Service
   fr0g-ai-io:
     build:
-      context: ./fr0g-ai-io
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: fr0g-ai-io/Dockerfile
     ports:
       - "8083:8083"
       - "9092:9092"

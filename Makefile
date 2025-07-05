@@ -174,18 +174,34 @@ test-deployment:
 # Run all integration tests
 test-all-integration: test-integration test-registry test-api test-performance test-deployment
 
-# Docker operations
+# Docker operations with error handling
 docker-build:
 	@echo "🐳 Building Docker images..."
-	docker-compose build
+	@if docker-compose build >/dev/null 2>&1; then \
+		echo "✅ Docker images built successfully!"; \
+	else \
+		echo "❌ Docker build failed. Running with verbose output:"; \
+		docker-compose build; \
+		exit 1; \
+	fi
 
 docker-up:
 	@echo "🐳 Starting services with Docker Compose..."
-	docker-compose up -d
+	@if docker-compose up -d >/dev/null 2>&1; then \
+		echo "✅ Services started successfully!"; \
+	else \
+		echo "❌ Failed to start services. Check logs with: docker-compose logs"; \
+		exit 1; \
+	fi
 
 docker-down:
 	@echo "🐳 Stopping Docker Compose services..."
-	docker-compose down
+	@if docker-compose down >/dev/null 2>&1; then \
+		echo "✅ Services stopped successfully!"; \
+	else \
+		echo "❌ Failed to stop services"; \
+		exit 1; \
+	fi
 
 # Legacy targets for backward compatibility
 build: build-all
