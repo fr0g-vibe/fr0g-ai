@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"fr0g-ai-master-control/internal/registry"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/registry"
 )
 
 func main() {
