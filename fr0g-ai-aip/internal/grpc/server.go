@@ -104,10 +104,10 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 	fmt.Printf("DEBUG: Final enableReflection=%t\n", enableReflection)
 	
 	if enableReflection {
-		fmt.Println("⚠️  gRPC reflection ENABLED - DO NOT use in production!")
+		fmt.Println("WARNING: gRPC reflection is ENABLED - DO NOT use in production!")
 		reflection.Register(s)
 	} else {
-		fmt.Println("✅ gRPC reflection disabled (production safe)")
+		fmt.Println("SUCCESS: gRPC reflection is properly disabled")
 	}
 
 	fmt.Printf("gRPC server listening on port %s\n", cfg.GRPC.Port)
