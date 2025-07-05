@@ -7,43 +7,42 @@ set -e
 
 echo "Starting unicode purge across fr0g.ai project..."
 
-# Define unicode symbol mappings
+# Define actual unicode symbol mappings (these are the real unicode symbols to replace)
 declare -A UNICODE_MAP=(
-    ["COMPLETED"]="COMPLETED"
-    ["FAILED"]="FAILED"
-    ["PRIORITY"]="PRIORITY"
-    ["STARTING"]="STARTING"
-    ["PERFORMANCE"]="PERFORMANCE"
-    ["TARGET"]="TARGET"
-    ["TESTING"]="TESTING"
-    ["CHECKING"]="CHECKING"
-    ["BUILDING"]="BUILDING"
-    ["INSTALLING"]="INSTALLING"
-    ["fr0g.ai"]="fr0g.ai"
-    ["HEALTH"]="HEALTH"
-    ["SETUP"]="SETUP"
-    ["SECURITY"]="SECURITY"
-    ["TIP"]="TIP"
-    ["WAITING"]="WAITING"
-    ["DOCKER"]="DOCKER"
-    ["CLEANING"]="CLEANING"
-    ["NOTES"]="NOTES"
-    ["METRICS"]="METRICS"
-    ["NETWORK"]="NETWORK"
-    ["CONFIG"]="CONFIG"
-    ["STATS"]="STATS"
-    ["FORMAT"]="FORMAT"
-    ["WARNING"]="WARNING"
-    ["INFO"]="INFO"
-    ["ALERT"]="ALERT"
-    ["LIST"]="LIST"
-    ["REFRESH"]="REFRESH"
-    ["SAVE"]="SAVE"
-    ["FILES"]="FILES"
-    ["TARGET"]="TARGET"
-    ["LINK"]="LINK"
-    ["SEND"]="SEND"
-    ["RECEIVE"]="RECEIVE"
+    ["✅"]="[COMPLETED]"
+    ["❌"]="[FAILED]"
+    ["🔥"]="[PRIORITY]"
+    ["🚀"]="[STARTING]"
+    ["⚡"]="[PERFORMANCE]"
+    ["🎯"]="[TARGET]"
+    ["🧪"]="[TESTING]"
+    ["✔️"]="[CHECKING]"
+    ["🔨"]="[BUILDING]"
+    ["📦"]="[INSTALLING]"
+    ["🐸"]="fr0g.ai"
+    ["💚"]="[HEALTH]"
+    ["⚙️"]="[SETUP]"
+    ["🔒"]="[SECURITY]"
+    ["💡"]="[TIP]"
+    ["⏳"]="[WAITING]"
+    ["🐳"]="[DOCKER]"
+    ["🧹"]="[CLEANING]"
+    ["📝"]="[NOTES]"
+    ["📊"]="[METRICS]"
+    ["🌐"]="[NETWORK]"
+    ["⚙️"]="[CONFIG]"
+    ["📈"]="[STATS]"
+    ["🎨"]="[FORMAT]"
+    ["⚠️"]="[WARNING]"
+    ["ℹ️"]="[INFO]"
+    ["🚨"]="[ALERT]"
+    ["📋"]="[LIST]"
+    ["🔄"]="[REFRESH]"
+    ["💾"]="[SAVE]"
+    ["📁"]="[FILES]"
+    ["🔗"]="[LINK]"
+    ["📤"]="[SEND]"
+    ["📥"]="[RECEIVE]"
 )
 
 # Function to purge unicode from a file
@@ -72,7 +71,10 @@ purge_file() {
     
     for unicode in "${!UNICODE_MAP[@]}"; do
         replacement="${UNICODE_MAP[$unicode]}"
-        sed -i "s/$unicode/$replacement/g" "$temp_file"
+        # Escape special characters for sed and use a more precise replacement
+        escaped_unicode=$(printf '%s\n' "$unicode" | sed 's/[[\.*^$()+?{|]/\\&/g')
+        escaped_replacement=$(printf '%s\n' "$replacement" | sed 's/[[\.*^$(){}|]/\\&/g')
+        sed -i "s/$escaped_unicode/$escaped_replacement/g" "$temp_file"
     done
     
     # Check if file was modified
@@ -90,8 +92,8 @@ purge_file() {
 echo "Cleaning up existing backup files..."
 find . -name '*.backup' -delete 2>/dev/null || true
 
-# Get list of files with unicode symbols (excluding binary data and dot files)
-files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exec grep -l 'COMPLETED\|FAILED\|PRIORITY\|STARTING\|PERFORMANCE\|TARGET\|TESTING\|CHECKING\|BUILDING\|INSTALLING\|fr0g.ai\|HEALTH\|SETUP\|SECURITY\|TIP\|WAITING\|DOCKER\|CLEANING' {} \; 2>/dev/null || true)
+# Get list of files with actual unicode symbols (excluding binary data and dot files)
+files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exec grep -l '[✅❌🔥🚀⚡🎯🧪✔️🔨📦🐸💚⚙️🔒💡⏳🐳🧹📝📊🌐📈🎨⚠️ℹ️🚨📋🔄💾📁🔗📤📥]' {} \; 2>/dev/null || true)
 
 # Filter out binary files and directories we should skip
 filtered_files=""
