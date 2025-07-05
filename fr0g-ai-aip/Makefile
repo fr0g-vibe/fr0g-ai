@@ -162,21 +162,21 @@ test-grpc-reflection:
 build-test:
 	@echo "🔨 Building AIP service with gRPC reflection enabled for testing..."
 	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
-	GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development go build -o bin/fr0g-ai-aip ./cmd
+	GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development AIP_HTTP_PORT=8080 AIP_GRPC_PORT=9090 go build -o bin/fr0g-ai-aip ./cmd
 
 run-test: build-test
 	@echo "🚀 Starting AIP service with reflection enabled..."
 	@echo "⚠️  WARNING: gRPC reflection is ENABLED - DO NOT use in production!"
-	GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development ./bin/fr0g-ai-aip
+	GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development AIP_HTTP_PORT=8080 AIP_GRPC_PORT=9090 ./bin/fr0g-ai-aip
 
 # Run tests with reflection enabled
 test-with-reflection:
 	@echo "🧪 Running AIP tests with gRPC reflection enabled..."
 	@echo "⚠️  This will start the service with reflection for testing"
 	@echo "Starting service in background..."
-	@GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development $(MAKE) run &
+	@GRPC_ENABLE_REFLECTION=true ENVIRONMENT=development AIP_HTTP_PORT=8080 AIP_GRPC_PORT=9090 $(MAKE) run &
 	@echo "Waiting for service to start..."
-	@sleep 5
+	@sleep 8
 	@chmod +x ../test_aip_service.sh
 	@../test_aip_service.sh
 	@echo "Stopping test service..."

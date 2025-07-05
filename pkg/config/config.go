@@ -387,19 +387,33 @@ func (c *Config) Validate() error {
 
 // GetDefaults returns default configuration values
 func GetDefaults() *Config {
-	// Read environment variables for ports
+	// Read environment variables for ports with proper defaults
 	httpPort := os.Getenv("AIP_HTTP_PORT")
 	if httpPort == "" {
-		httpPort = "8080"
+		httpPort = os.Getenv("HTTP_PORT")
+		if httpPort == "" {
+			httpPort = "8080"
+		}
 	}
 	
 	grpcPort := os.Getenv("AIP_GRPC_PORT")
 	if grpcPort == "" {
-		grpcPort = "9090"
+		grpcPort = os.Getenv("GRPC_PORT")
+		if grpcPort == "" {
+			grpcPort = "9090"
+		}
 	}
 	
 	// Read reflection setting from environment
 	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
+	
+	// Override ports based on service defaults if not explicitly set
+	if httpPort == "8083" || httpPort == "8082" {
+		httpPort = "8080" // Force AIP service to use correct port
+	}
+	if grpcPort == "9092" || grpcPort == "9091" {
+		grpcPort = "9090" // Force AIP service to use correct port
+	}
 	
 	return &Config{
 		HTTP: HTTPConfig{
@@ -416,6 +430,8 @@ func GetDefaults() *Config {
 			Host:             "localhost",
 			TLS:              false,
 			EnableReflection: enableReflection,
+			MaxRecvMsgSize:   4 * 1024 * 1024,  // 4MB
+			MaxSendMsgSize:   4 * 1024 * 1024,  // 4MB
 		},
 		SMS: SMSConfig{
 			Enabled:            true,
