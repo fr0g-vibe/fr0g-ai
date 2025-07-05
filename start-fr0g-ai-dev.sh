@@ -69,7 +69,7 @@ tmux send-keys -t $SESSION_NAME:1 "echo 'FR0G-AI-AIP AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Role: Core AI processing engine, persona management, identity processing'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Ports: HTTP :8080, gRPC :9090'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Status: Demographics ✅, Other attributes need implementation'" C-m
-tmux send-keys -t $SESSION_NAME:1 "$AIDER_CMD TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:1 "$AIDER_CMD --cwd fr0g-ai-aip TODO.md" C-m
 
 # Window 2: fr0g-ai-bridge (Integration Service)
 tmux new-window -t $SESSION_NAME -n "Bridge" -c "$PROJECT_ROOT/fr0g-ai-bridge"
@@ -77,7 +77,7 @@ tmux send-keys -t $SESSION_NAME:2 "echo 'FR0G-AI-BRIDGE AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Role: OpenWebUI integration, REST/gRPC bridge services'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Ports: HTTP :8082, gRPC :9091'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Status: Fully operational ✅'" C-m
-tmux send-keys -t $SESSION_NAME:2 "$AIDER_CMD TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:2 "$AIDER_CMD --cwd fr0g-ai-bridge TODO.md" C-m
 
 # Window 3: fr0g-ai-master-control (Cognitive Engine)
 tmux new-window -t $SESSION_NAME -n "MCP" -c "$PROJECT_ROOT/fr0g-ai-master-control"
@@ -85,7 +85,7 @@ tmux send-keys -t $SESSION_NAME:3 "echo 'FR0G-AI-MASTER-CONTROL AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Role: System orchestration, cognitive engine, threat processing'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Port: HTTP :8081'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL ✅ (Learning Rate: 0.100+)'" C-m
-tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD --cwd fr0g-ai-master-control TODO.md" C-m
 
 # Window 4: fr0g-ai-io (Input/Output Processing)
 tmux new-window -t $SESSION_NAME -n "IO" -c "$PROJECT_ROOT/fr0g-ai-io"
@@ -93,7 +93,7 @@ tmux send-keys -t $SESSION_NAME:4 "echo 'FR0G-AI-IO AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Role: Input/Output processing, threat vector handling, external integrations'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Ports: HTTP :8083, gRPC :9092'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Status: NEW SERVICE - SMS, Voice, IRC, ESMTP, Discord processors'" C-m
-tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD --cwd fr0g-ai-io TODO.md" C-m
 
 # Window 5: Configuration Expert
 tmux new-window -t $SESSION_NAME -n "Config" -c "$PROJECT_ROOT"
@@ -121,7 +121,7 @@ tmux send-keys -t $SESSION_NAME:7 "echo 'FR0G-AI-REGISTRY AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Service discovery, registration, and health monitoring'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Port: HTTP :8500'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
-tmux send-keys -t $SESSION_NAME:7 "$AIDER_CMD TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:7 "$AIDER_CMD --cwd fr0g-ai-registry TODO.md" C-m
 
 # Window 8: Build & Test Runner
 tmux new-window -t $SESSION_NAME -n "Build-Test" -c "$PROJECT_ROOT"
