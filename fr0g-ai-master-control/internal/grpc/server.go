@@ -9,7 +9,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"fr0g-ai-master-control/internal/mastercontrol/input"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/input"
 )
 
 // Fr0gIOInputServer implements the gRPC server for receiving input events from fr0g-ai-io
