@@ -1,8 +1,8 @@
 # fr0g-ai-aip TODO
 
-## 🤖 AI CODE GENERATION GUIDELINES - AIP COMPONENT
+## AI CODE GENERATION GUIDELINES - AIP COMPONENT
 
-### 📋 ESSENTIAL CONTEXT FILES FOR THIS COMPONENT
+### ESSENTIAL CONTEXT FILES FOR THIS COMPONENT
 **ALWAYS ADD THESE FILES TO AI CHAT CONTEXT:**
 - `README.md` (project overview and component boundaries)
 - `docker-compose.yml` (service configuration)
@@ -14,20 +14,20 @@
 - `fr0g-ai-aip/internal/config/validation.go` (validation framework)
 - `fr0g-ai-aip/internal/attributes/demographics/processor.go` (processing patterns)
 
-### 🚨 COMPONENT BOUNDARY RULES
+### COMPONENT BOUNDARY RULES
 - **FOCUS AREA**: Only work on `fr0g-ai-aip/` directory and files
 - **SERVICE ROLE**: Core AI processing engine for personas and identities
 - **PORTS**: HTTP :8080, gRPC :9090 (configured in docker-compose)
 - **DEPENDENCIES**: Provides services to fr0g-ai-bridge and fr0g-ai-master-control
 
-### ⚠️ CROSS-COMPONENT INTERACTION RULES
+### CROSS-COMPONENT INTERACTION RULES
 - **DO NOT** edit files in `fr0g-ai-bridge/` or `fr0g-ai-master-control/` directories
 - **DO NOT** modify other components' TODO.md files
 - **ASK FIRST** if changes affect gRPC interfaces that other services consume
 - **ASK FIRST** if you need to modify shared files (docker-compose.yml, Makefile, etc.)
 - **BE AWARE** that other services depend on your gRPC interfaces
 
-### 🏗️ PROJECT STRUCTURE RULES
+### PROJECT STRUCTURE RULES
 - **Repository URL**: Always use `https://github.com/fr0g-vibe/fr0g-ai`
 - **Project Path**: All Go imports use `github.com/fr0g-vibe/fr0g-ai/` prefix
 - **Working Directory**: AI agents start in `/fr0g-ai` root directory (local clone)
@@ -35,14 +35,14 @@
 - **Service Ports**: HTTP :8080, gRPC :9090 (configured in docker-compose)
 - **Subproject Path**: This component exists at `github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip`
 
-### 🚫 PROTOBUF GENERATION RULES
+### PROTOBUF GENERATION RULES
 - **NEVER EDIT**: Do not manually edit any `.pb.go` files marked "DO NOT EDIT"
 - **Use Build Commands**: Always use `make proto` or `protoc` commands for protobuf generation
 - **Generated Files**: Treat all `.pb.go` files as build artifacts, not source code
 - **Source of Truth**: This component defines the core protobuf schemas for the project
 - **Proto Files**: Only edit `.proto` source files, never the generated `.pb.go` files
 
-### 🚫 NO MOCKING POLICY - AIP COMPONENT
+### NO MOCKING POLICY - AIP COMPONENT
 - **NEVER CREATE MOCKS**: Always implement real functionality, never mock implementations
 - **REAL DATA STORAGE**: Implement actual file/database storage, not in-memory fakes
 - **REAL ATTRIBUTE PROCESSING**: Implement actual validation and processing algorithms
@@ -52,7 +52,7 @@
 - **REAL VALIDATION**: Implement comprehensive data validation, not placeholder checks
 - **PRODUCTION READY**: All AIP functionality must handle real-world data and scale
 
-### 🔧 CENTRALIZED CONFIGURATION RULES - AIP COMPONENT
+### CENTRALIZED CONFIGURATION RULES - AIP COMPONENT
 - **MANDATORY**: Use `pkg/config/` for ALL configuration and validation needs
 - **NO LOCAL CONFIG**: Never create `internal/config/validation.go` or similar files
 - **EXTEND SHARED**: Embed `sharedconfig.ServerConfig`, `sharedconfig.SecurityConfig` etc.
@@ -62,25 +62,25 @@
 - **NO DUPLICATION**: Never implement port, timeout, or other validation already in shared config
 - **LOADER USAGE**: Use `sharedconfig.NewLoader()` for YAML and environment loading
 
-### 🧠 AIP SERVICE SPECIFIC GUIDELINES
+### AIP SERVICE SPECIFIC GUIDELINES
 - **Primary Role**: Core AI processing engine for personas and identities
 - **Data Model**: Rich attributes system with comprehensive persona modeling
 - **Storage**: File-based storage with future database migration support
 - **Processing**: Real-time attribute validation and processing
 
-### 🎭 PERSONA AND IDENTITY MODELING
+### PERSONA AND IDENTITY MODELING
 - **Rich Attributes**: Demographics, Psychographics, LifeHistory, Cultural, Political, Health, Preferences, Behavioral
 - **Validation**: Comprehensive validation for all attribute types
 - **Processing**: Real-time processing and analysis of persona data
 - **Relationships**: Identity-persona relationships and mappings
 
-### 📊 DATA PROCESSING PATTERNS
+### DATA PROCESSING PATTERNS
 - **Attribute Processors**: Separate processors for each attribute category
 - **Validation Pipeline**: Multi-stage validation with detailed error reporting
 - **Storage Abstraction**: Interface-based storage for multiple backends
 - **Caching**: Implement caching for frequently accessed data
 
-### 🗄️ STORAGE AND PERSISTENCE
+### STORAGE AND PERSISTENCE
 - **File Storage**: JSON-based file storage for development
 - **Database Migration**: Prepare for PostgreSQL/MongoDB migration
 - **Backup/Restore**: Implement data backup and restore functionality

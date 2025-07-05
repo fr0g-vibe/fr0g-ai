@@ -3,12 +3,12 @@
 [![CI/CD](https://github.com/fr0g-vibe/fr0g-ai/workflows/CI/badge.svg)](https://github.com/fr0g-vibe/fr0g-ai/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fr0g-vibe/fr0g-ai)](https://goreportcard.com/report/github.com/fr0g-vibe/fr0g-ai)
 
-## 🎯 Mission
+## Mission
 Eliminate human-computer interaction vulnerabilities through AI-driven automated threat detection and response.
 
 > *"You are the first layer of an artificial intelligence system designed to remove interactions between computers and humans."*
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────┐    gRPC     ┌─────────────────┐
@@ -29,7 +29,7 @@ Eliminate human-computer interaction vulnerabilities through AI-driven automated
 - **Communication**: High-performance gRPC inter-service communication
 - **Storage**: Configurable storage backends (file system, future: database)
 
-## 🚨 Security Philosophy
+## Security Philosophy
 
 ### Baseline Principles
 - **Trust no one, verify everything**
@@ -48,7 +48,7 @@ Human-computer interactions create vulnerabilities:
 
 The fr0g.ai system acts as that intelligent front desk - intercepting, analyzing, and verifying all interactions before they reach their intended targets.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # 1. Clone the repository
@@ -69,7 +69,7 @@ docker-compose up -d
 make health
 ```
 
-## 🛠️ Development
+## Development
 
 ```bash
 # Initialize development environment
@@ -89,7 +89,7 @@ make test-all
 make lint fmt
 ```
 
-## 📊 Service Endpoints
+## Service Endpoints
 
 ### fr0g-ai-aip (Core AI)
 - **HTTP**: http://localhost:8080
@@ -101,14 +101,14 @@ make lint fmt
 - **gRPC**: localhost:9091
 - **Health**: http://localhost:8081/health
 
-## 🔧 Configuration
+## Configuration
 
 Key environment variables:
 - `OPENWEBUI_API_KEY`: API key for OpenWebUI integration
 - `FR0G_STORAGE_TYPE`: Storage backend type (file, database)
 - `LOG_LEVEL`: Logging verbosity (debug, info, warn, error)
 
-## 📚 Documentation
+## Documentation
 
 - [Architecture Overview](docs/architecture.md)
 - [API Documentation](docs/api/)
@@ -116,7 +116,7 @@ Key environment variables:
 - [Development Setup](docs/development.md)
 - [AI Code Generation Guidelines](docs/ai-guidelines.md)
 
-## 🤖 AI Development Guidelines
+## AI Development Guidelines
 
 ### Essential Context Files for AI Sessions
 When starting new AI coding sessions, always include these files:
@@ -139,13 +139,13 @@ When starting new AI coding sessions, always include these files:
 - **Module Navigation**: Must `cd` into component directory before Go commands
 - **Subprojects**: All components exist under `github.com/fr0g-vibe/fr0g-ai/` path
 
-### 🚫 NO MOCKING POLICY
+### NO MOCKING POLICY
 - **NEVER CREATE MOCKS**: Always implement real functionality, never create mock implementations
 - **REPLACE EXISTING MOCKS**: If you find mock implementations, replace them with real working code
 - **REAL INTEGRATIONS**: Always implement actual API calls, database connections, and service integrations
 - **PRODUCTION READY**: All code must be production-ready, not placeholder or demo code
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -153,10 +153,10 @@ When starting new AI coding sessions, always include these files:
 4. Add tests
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-*Built with 🐸 by the fr0g.ai team*
+*Built by the fr0g.ai team*
