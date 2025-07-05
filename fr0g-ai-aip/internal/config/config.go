@@ -9,10 +9,16 @@ import (
 
 // Config represents the AIP service configuration
 type Config struct {
-	HTTP     sharedconfig.HTTPConfig     `yaml:"http"`
-	GRPC     sharedconfig.GRPCConfig     `yaml:"grpc"`
-	Storage  sharedconfig.StorageConfig  `yaml:"storage"`
-	Security sharedconfig.SecurityConfig `yaml:"security"`
+	HTTP       sharedconfig.HTTPConfig     `yaml:"http"`
+	GRPC       sharedconfig.GRPCConfig     `yaml:"grpc"`
+	Storage    sharedconfig.StorageConfig  `yaml:"storage"`
+	Security   sharedconfig.SecurityConfig `yaml:"security"`
+	Validation ValidationConfig            `yaml:"validation"`
+}
+
+// ValidationConfig represents validation-specific configuration
+type ValidationConfig struct {
+	StrictMode bool `yaml:"strict_mode"`
 }
 
 // LoadConfig loads the configuration from environment variables and files
@@ -41,6 +47,9 @@ func LoadConfig(configPath string) (*Config, error) {
 			RateLimitRPM:     60,
 			RequireAPIKey:    false,
 			EnableReflection: true,
+		},
+		Validation: ValidationConfig{
+			StrictMode: false,
 		},
 	}
 	
