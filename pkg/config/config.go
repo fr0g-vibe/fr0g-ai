@@ -217,6 +217,7 @@ type GRPCConfig struct {
 	TLS               bool          `yaml:"tls" json:"tls"`
 	CertFile          string        `yaml:"cert_file" json:"cert_file"`
 	KeyFile           string        `yaml:"key_file" json:"key_file"`
+	EnableReflection  bool          `yaml:"enable_reflection" json:"enable_reflection"`
 }
 
 // Validate validates the CommonConfig
