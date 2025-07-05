@@ -65,7 +65,12 @@ proto:
 	@echo "Generating protobuf files..."
 	@mkdir -p internal/pb
 	@if [ ! -f proto/io.proto ]; then echo "Error: proto/io.proto not found"; exit 1; fi
-	@protoc --go_out=internal/pb --go_opt=paths=source_relative \
+	@echo "Running protoc command..."
+	@protoc --version || echo "protoc not found - install protocol buffers compiler"
+	@which protoc-gen-go || echo "protoc-gen-go not found - run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest"
+	@which protoc-gen-go-grpc || echo "protoc-gen-go-grpc not found - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest"
+	@PATH="$(shell go env GOPATH)/bin:$$PATH" protoc \
+		--go_out=internal/pb --go_opt=paths=source_relative \
 		--go-grpc_out=internal/pb --go-grpc_opt=paths=source_relative \
 		proto/io.proto
 	@echo "Generated files:"

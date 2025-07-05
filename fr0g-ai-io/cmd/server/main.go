@@ -10,7 +10,6 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/grpc"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
@@ -44,12 +43,8 @@ func main() {
 		log.Fatalf("Failed to create server: %v", err)
 	}
 
-	// Create and start gRPC server
-	grpcServer := grpc.NewServer(cfg, processorMgr, outputMgr)
-	if err := grpcServer.Start(); err != nil {
-		log.Fatalf("Failed to start gRPC server: %v", err)
-	}
-	defer grpcServer.Stop()
+	// TODO: Add gRPC server once protobuf generation is fixed
+	log.Println("gRPC server temporarily disabled - protobuf generation needed")
 
 	// Start HTTP server
 	ctx, cancel := context.WithCancel(context.Background())
