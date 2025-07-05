@@ -114,6 +114,11 @@ func (f *Fr0gIOIntegration) Start() error {
 		if err := f.grpcServer.Start(); err != nil {
 			return fmt.Errorf("failed to start gRPC input server: %w", err)
 		}
+		
+		// Start simulation of input events for demonstration
+		if serverImpl, ok := f.grpcServer.(*grpc.Fr0gIOInputServer); ok {
+			serverImpl.StartSimulation()
+		}
 	}
 
 	// Test connection to fr0g-ai-io service
