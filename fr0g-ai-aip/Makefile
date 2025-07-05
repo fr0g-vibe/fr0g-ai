@@ -3,7 +3,7 @@
 # Build the application
 build: proto-if-needed
 	@echo "Building application..."
-	go build -o bin/fr0g-ai-aip ./cmd/fr0g-ai-aip
+	go build -o bin/fr0g-ai-aip ./cmd
 
 # Build with local gRPC support (no external dependencies)
 build-with-grpc: proto-if-needed build
@@ -77,19 +77,19 @@ clean:
 
 # Run HTTP REST API server
 run-server: proto-if-needed
-	go run ./cmd/fr0g-ai-aip -server
+	go run ./cmd -server
 
 # Run gRPC server
 run-grpc: proto-if-needed
-	go run ./cmd/fr0g-ai-aip -grpc
+	go run ./cmd -grpc
 
 # Run both HTTP and gRPC servers
 run-both: proto-if-needed
-	go run ./cmd/fr0g-ai-aip -server -grpc
+	go run ./cmd -server -grpc
 
 # Run CLI help
 run-cli:
-	go run ./cmd/fr0g-ai-aip -help
+	go run ./cmd -help
 
 # Install dependencies
 deps:
@@ -173,10 +173,10 @@ help:
 	@echo ""
 	@echo "Quick Start Examples:"
 	@echo "  # Generate sample data"
-	@echo "  go run ./cmd/fr0g-ai-aip generate-identities"
+	@echo "  go run ./cmd generate-identities"
 	@echo ""
 	@echo "  # Create a tech community"
-	@echo "  go run ./cmd/fr0g-ai-aip generate-random-community -size 20 \\"
+	@echo "  go run ./cmd generate-random-community -size 20 \\"
 	@echo "    -name \"Tech Startup\" -type \"professional\" -location \"San Francisco\""
 	@echo ""
 	@echo "  # Start API server"

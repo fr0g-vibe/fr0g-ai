@@ -9,7 +9,7 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
-	"github.com/fr0g-vibe/fr0g-ai/internal/server"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/server"
 )
 
 func main() {
