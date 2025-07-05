@@ -70,12 +70,12 @@ purge_file() {
 }
 
 # Get list of files with unicode symbols (excluding binary data and dot files)
-files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exec grep -l '✅\|❌\|🔥\|🚀\|⚡\|🎯\|🧪\|🔍\|🔨\|📦\|🐸\|🏥\|🛠\|🔒\|💡\|⏳\|🐳\|🧹' {} \; 2>/dev/null || true)
+files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -not -name '*.backup' -exec grep -l '✅\|❌\|🔥\|🚀\|⚡\|🎯\|🧪\|🔍\|🔨\|📦\|🐸\|🏥\|🛠\|🔒\|💡\|⏳\|🐳\|🧹' {} \; 2>/dev/null || true)
 
-# Filter out binary files
+# Filter out binary files and backup files
 filtered_files=""
 while IFS= read -r file; do
-    if [ -f "$file" ] && ! file "$file" | grep -q "ELF\|executable"; then
+    if [ -f "$file" ] && [[ "$file" != *.backup ]] && ! file "$file" | grep -q "ELF\|executable"; then
         filtered_files="$filtered_files$file"$'\n'
     fi
 done <<< "$files_with_unicode"
@@ -103,3 +103,7 @@ echo "Unicode purge completed!"
 echo "Backup files created with .backup extension"
 echo "To restore a file: mv filename.backup filename"
 echo "To clean up backups: find . -name '*.backup' -delete"
+echo ""
+echo "Cleaning up backup files automatically..."
+find . -name '*.backup' -delete
+echo "Backup files cleaned up!"
