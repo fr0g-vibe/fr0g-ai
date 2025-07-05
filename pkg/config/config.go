@@ -415,7 +415,7 @@ func GetDefaults() *Config {
 			ResponseEnabled:    false,
 		},
 		IRC: IRCConfig{
-			Enabled:           true,
+			Enabled:           false,
 			Servers:           []string{"irc.libera.chat:6667"},
 			Channels:          []string{"#fr0g-ai-test"},
 			Nickname:          "fr0g-ai",
