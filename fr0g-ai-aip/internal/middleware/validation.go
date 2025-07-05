@@ -10,6 +10,30 @@ import (
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
+// ValidationError represents a single validation error
+type ValidationError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
+// ValidationErrors represents a collection of validation errors
+type ValidationErrors struct {
+	Errors []ValidationError `json:"errors"`
+}
+
+// Error implements the error interface
+func (ve *ValidationErrors) Error() string {
+	if len(ve.Errors) == 0 {
+		return "validation failed"
+	}
+	
+	if len(ve.Errors) == 1 {
+		return fmt.Sprintf("validation failed: %s: %s", ve.Errors[0].Field, ve.Errors[0].Message)
+	}
+	
+	return fmt.Sprintf("validation failed with %d errors", len(ve.Errors))
+}
+
 // ValidatePersona validates a persona struct using shared validation
 func ValidatePersona(p *types.Persona) error {
 	if p == nil {

@@ -214,3 +214,68 @@ func (p *Processor) GetGenerationCohort(age int32) string {
 		return "silent-generation"
 	}
 }
+
+// GetDemographicProfile creates a comprehensive demographic profile
+func (p *Processor) GetDemographicProfile(demo *pb.Demographics) map[string]interface{} {
+	profile := make(map[string]interface{})
+
+	if demo == nil {
+		return profile
+	}
+
+	// Age analysis
+	if demo.Age > 0 {
+		profile["age"] = demo.Age
+		profile["age_group"] = p.GetAgeGroup(demo.Age)
+		profile["generation"] = p.GetGenerationCohort(demo.Age)
+	}
+
+	// Gender analysis
+	if demo.Gender != "" {
+		profile["gender"] = demo.Gender
+	}
+
+	// Education analysis
+	if demo.Education != "" {
+		profile["education"] = demo.Education
+	}
+
+	// Occupation analysis
+	if demo.Occupation != "" {
+		profile["occupation"] = demo.Occupation
+	}
+
+	// Socioeconomic analysis
+	if demo.SocioeconomicStatus != "" {
+		profile["socioeconomic_status"] = demo.SocioeconomicStatus
+	}
+
+	// Location analysis
+	if demo.Location != nil {
+		profile["location"] = p.getLocationProfile(demo.Location)
+	}
+
+	return profile
+}
+
+func (p *Processor) getLocationProfile(location *pb.Location) map[string]interface{} {
+	profile := make(map[string]interface{})
+	
+	if location.Country != "" {
+		profile["country"] = location.Country
+	}
+	
+	if location.Region != "" {
+		profile["region"] = location.Region
+	}
+	
+	if location.City != "" {
+		profile["city"] = location.City
+	}
+	
+	if location.UrbanRural != "" {
+		profile["urban_rural"] = location.UrbanRural
+	}
+	
+	return profile
+}

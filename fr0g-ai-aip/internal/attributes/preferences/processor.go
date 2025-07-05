@@ -652,3 +652,22 @@ func (p *Processor) getTravelPersonality(travelStyle string) string {
 	}
 	return "unknown"
 }
+
+// GetPreferenceProfile creates a comprehensive preference profile
+func (p *Processor) GetPreferenceProfile(prefs *pb.Preferences) map[string]interface{} {
+	return p.GetPreferencesProfile(prefs)
+}
+
+func (p *Processor) calculateInterestDiversity(interests []string) float64 {
+	categories := p.categorizeInterests(interests)
+	
+	if len(interests) == 0 {
+		return 0.0
+	}
+
+	// Calculate diversity as number of categories / total possible categories
+	maxCategories := 10.0 // Number of predefined categories
+	actualCategories := float64(len(categories))
+	
+	return actualCategories / maxCategories
+}
