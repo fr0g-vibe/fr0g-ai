@@ -96,8 +96,8 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	config := &Config{
 		Server: sharedconfig.ServerConfig{
-			HTTPPort: 8080,
-			GRPCPort: 9090,
+			HTTPPort: 8082,
+			GRPCPort: 9091,
 			Host:     "0.0.0.0",
 		},
 		OpenWebUI: sharedconfig.OpenWebUIConfig{
@@ -145,6 +145,12 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 
 	if port := os.Getenv("GRPC_PORT"); port != "" {
+		if p, err := strconv.Atoi(port); err == nil {
+			config.Server.GRPCPort = p
+		}
+	}
+
+	if port := os.Getenv("FR0G_BRIDGE_GRPC_PORT"); port != "" {
 		if p, err := strconv.Atoi(port); err == nil {
 			config.Server.GRPCPort = p
 		}
