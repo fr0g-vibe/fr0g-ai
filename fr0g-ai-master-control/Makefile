@@ -29,16 +29,3 @@ fmt:
 # Lint code
 lint:
 	golangci-lint run || echo "Install golangci-lint for better linting"
-
-# Install dependencies
-deps:
-	go mod tidy
-	go mod download
-
-# Format code
-fmt:
-	go fmt ./...
-
-# Lint code
-lint:
-	golangci-lint run || echo "Install golangci-lint for better linting"

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/server"
 )
 
 func main() {
@@ -93,15 +92,13 @@ func main() {
 
 // MCPServer represents the main MCP server
 type MCPServer struct {
-	config     *sharedconfig.Config
-	httpServer *server.HTTPServer
+	config *sharedconfig.Config
 }
 
 // NewMCPServer creates a new MCP server instance
 func NewMCPServer(cfg *sharedconfig.Config) *MCPServer {
 	return &MCPServer{
-		config:     cfg,
-		httpServer: server.NewHTTPServer(cfg.HTTP.Port),
+		config: cfg,
 	}
 }
 
@@ -109,37 +106,15 @@ func NewMCPServer(cfg *sharedconfig.Config) *MCPServer {
 func (s *MCPServer) Start(ctx context.Context) error {
 	log.Println("🔧 Starting MCP server components...")
 	
-	// Start HTTP server in a goroutine
-	go func() {
-		if err := s.httpServer.Start(); err != nil {
-			log.Printf("HTTP server error: %v", err)
-		}
-	}()
+	// TODO: Implement actual server startup logic
+	log.Printf("📡 HTTP server would start on port %s", s.config.HTTP.Port)
+	log.Printf("📡 gRPC server would start on port %s", s.config.GRPC.Port)
 	
-	// Give the server a moment to start
-	time.Sleep(100 * time.Millisecond)
-	
-	// Log enabled processors based on config
-	log.Println("📡 Input processors status:")
-	// Note: These config fields need to be added to shared config
-	// For now, commenting out until config structure is updated
-	/*
-	if s.config.ESMTP.Enabled {
-		log.Printf("📧 ESMTP processor enabled on port %s", s.config.ESMTP.Port)
-	}
-	if s.config.Discord.Enabled {
-		log.Println("💬 Discord processor enabled")
-	}
-	if s.config.SMS.Enabled {
-		log.Println("📱 SMS processor enabled")
-	}
-	if s.config.Voice.Enabled {
-		log.Println("🎤 Voice processor enabled")
-	}
-	if s.config.IRC.Enabled {
-		log.Println("💭 IRC processor enabled")
-	}
-	*/
+	// Log configuration
+	log.Println("📡 Master Control Program configuration:")
+	log.Printf("   - HTTP Port: %s", s.config.HTTP.Port)
+	log.Printf("   - gRPC Port: %s", s.config.GRPC.Port)
+	log.Printf("   - Storage Type: %s", s.config.Storage.Type)
 	
 	return nil
 }
@@ -148,9 +123,8 @@ func (s *MCPServer) Start(ctx context.Context) error {
 func (s *MCPServer) Stop(ctx context.Context) error {
 	log.Println("🛑 Stopping MCP server...")
 	
-	if s.httpServer != nil {
-		return s.httpServer.Stop()
-	}
+	// TODO: Implement actual server shutdown logic
+	log.Println("✅ MCP server stopped")
 	
 	return nil
 }

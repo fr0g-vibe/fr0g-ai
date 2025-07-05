@@ -14,7 +14,7 @@ help:
 # Build the service
 build: proto-if-needed
 	@echo "Building fr0g-ai-bridge..."
-	go build -o bin/fr0g-ai-bridge cmd/fr0g-ai-bridge/main.go
+	go build -o bin/fr0g-ai-bridge ./cmd
 
 # Build with gRPC support
 build-with-grpc: proto build
