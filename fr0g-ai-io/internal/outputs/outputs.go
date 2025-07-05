@@ -2,6 +2,8 @@ package outputs
 
 import (
 	"time"
+	
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs/types"
 )
 
 // Re-export types for backward compatibility
