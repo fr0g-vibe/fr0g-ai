@@ -1,88 +1,90 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/fr0g-vibe/fr0g-ai/internal/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 	"github.com/fr0g-vibe/fr0g-ai/internal/server"
 )
 
 func main() {
-	fmt.Println("🎛️  fr0g.ai Master Control Program")
-	fmt.Println("==================================")
+	log.Println("🎛️  fr0g.ai Master Control Program")
+	log.Println("==================================")
 	
-	// Load configuration
-	cfg, err := config.LoadConfig("")
-	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+	// Load configuration using shared config system
+	cfg := sharedconfig.LoadConfig()
+	
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("Configuration validation failed: %v", err)
 	}
 	
-	fmt.Printf("✅ Configuration loaded successfully\n")
-	fmt.Printf("   - HTTP Port: %d\n", cfg.HTTPPort)
-	fmt.Printf("   - Log Level: %s\n", cfg.LogLevel)
-	fmt.Printf("   - Learning Enabled: %v\n", cfg.LearningEnabled)
-	fmt.Printf("   - System Consciousness: %v\n", cfg.SystemConsciousness)
-	fmt.Printf("   - Emergent Capabilities: %v\n", cfg.EmergentCapabilities)
-	fmt.Println()
+	log.Println("✅ Configuration loaded and validated successfully")
 	
 	// Create MCP server
-	fmt.Println("🧠 Initializing Master Control Program...")
+	log.Println("🧠 Initializing Master Control Program...")
 	mcpServer := NewMCPServer(cfg)
 	
+	// Create context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
 	// Start the server
-	fmt.Println("🚀 Starting Master Control Program...")
-	if err := mcpServer.Start(); err != nil {
+	log.Println("🚀 Starting Master Control Program...")
+	if err := mcpServer.Start(ctx); err != nil {
 		log.Fatalf("Failed to start MCP server: %v", err)
 	}
 	
-	fmt.Println("✅ Master Control Program is now operational!")
-	fmt.Printf("   - HTTP Server: http://localhost:%d\n", cfg.HTTPPort)
-	fmt.Printf("   - Health Check: http://localhost:%d/health\n", cfg.HTTPPort)
-	fmt.Println()
+	log.Println("✅ Master Control Program is now operational!")
+	log.Printf("   - HTTP Server: http://localhost:%s", cfg.HTTP.Port)
+	log.Printf("   - Health Check: http://localhost:%s/health", cfg.HTTP.Port)
 	
 	// Set up graceful shutdown
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	
-	fmt.Println("🎯 Master Control Program is running...")
-	fmt.Println("   Press Ctrl+C to shutdown gracefully")
-	fmt.Println()
+	log.Println("🎯 Master Control Program is running...")
+	log.Println("   Press Ctrl+C to shutdown gracefully")
 	
 	// Wait for shutdown signal
-	<-c
+	<-sigChan
 	
-	fmt.Println("\n🛑 Shutdown signal received...")
+	log.Println("🛑 Shutdown signal received...")
+	
+	// Create shutdown context with timeout
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
 	
 	// Stop the server
-	if err := mcpServer.Stop(); err != nil {
+	if err := mcpServer.Stop(shutdownCtx); err != nil {
 		log.Printf("Error during shutdown: %v", err)
 	}
 	
-	fmt.Println("👋 Master Control Program shutdown complete")
+	log.Println("👋 Master Control Program shutdown complete")
 }
 
 // MCPServer represents the main MCP server
 type MCPServer struct {
-	config     *config.Config
+	config     *sharedconfig.Config
 	httpServer *server.HTTPServer
 }
 
 // NewMCPServer creates a new MCP server instance
-func NewMCPServer(cfg *config.Config) *MCPServer {
+func NewMCPServer(cfg *sharedconfig.Config) *MCPServer {
 	return &MCPServer{
 		config:     cfg,
-		httpServer: server.NewHTTPServer(cfg.HTTPPort),
+		httpServer: server.NewHTTPServer(cfg.HTTP.Port),
 	}
 }
 
 // Start starts the MCP server
-func (s *MCPServer) Start() error {
-	fmt.Println("🔧 Starting MCP server components...")
+func (s *MCPServer) Start(ctx context.Context) error {
+	log.Println("🔧 Starting MCP server components...")
 	
 	// Start HTTP server in a goroutine
 	go func() {
@@ -94,29 +96,34 @@ func (s *MCPServer) Start() error {
 	// Give the server a moment to start
 	time.Sleep(100 * time.Millisecond)
 	
-	// Initialize input processors
-	if s.config.ESMTPEnabled {
-		fmt.Printf("📧 ESMTP processor enabled on port %d\n", s.config.ESMTPPort)
+	// Log enabled processors based on config
+	log.Println("📡 Input processors status:")
+	// Note: These config fields need to be added to shared config
+	// For now, commenting out until config structure is updated
+	/*
+	if s.config.ESMTP.Enabled {
+		log.Printf("📧 ESMTP processor enabled on port %s", s.config.ESMTP.Port)
 	}
-	if s.config.DiscordEnabled {
-		fmt.Println("💬 Discord processor enabled")
+	if s.config.Discord.Enabled {
+		log.Println("💬 Discord processor enabled")
 	}
-	if s.config.SMSEnabled {
-		fmt.Println("📱 SMS processor enabled")
+	if s.config.SMS.Enabled {
+		log.Println("📱 SMS processor enabled")
 	}
-	if s.config.VoiceEnabled {
-		fmt.Println("🎤 Voice processor enabled")
+	if s.config.Voice.Enabled {
+		log.Println("🎤 Voice processor enabled")
 	}
-	if s.config.IRCEnabled {
-		fmt.Println("💭 IRC processor enabled")
+	if s.config.IRC.Enabled {
+		log.Println("💭 IRC processor enabled")
 	}
+	*/
 	
 	return nil
 }
 
 // Stop stops the MCP server
-func (s *MCPServer) Stop() error {
-	fmt.Println("🛑 Stopping MCP server...")
+func (s *MCPServer) Stop(ctx context.Context) error {
+	log.Println("🛑 Stopping MCP server...")
 	
 	if s.httpServer != nil {
 		return s.httpServer.Stop()
