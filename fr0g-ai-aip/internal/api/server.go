@@ -527,15 +527,15 @@ func (s *Server) generateCommunityHandler(w http.ResponseWriter, r *http.Request
 // StartServer starts the HTTP API server (legacy function for backward compatibility)
 func StartServer(port string) error {
 	cfg := &config.Config{
-		HTTP: config.HTTPConfig{
+		HTTP: sharedconfig.HTTPConfig{
 			Port:         port,
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 30 * time.Second,
 		},
-		Security: config.SecurityConfig{
+		Security: sharedconfig.SecurityConfig{
 			EnableAuth: false,
 		},
-		Storage: config.StorageConfig{
+		Storage: sharedconfig.StorageConfig{
 			Type: "memory",
 		},
 	}
