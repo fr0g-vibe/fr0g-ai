@@ -190,7 +190,8 @@ func (mcp *MasterControlProgram) updateSystemMetrics() {
 	uptime := time.Since(mcp.startTime)
 	mcp.systemState.SystemLoad = 0.1 + (float64(uptime.Minutes()) * 0.001)
 	if mcp.systemState.SystemLoad > 1.0 {
-		mcp.systemState.SystemLoad = 0.8 + (0.2 * (float64(time.Now().Unix()) % 10 / 10))
+		now := time.Now().Unix()
+		mcp.systemState.SystemLoad = 0.8 + (0.2 * float64(now%10) / 10)
 	}
 	
 	// Update intelligence metrics
