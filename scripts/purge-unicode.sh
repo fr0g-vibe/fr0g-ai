@@ -69,8 +69,18 @@ purge_file() {
     fi
 }
 
-# Get list of files with unicode (excluding binary data and dot files)
-files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exec grep -l '[^\x00-\x7F]' {} \; 2>/dev/null | grep -v "ELF\|executable\|JSON text data" || true)
+# Get list of files with unicode symbols (excluding binary data and dot files)
+files_with_unicode=$(find . -type f -not -path '*/.*' -not -path '*/data/*' -exec grep -l '✅\|❌\|🔥\|🚀\|⚡\|🎯\|🧪\|🔍\|🔨\|📦\|🐸\|🏥\|🛠\|🔒\|💡\|⏳\|🐳\|🧹' {} \; 2>/dev/null || true)
+
+# Filter out binary files
+filtered_files=""
+while IFS= read -r file; do
+    if [ -f "$file" ] && ! file "$file" | grep -q "ELF\|executable"; then
+        filtered_files="$filtered_files$file"$'\n'
+    fi
+done <<< "$files_with_unicode"
+
+files_with_unicode="$filtered_files"
 
 if [ -z "$files_with_unicode" ]; then
     echo "No files with unicode symbols found."
