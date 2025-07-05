@@ -10,42 +10,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Config represents the main configuration structure
-type Config struct {
-	HTTP    HTTPConfig    `yaml:"http"`
-	GRPC    GRPCConfig    `yaml:"grpc"`
-	Logging LoggingConfig `yaml:"logging"`
-}
-
-// HTTPConfig holds HTTP server configuration
-type HTTPConfig struct {
-	Port string `yaml:"port"`
-	Host string `yaml:"host"`
-}
-
-// GRPCConfig holds gRPC server configuration
-type GRPCConfig struct {
-	Port string `yaml:"port"`
-	Host string `yaml:"host"`
-}
-
-// LoggingConfig holds logging configuration
-type LoggingConfig struct {
-	Level  string `yaml:"level"`
-	Format string `yaml:"format"`
-}
-
-// Validate validates the configuration
-func (c *Config) Validate() error {
-	// Basic validation - can be expanded
-	if c.HTTP.Port == "" {
-		return fmt.Errorf("HTTP port is required")
-	}
-	if c.GRPC.Port == "" {
-		return fmt.Errorf("gRPC port is required")
-	}
-	return nil
-}
 
 // LoaderOptions configures how configuration is loaded
 type LoaderOptions struct {
