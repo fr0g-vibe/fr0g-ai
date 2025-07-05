@@ -181,14 +181,15 @@ func (s *IOService) ProcessOutputCommand(ctx context.Context, command *OutputCom
 
 	// Convert to queue message and send to output queue
 	message := &queue.Message{
-		ID:        command.ID,
-		Type:      command.Type,
-		Source:    "master-control",
-		Target:    command.Target,
-		Content:   command.Content,
-		Metadata:  command.Metadata,
-		Priority:  command.Priority,
-		Timestamp: time.Now(),
+		ID:          command.ID,
+		Type:        command.Type,
+		Source:      "master-control",
+		Destination: command.Target,
+		Content:     command.Content,
+		Metadata:    command.Metadata,
+		Timestamp:   time.Now(),
+		Retries:     0,
+		MaxRetries:  3,
 	}
 
 	if err := s.outputQueue.Enqueue(message); err != nil {
@@ -257,14 +258,19 @@ func (s *IOService) ProcessInputMessage(message *queue.Message) error {
 	defer cancel()
 
 	// Convert queue message to input event
+	content, ok := message.Content.(string)
+	if !ok {
+		return fmt.Errorf("message content is not a string")
+	}
+
 	event := &InputEvent{
 		ID:        message.ID,
 		Type:      message.Type,
 		Source:    message.Source,
-		Content:   message.Content,
+		Content:   content,
 		Metadata:  message.Metadata,
 		Timestamp: message.Timestamp,
-		Priority:  message.Priority,
+		Priority:  0, // Default priority since queue.Message doesn't have Priority field
 	}
 
 	response, err := s.SendInputEvent(ctx, event)
@@ -285,14 +291,15 @@ func (s *IOService) ProcessInputMessage(message *queue.Message) error {
 
 		// Send to output queue for processing
 		outputMessage := &queue.Message{
-			ID:        outputCommand.ID,
-			Type:      outputCommand.Type,
-			Source:    "master-control-response",
-			Target:    outputCommand.Target,
-			Content:   outputCommand.Content,
-			Metadata:  outputCommand.Metadata,
-			Priority:  outputCommand.Priority,
-			Timestamp: time.Now(),
+			ID:          outputCommand.ID,
+			Type:        outputCommand.Type,
+			Source:      "master-control-response",
+			Destination: outputCommand.Target,
+			Content:     outputCommand.Content,
+			Metadata:    outputCommand.Metadata,
+			Timestamp:   time.Now(),
+			Retries:     0,
+			MaxRetries:  3,
 		}
 
 		if err := s.outputQueue.Enqueue(outputMessage); err != nil {

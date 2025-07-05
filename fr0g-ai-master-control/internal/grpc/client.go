@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"fr0g-ai-master-control/internal/mastercontrol/input"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/input"
 )
 
 // Fr0gIOGRPCClient implements the Fr0gIOClient interface
