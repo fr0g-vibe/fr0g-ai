@@ -145,12 +145,14 @@ func (m *Manager) HandleSMSMessage(ctx context.Context, message *input.SMSMessag
 		ID:        message.ID,
 		Type:      "sms",
 		Source:    message.From,
-		Content:   message.Content,
+		Content:   message.Body,
 		Timestamp: message.Timestamp,
 		Metadata: map[string]interface{}{
 			"to":           message.To,
-			"provider":     message.Provider,
+			"message_sid":  message.MessageSID,
 			"message_type": message.MessageType,
+			"status":       message.Status,
+			"direction":    message.Direction,
 		},
 	}
 
@@ -167,9 +169,13 @@ func (m *Manager) HandleVoiceMessage(ctx context.Context, message *input.VoiceMe
 		Content:   message.Transcription,
 		Timestamp: message.Timestamp,
 		Metadata: map[string]interface{}{
-			"to":       message.To,
-			"duration": message.Duration,
-			"format":   message.Format,
+			"to":                message.To,
+			"duration":          message.RecordingDuration,
+			"format":            message.AudioFormat,
+			"call_sid":          message.CallSID,
+			"recording_url":     message.RecordingURL,
+			"confidence":        message.Confidence,
+			"language":          message.Language,
 		},
 	}
 
@@ -182,12 +188,14 @@ func (m *Manager) HandleIRCMessage(ctx context.Context, message *input.IRCMessag
 	event := &input.InputEvent{
 		ID:        message.ID,
 		Type:      "irc",
-		Source:    message.Nick,
-		Content:   message.Content,
+		Source:    message.From,
+		Content:   message.Message,
 		Timestamp: message.Timestamp,
 		Metadata: map[string]interface{}{
 			"server":     message.Server,
 			"channel":    message.Channel,
+			"to":         message.To,
+			"type":       message.Type,
 			"is_private": message.IsPrivate,
 		},
 	}
@@ -201,14 +209,15 @@ func (m *Manager) HandleDiscordMessage(ctx context.Context, message *input.Disco
 	event := &input.InputEvent{
 		ID:        message.ID,
 		Type:      "discord",
-		Source:    message.Username,
+		Source:    message.Author.Username,
 		Content:   message.Content,
 		Timestamp: message.Timestamp,
 		Metadata: map[string]interface{}{
-			"guild_id":     message.GuildID,
-			"channel_id":   message.ChannelID,
-			"user_id":      message.UserID,
-			"message_type": message.MessageType,
+			"guild_id":   message.GuildID,
+			"channel_id": message.ChannelID,
+			"user_id":    message.Author.ID,
+			"username":   message.Author.Username,
+			"is_bot":     message.Author.Bot,
 		},
 	}
 
