@@ -145,7 +145,6 @@ func (p *Processor) initializeThreatPatterns() {
 		"malware_url":      `(?i)(bit\.ly|tinyurl|t\.co|goo\.gl|short\.link)/[a-zA-Z0-9]+`,
 		"phishing_url":     `(?i)(login|verify|account|security).*\.(tk|ml|ga|cf|pw)`,
 		"bot_pattern":      `(?i)^(bot|service|auto)_?[a-z0-9]*$`,
-		"flood_pattern":    `(.)\1{10,}|(.{1,3})\2{5,}`, // Repeated characters or patterns
 		"spam_pattern":     `(?i)(free|win|prize|money|cash|earn|work from home)`,
 		"malware_keywords": `(?i)(download|install|exe|zip|rar|torrent)`,
 		"social_eng":       `(?i)(urgent|immediate|click here|verify now|suspended)`,
