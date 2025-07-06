@@ -202,6 +202,32 @@ diagnose-logs:
 
 diagnose-all: diagnose-registry diagnose-grpc diagnose-ports diagnose-logs
 
+# Test the bridge chat completions endpoint
+test-bridge-chat:
+	@echo "TESTING Bridge chat completions endpoint..."
+	@curl -X POST http://localhost:8082/v1/chat/completions \
+		-H "Content-Type: application/json" \
+		-d '{"model":"gpt-3.5-turbo","messages":[{"role":"user","content":"Hello, test message"}]}' \
+		|| echo "FAILED Chat completions endpoint not working"
+
+# Test service registry registration
+test-registry-register:
+	@echo "TESTING Service registry registration..."
+	@curl -X POST http://localhost:8500/v1/agent/service/register \
+		-H "Content-Type: application/json" \
+		-d '{"ID":"test-service","Name":"test","Port":8000,"Address":"localhost"}' \
+		|| echo "FAILED Service registration not working"
+
+# Test gRPC connectivity
+test-grpc-connectivity:
+	@echo "TESTING gRPC service connectivity..."
+	@echo "Testing AIP gRPC (port 9090)..."
+	@command -v grpcurl >/dev/null && (grpcurl -plaintext localhost:9090 list >/dev/null 2>&1 && echo "✓ AIP gRPC responding" || echo "✗ AIP gRPC not responding") || echo "grpcurl not available"
+	@echo "Testing Bridge gRPC (port 9091)..."
+	@command -v grpcurl >/dev/null && (grpcurl -plaintext localhost:9091 list >/dev/null 2>&1 && echo "✓ Bridge gRPC responding" || echo "✗ Bridge gRPC not responding") || echo "grpcurl not available"
+	@echo "Testing IO gRPC (port 9093)..."
+	@command -v grpcurl >/dev/null && (grpcurl -plaintext localhost:9093 list >/dev/null 2>&1 && echo "✓ IO gRPC responding" || echo "✗ IO gRPC not responding") || echo "grpcurl not available"
+
 # Health check with clean service restart
 health-clean:
 	@echo "HEALTH Performing clean health check with service restart..."
