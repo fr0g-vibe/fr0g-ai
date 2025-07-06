@@ -29,11 +29,28 @@ func main() {
 	// Create default config
 	cfg := &sharedconfig.Config{
 		HTTP: sharedconfig.HTTPConfig{
+			Host: "0.0.0.0",
 			Port: "8081",
 		},
 		GRPC: sharedconfig.GRPCConfig{
+			Host: "0.0.0.0", 
 			Port: "9091",
 		},
+		Storage: sharedconfig.StorageConfig{
+			Type:    "file",
+			DataDir: "/app/data",
+		},
+	}
+	
+	// Override with environment variables
+	if httpPort := os.Getenv("HTTP_PORT"); httpPort != "" {
+		cfg.HTTP.Port = httpPort
+	}
+	if storageType := os.Getenv("STORAGE_TYPE"); storageType != "" {
+		cfg.Storage.Type = storageType
+	}
+	if dataDir := os.Getenv("DATA_DIR"); dataDir != "" {
+		cfg.Storage.DataDir = dataDir
 	}
 
 	// Load from file
@@ -113,9 +130,9 @@ func (s *MCPServer) Start(ctx context.Context) error {
 
 	// Log configuration
 	log.Println("Master Control Program configuration:")
-	log.Printf("   - HTTP Port: %s", s.config.HTTP.Port)
-	log.Printf("   - gRPC Port: %s", s.config.GRPC.Port)
-	log.Printf("   - Storage Type: %s", s.config.Storage.Type)
+	log.Printf("   - HTTP: %s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
+	log.Printf("   - gRPC: %s:%s", s.config.GRPC.Host, s.config.GRPC.Port)
+	log.Printf("   - Storage: %s (%s)", s.config.Storage.Type, s.config.Storage.DataDir)
 	log.Println("   - Webhook endpoints: /webhook/{tag}")
 
 	return nil
