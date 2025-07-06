@@ -19,7 +19,7 @@ RUN go mod download
 
 # Build the application
 WORKDIR /app/fr0g-ai-aip
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-aip ./cmd/fr0g-ai-aip
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-aip .
 
 # Final stage
 FROM alpine:latest
