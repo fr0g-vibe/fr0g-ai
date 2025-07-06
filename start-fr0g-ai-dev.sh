@@ -10,11 +10,11 @@ SESSION_NAME="fr0g-ai"
 PROJECT_ROOT="$(pwd)"
 AIDER_CMD="aider --dark-mode"
 
-# Function to create aider command - just start aider with files
+# Function to create aider command - just start aider with files in diff edit mode
 create_aider_cmd() {
     local prompt_file="$1"
     local files="$2"
-    echo "$AIDER_CMD $files"
+    echo "$AIDER_CMD --edit-format diff $files"
 }
 
 # Function to send system prompt after aider starts
