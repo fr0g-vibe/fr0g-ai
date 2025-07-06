@@ -27,9 +27,10 @@
 - **Repository URL**: Always use `https://github.com/fr0g-vibe/fr0g-ai`
 - **Project Path**: All Go imports use `github.com/fr0g-vibe/fr0g-ai/` prefix
 - **Working Directory**: AI agents start in `/fr0g-ai` root directory (local clone)
-- **Module Navigation**: MUST `cd fr0g-ai-master-control` before running Go commands
+- **Module Navigation**: Already in fr0g-ai-master-control/ directory (set by tmux session)
 - **Service Ports**: HTTP :8081 (configured in docker-compose)
 - **Subproject Path**: This component exists at `github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control`
+- **Working Directory**: Already in component directory (fr0g-ai-master-control/)
 
 ### PROTOBUF GENERATION RULES
 - **NEVER EDIT**: Do not manually edit any `.pb.go` files marked "DO NOT EDIT"
