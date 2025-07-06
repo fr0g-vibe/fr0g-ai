@@ -2,17 +2,18 @@
 
 ## EXECUTIVE SUMMARY - CRITICAL BLOCKERS IDENTIFIED
 
-### CURRENT OPERATIONAL STATUS - ALL SERVICES HEALTHY
-- **fr0g-ai-registry**: ✅ OPERATIONAL - Service healthy, basic endpoints working
-- **fr0g-ai-bridge**: ✅ OPERATIONAL - HTTP healthy, chat completions accessible
-- **fr0g-ai-aip**: ✅ FULLY OPERATIONAL - HTTP healthy, 5 personas loaded, file storage working
+### CURRENT OPERATIONAL STATUS - MIXED RESULTS
+- **fr0g-ai-registry**: ⚠️ CRITICAL - HTTP healthy but API endpoints missing (HTTP 405 errors)
+- **fr0g-ai-bridge**: ⚠️ CRITICAL - HTTP healthy but gRPC port closed, chat completions 404
+- **fr0g-ai-aip**: ⚠️ CRITICAL - HTTP healthy, 5 personas loaded, but gRPC unhealthy
 - **fr0g-ai-master-control**: ✅ OPERATIONAL - HTTP healthy, conscious AI active
-- **fr0g-ai-io**: ✅ OPERATIONAL - HTTP healthy, all processors working
+- **fr0g-ai-io**: ⚠️ CRITICAL - HTTP healthy but gRPC unhealthy
 
-### REMAINING ISSUES REQUIRING ATTENTION
-1. **Service Registry API Enhancement** - HIGH PRIORITY (service discovery endpoints)
-2. **Bridge Chat Completions Testing** - MEDIUM PRIORITY (endpoint accessible but needs validation)
-3. **gRPC Health Check Enhancement** - LOW PRIORITY (HTTP services all working)
+### CRITICAL BLOCKERS REQUIRING IMMEDIATE ATTENTION
+1. **Service Registry API Implementation** - CRITICAL PRIORITY (HTTP 405 on registration endpoint)
+2. **gRPC Service Health Crisis** - CRITICAL PRIORITY (all gRPC services unhealthy)
+3. **Bridge Chat Completions API** - HIGH PRIORITY (404 errors on /v1/chat/completions)
+4. **Service Discovery Integration** - HIGH PRIORITY (no services being discovered)
 
 ### COMPLETED INFRASTRUCTURE
 - **pkg/config System**: FULLY OPERATIONAL - All validation functions, types, and documentation ready for AIP migration
@@ -1074,29 +1075,66 @@ Test Execution Time: 0.005s (excellent performance)
 - **Performance**: ✅ Production-ready performance under load
 - **New Components**: 📋 Begin development of analytics and gateway services
 
-## IMMEDIATE NEXT STEPS (NEXT 2 WEEKS) - PRODUCTION OPTIMIZATION
+## IMMEDIATE NEXT STEPS (THIS WEEK) - CRITICAL SYSTEM REPAIR
 
-### PHASE 1: VERIFICATION AND TESTING (Week 1)
+### PHASE 1: EMERGENCY BLOCKER RESOLUTION (Days 1-2)
 
-**PRIORITY 1: Bridge Service API Testing**
-- **TASK**: Comprehensive testing of chat completions API
-- **STATUS**: Health endpoint working, chat API needs verification
-- **ACTIONS**:
-  - Test `/v1/chat/completions` endpoint with real requests
-  - Verify OpenWebUI integration end-to-end
-  - Validate API response format matches OpenAI specification
-  - Load test under concurrent requests
-- **TARGET**: 100% API functionality verified
+**PRIORITY 1: Service Registry API Emergency Implementation**
+- **TASK**: Fix missing POST handler for service registration endpoint
+- **STATUS**: Registry HTTP healthy but `/v1/agent/service/register` returning HTTP 405
+- **EMERGENCY ACTIONS**:
+  - Add POST method handler for `/v1/agent/service/register` endpoint
+  - Fix HTTP method routing to accept POST requests for registration
+  - Implement proper JSON request parsing for service registration
+  - Add service storage and retrieval functionality
+  - Test service registration workflow end-to-end
+- **TARGET**: Service registration endpoint accepting POST requests and storing services
 
-**PRIORITY 2: End-to-End Integration Testing**
-- **TASK**: Complete system integration testing
-- **STATUS**: All services operational individually
-- **ACTIONS**:
+**PRIORITY 2: gRPC Service Health Emergency Repair**
+- **TASK**: Diagnose and fix all gRPC service startup failures
+- **STATUS**: All gRPC services unhealthy, ports not responding
+- **EMERGENCY ACTIONS**:
+  - Check gRPC server initialization in all services (AIP, Bridge, IO)
+  - Verify gRPC port binding and Docker port mapping
+  - Fix any gRPC server startup errors or configuration issues
+  - Test gRPC connectivity and health check implementations
+  - Validate gRPC service registration and reflection
+- **TARGET**: All gRPC services responding and healthy
+
+**PRIORITY 3: Bridge Chat Completions Emergency Fix**
+- **TASK**: Fix missing chat completions endpoint returning 404
+- **STATUS**: Bridge HTTP healthy but `/v1/chat/completions` not found
+- **EMERGENCY ACTIONS**:
+  - Implement or fix `/v1/chat/completions` endpoint routing
+  - Add proper HTTP handler for chat completions API
+  - Verify OpenAI-compatible request/response format
+  - Test endpoint with valid chat completion requests
+  - Validate integration with AIP service for persona processing
+- **TARGET**: Chat completions endpoint operational and OpenWebUI-compatible
+
+### PHASE 2: INTEGRATION REPAIR (Days 3-5)
+
+**PRIORITY 4: Service Discovery Integration Emergency**
+- **TASK**: Implement automatic service registration workflow
+- **STATUS**: No services being discovered, empty catalog
+- **INTEGRATION ACTIONS**:
+  - Add automatic service registration on startup for all services
+  - Implement service health monitoring and status updates
+  - Fix service discovery catalog to return registered services
+  - Test inter-service communication through registry
+  - Validate service deregistration on shutdown
+- **TARGET**: Complete service discovery ecosystem operational
+
+**PRIORITY 5: System Integration Validation**
+- **TASK**: End-to-end system testing and validation
+- **STATUS**: Individual services working, integration broken
+- **VALIDATION ACTIONS**:
   - Test complete request flow: OpenWebUI → Bridge → AIP
-  - Verify service discovery working across all components
-  - Test error handling and fallback scenarios
-  - Validate monitoring and health checks
-- **TARGET**: Complete system integration verified
+  - Verify gRPC communication between services
+  - Test service discovery and automatic failover
+  - Validate error handling and graceful degradation
+  - Performance test under concurrent load
+- **TARGET**: Complete system integration verified and stable
 
 ### PHASE 2: PRODUCTION HARDENING (Week 2)
 
