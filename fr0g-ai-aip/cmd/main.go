@@ -85,7 +85,7 @@ func main() {
 
 	// Start gRPC server
 	grpcServer := grpc.NewServer()
-	grpcPersonaServer := grpcserver.NewServer()
+	grpcPersonaServer := grpcserver.NewPersonaServer(cfg, personaService)
 	pb.RegisterPersonaServiceServer(grpcServer, grpcPersonaServer)
 
 	grpcPort := cfg.GRPC.Port

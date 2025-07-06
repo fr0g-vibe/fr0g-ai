@@ -2,6 +2,7 @@ package persona
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/behavioral"
@@ -242,22 +243,22 @@ func (s *Service) GetIdentityWithPersona(id string) (types.IdentityWithPersona, 
 func (s *Service) validatePersona(persona *types.Persona) error {
 	var errors []sharedconfig.ValidationError
 
-	// Required fields
-	if persona.Name == "" {
+	// Required fields - reject empty and whitespace-only strings
+	if len(strings.TrimSpace(persona.Name)) == 0 {
 		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "name",
 			Message: "persona name is required",
 		})
 	}
 
-	if persona.Topic == "" {
+	if len(strings.TrimSpace(persona.Topic)) == 0 {
 		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "topic",
 			Message: "persona topic is required",
 		})
 	}
 
-	if persona.Prompt == "" {
+	if len(strings.TrimSpace(persona.Prompt)) == 0 {
 		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "prompt",
 			Message: "persona prompt is required",
@@ -337,15 +338,15 @@ func (s *Service) validatePersona(persona *types.Persona) error {
 func (s *Service) validateIdentity(identity *types.Identity) error {
 	var errors []sharedconfig.ValidationError
 
-	// Required fields
-	if identity.PersonaId == "" {
+	// Required fields - reject empty and whitespace-only strings
+	if len(strings.TrimSpace(identity.PersonaId)) == 0 {
 		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "persona_id",
 			Message: "persona ID is required",
 		})
 	}
 
-	if identity.Name == "" {
+	if len(strings.TrimSpace(identity.Name)) == 0 {
 		errors = append(errors, sharedconfig.ValidationError{
 			Field:   "name",
 			Message: "identity name is required",

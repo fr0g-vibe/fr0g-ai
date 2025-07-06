@@ -23,8 +23,8 @@ func TestHealthHandlerMethods(t *testing.T) {
 
 	var response map[string]interface{}
 	json.NewDecoder(w.Body).Decode(&response)
-	if response["status"] != "ok" {
-		t.Errorf("Expected status 'ok', got %s", response["status"])
+	if response["status"] != "healthy" {
+		t.Errorf("Expected status 'healthy', got %s", response["status"])
 	}
 }
 
