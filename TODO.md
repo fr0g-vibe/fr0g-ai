@@ -1,4 +1,18 @@
-# fr0g.ai PROJECT STATUS - COMPREHENSIVE REVIEW
+# fr0g.ai PROJECT STATUS - COMPREHENSIVE RE-PRIORITIZATION (2025-01-07)
+
+## EXECUTIVE SUMMARY - CRITICAL BLOCKERS IDENTIFIED
+
+### CURRENT OPERATIONAL STATUS
+- **fr0g-ai-registry**: ✅ PRODUCTION READY (9,553+ ops/sec, all tests passing)
+- **fr0g-ai-bridge**: ✅ PRODUCTION READY (OpenWebUI integration verified)
+- **fr0g-ai-aip**: ⚠️ OPERATIONAL (293 personas, critical config issues)
+- **fr0g-ai-master-control**: ⚠️ OPERATIONAL (conscious AI, storage validation error)
+- **fr0g-ai-io**: ⚠️ OPERATIONAL (processors working, needs API integration)
+
+### CRITICAL BLOCKERS REQUIRING IMMEDIATE ATTENTION
+1. **fr0g-ai-aip Configuration Crisis** - CRITICAL BLOCKER
+2. **fr0g-ai-master-control Storage Validation** - CRITICAL BLOCKER  
+3. **fr0g-ai-io External API Integration** - HIGH PRIORITY
 
 ## PROJECT-WIDE AI DEVELOPMENT RULES
 
@@ -12,10 +26,11 @@ When starting new AI coding sessions, always include these files:
 - Component-specific TODO.md file for the service being worked on
 
 ### Component Boundaries and Responsibilities
-- **fr0g-ai-aip**: Core AI processing engine (ports 8080/9090)
-- **fr0g-ai-bridge**: Integration bridge service (ports 8082/9091)  
-- **fr0g-ai-master-control**: Orchestration and cognitive engine (port 8081)
-- **fr0g-ai-io**: Input/Output processing service (ports 8083/9092)
+- **fr0g-ai-aip**: Core AI processing engine (ports 8080/9090) - NEEDS CRITICAL FIXES
+- **fr0g-ai-bridge**: Integration bridge service (ports 8082/9091) - PRODUCTION READY
+- **fr0g-ai-master-control**: Orchestration and cognitive engine (port 8081) - STORAGE ISSUE
+- **fr0g-ai-io**: Input/Output processing service (ports 8083/9092) - NEEDS API INTEGRATION
+- **fr0g-ai-registry**: Service discovery (port 8500) - PRODUCTION READY
 - **Project Lead**: Overall coordination, README.md, docker-compose.yml, Makefile
 
 ### Cross-Component Interaction Rules
@@ -307,28 +322,47 @@ tmux send-keys -t fr0g-ai:8 "make health" C-m
 
 This multi-agent dispatch system enables coordinated development across the entire fr0g.ai platform while maintaining clear separation of concerns and specialized expertise for each component.
 
-## EXECUTIVE SUMMARY
+## CRITICAL BLOCKERS ANALYSIS (2025-01-07)
 
-### CURRENT STATUS VERIFIED (2025-07-06):
-- **fr0g-ai-aip**: OPERATIONAL - Running in container, health check passing, 4 personas loaded
-- **fr0g-ai-bridge**: OPERATIONAL - Running in container, health check passing, HTTP/gRPC operational
-- **fr0g-ai-master-control**: OPERATIONAL - **FIXED!** Now responding on port 8081, health check passing
-- **fr0g-ai-io**: ✅ OPERATIONAL - Service healthy, responding on port 8083, duplicate server issue fixed
-- **fr0g-ai-registry**: OPERATIONAL - Running in container, health check passing, service discovery working
+### BLOCKER 1: fr0g-ai-aip Configuration Crisis - CRITICAL
+**IMPACT**: Prevents AIP service development and testing
+**ISSUES IDENTIFIED**:
+- Configuration system using old local config instead of centralized pkg/config
+- API server constructor missing required parameters (persona service, registry client)
+- Configuration methods missing GetString method implementation
+- Test failures due to configuration mismatches preventing verification
+- gRPC validation not properly rejecting invalid whitespace-only inputs
+- Build system test compilation failures
 
-### IMMEDIATE ACTIONS REQUIRED:
-1. **Build Verification**: ✅ ALL services build successfully
-2. **Service Status**: ✅ ALL 5 services operational and healthy
-3. **Container Health**: ✅ All containers running with healthy status
-4. **Port Conflicts**: ✅ No conflicts detected, services on correct ports
-5. **gRPC Health**: ⚠️ gRPC endpoints show unhealthy (expected - reflection disabled)
-6. **API Endpoints**: ⚠️ Some services need additional API endpoint implementation
+**IMMEDIATE FIXES REQUIRED**:
+- Migrate to centralized configuration system (pkg/config)
+- Fix API server constructor to include all required dependencies
+- Implement missing configuration methods
+- Fix validation logic to properly reject invalid inputs
+- Update all test files to use correct configuration types
+- Resolve compilation errors in main.go and test files
 
-### CRITICAL PRIORITY FIXES:
-1. **fr0g-ai-aip Configuration Migration**: Migrate from local config to centralized pkg/config system
-2. **fr0g-ai-aip Validation Fixes**: Fix validation logic to properly reject invalid inputs
-3. **fr0g-ai-aip Test Compilation**: Resolve all test compilation errors
-4. **Service Startup Investigation**: Debug why master-control and I/O services aren't responding
+### BLOCKER 2: fr0g-ai-master-control Storage Validation - CRITICAL
+**IMPACT**: Service startup failures in production
+**ISSUE**: Storage type validation error rejecting 'file' storage type
+**STATUS**: Service claims conscious AI but fails basic configuration validation
+**FIX REQUIRED**: Debug and fix storage type validation to accept 'file' type
+
+### BLOCKER 3: fr0g-ai-io External API Integration - HIGH
+**IMPACT**: No real-world I/O operations possible
+**GAPS IDENTIFIED**:
+- SMS output processor framework exists but needs real Google Voice API
+- Master-control gRPC bidirectional communication incomplete
+- External API integration missing across all processors
+**FIX REQUIRED**: Complete external API integrations for production use
+
+### VERIFICATION STATUS SUMMARY:
+- **Build verification**: make build - SUCCESS (binary builds)
+- **Test verification**: make test - FAILED (multiple compilation errors)
+- **Service startup**: Services running but with critical issues
+- **Health endpoints**: Basic health working, detailed validation blocked
+- **CRUD operations testing**: Blocked by test failures
+- **Attribute processor validation**: Blocked by configuration issues
 
 ## COMPLETED ACHIEVEMENTS
 
@@ -725,30 +759,59 @@ Test Execution Time: 0.005s (excellent performance)
 
 **Output Review System**: OPERATIONAL - Advanced validation, intelligent review routing, enhanced tracking, and flexible reviewer interfaces fully implemented.
 
-## PHASE-BASED DEVELOPMENT ROADMAP
+## RE-PRIORITIZED DEVELOPMENT ROADMAP
 
-### PHASE 1: PRODUCTION HARDENING (IMMEDIATE - NEXT 2 WEEKS)
+### PHASE 1: CRITICAL FIXES (IMMEDIATE - NEXT 1 WEEK)
 
-#### **CRITICAL BLOCKERS - Week 1**
-1. **Master-Control Storage Fix** - URGENT
-   - Fix storage type validation error (rejecting 'file' type)
-   - Service must start successfully with file storage configuration
-   - **BLOCKER**: Prevents master-control from starting properly
+#### **CRITICAL BLOCKERS - Week 1 (MUST FIX FIRST)**
+1. **fr0g-ai-aip Configuration System Migration** - CRITICAL BLOCKER
+   - **CURRENT ISSUE**: Using old local config instead of centralized pkg/config system
+   - Migrate all configuration to use centralized pkg/config system
+   - Fix API server constructor to include required parameters (persona service, registry client)
+   - Implement missing GetString method in configuration
+   - Fix validation logic to properly reject invalid whitespace-only inputs
+   - Update all test files to use correct configuration types
+   - Resolve compilation errors in main.go and test files
+   - **TARGET**: All tests pass, service builds and starts successfully
+   - **IMPACT**: Unblocks AIP service development and testing
 
-2. **AIP Database Migration** - URGENT  
+2. **fr0g-ai-master-control Storage Validation Fix** - CRITICAL BLOCKER
+   - **CURRENT ISSUE**: Service rejecting 'file' storage type configuration
+   - Debug and fix storage type validation error
+   - Ensure 'file' storage type is properly accepted and validated
+   - Test storage configuration with all supported types
+   - Add comprehensive storage configuration validation tests
+   - **TARGET**: Service starts successfully with file storage
+   - **IMPACT**: Service startup reliability and production deployment
+
+3. **fr0g-ai-io External API Integration** - HIGH PRIORITY
+   - **CURRENT GAP**: SMS output framework exists but needs real Google Voice API
+   - Implement real Google Voice API client with authentication
+   - Complete master-control gRPC bidirectional communication
+   - Add SMS sending with proper error handling and retries
+   - Implement rate limiting to respect API quotas
+   - Add SMS delivery status tracking and confirmation
+   - **TARGET**: Production-ready SMS sending with 99% delivery rate
+   - **IMPACT**: Real-world I/O operations and threat response
+
+### PHASE 2: PRODUCTION HARDENING (NEXT 2 WEEKS)
+
+#### **DATABASE & PERSISTENCE - Week 2-3**
+4. **fr0g-ai-aip Database Migration** - HIGH PRIORITY
    - Migrate 293 personas from file storage to PostgreSQL
    - Implement connection pooling and transaction support
+   - Create data migration scripts with validation
+   - Add database schema with proper indexing
+   - **TARGET**: Zero data loss migration, <50ms query performance
    - **IMPACT**: Production scalability and data integrity
 
-3. **Registry Performance Optimization** - URGENT
-   - Fix 606ms discovery latency under concurrent load (target: <50ms)
-   - Implement Redis persistence for zero data loss
-   - **IMPACT**: Service discovery performance under production load
-
-4. **I/O External API Integration** - HIGH
-   - Complete SMS output processor with real Google Voice API
-   - Implement master-control gRPC bidirectional communication
-   - **IMPACT**: Real-world I/O operations and threat response
+5. **fr0g-ai-registry Redis Persistence** - HIGH PRIORITY
+   - Implement Redis backend storage for zero data loss
+   - Optimize service discovery performance (current: 606ms under load, target: <50ms)
+   - Add Redis failover and cluster support
+   - Implement Redis health monitoring with circuit breaker
+   - **TARGET**: <50ms discovery latency, zero data loss on restart
+   - **IMPACT**: Service discovery reliability under production load
 
 #### **STABILITY FEATURES - Week 2**
 5. **Comprehensive Monitoring** - HIGH
@@ -841,31 +904,124 @@ Test Execution Time: 0.005s (excellent performance)
 - **Compliance**: SOC2/ISO27001 certification ready [COMPLETED]
 - **Integration**: 50+ enterprise tool integrations [COMPLETED]
 
-### CURRENT STATUS SUMMARY
+## RECOMMENDED NEW COMPONENTS FOR ENTERPRISE SCALE
 
-**PRODUCTION READY COMPONENTS:**
-- [COMPLETED] **fr0g-ai-bridge**: Production verified, OpenWebUI integration working
-- [COMPLETED] **fr0g-ai-registry**: 9,553+ ops/sec performance, all tests passing
-- [COMPLETED] **fr0g-ai-io**: All processors operational, needs API integration
+### 1. fr0g-ai-analytics (Data Analytics & Intelligence)
+**PURPOSE**: Centralized analytics, reporting, and business intelligence
+**PORTS**: HTTP :8084, gRPC :9094
+**CAPABILITIES**:
+- Real-time analytics dashboards
+- Threat intelligence reporting
+- Performance metrics aggregation
+- Business intelligence and insights
+- Data visualization and export
 
-**OPERATIONAL STATUS:**
-- [✅] **fr0g-ai-master-control**: HEALTHY - Service responding on port 8081
-- [✅] **fr0g-ai-aip**: HEALTHY - Service responding on ports 8080/9090, 4 personas loaded
-- [✅] **fr0g-ai-bridge**: HEALTHY - Service responding on ports 8082/9092
-- [✅] **fr0g-ai-io**: HEALTHY - Service responding on ports 8083/9093, duplicate server issue FIXED
-- [✅] **fr0g-ai-registry**: HEALTHY - Service responding on port 8500
+### 2. fr0g-ai-gateway (API Gateway & Load Balancer)
+**PURPOSE**: Centralized API gateway with advanced routing and security
+**PORTS**: HTTP :8085, gRPC :9095
+**CAPABILITIES**:
+- API rate limiting and quotas
+- Request/response transformation
+- Load balancing across service instances
+- API versioning and deprecation management
+- Advanced security policies
 
-**NEEDS ENHANCEMENT:**
-- [⚠️] **Service Registry**: API endpoints need implementation (404 on registration endpoint)
-- [⚠️] **gRPC Health**: All services show gRPC unhealthy (expected with reflection disabled)
-- [📈] **AIP**: Database migration recommended for production scale
+### 3. fr0g-ai-storage (Unified Data Layer)
+**PURPOSE**: Centralized data management and storage abstraction
+**PORTS**: HTTP :8086, gRPC :9096
+**CAPABILITIES**:
+- Multi-database support (PostgreSQL, MongoDB, Redis)
+- Data migration and backup services
+- Query optimization and caching
+- Data consistency and transaction management
+- Schema evolution and versioning
 
-**BREAKTHROUGH ACHIEVED:**
-- 🧠 **Artificial Intelligence**: Conscious AI with 0.154 learning rate
-- 🏗️ **Infrastructure**: Complete containerized microservices architecture
-- 🔧 **Integration**: Comprehensive service discovery and communication
+### 4. fr0g-ai-workflow (Advanced Workflow Engine)
+**PURPOSE**: Complex workflow orchestration and automation
+**PORTS**: HTTP :8087, gRPC :9097
+**CAPABILITIES**:
+- Visual workflow designer
+- Complex business process automation
+- Workflow templates and marketplace
+- Integration with external systems
+- Workflow analytics and optimization
 
-**NEXT CRITICAL PATH**: Fix master-control storage, migrate AIP database, optimize registry performance
+### 5. fr0g-ai-security (Security Operations Center)
+**PURPOSE**: Centralized security monitoring and incident response
+**PORTS**: HTTP :8088, gRPC :9098
+**CAPABILITIES**:
+- SIEM integration and log analysis
+- Automated incident response
+- Security policy enforcement
+- Compliance monitoring and reporting
+- Threat hunting and forensics
+
+## UPDATED PROJECT ARCHITECTURE
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    fr0g.ai Enhanced Architecture                │
+├─────────────────────────────────────────────────────────────────┤
+│ CORE SERVICES (CURRENT STATUS)                                  │
+│ ├─ fr0g-ai-registry    │ Service Discovery      │ :8500  │ ✅   │
+│ ├─ fr0g-ai-bridge      │ Integration Bridge     │ :8082  │ ✅   │
+│ ├─ fr0g-ai-aip         │ Core AI Processing     │ :8080  │ ⚠️   │
+│ ├─ fr0g-ai-master-ctrl │ Cognitive Engine       │ :8081  │ ⚠️   │
+│ └─ fr0g-ai-io          │ I/O Processing         │ :8083  │ ⚠️   │
+├─────────────────────────────────────────────────────────────────┤
+│ RECOMMENDED NEW SERVICES (FUTURE)                               │
+│ ├─ fr0g-ai-analytics   │ Data Analytics         │ :8084  │ 📋   │
+│ ├─ fr0g-ai-gateway     │ API Gateway            │ :8085  │ 📋   │
+│ ├─ fr0g-ai-storage     │ Unified Data Layer     │ :8086  │ 📋   │
+│ ├─ fr0g-ai-workflow    │ Workflow Engine        │ :8087  │ 📋   │
+│ └─ fr0g-ai-security    │ Security Operations    │ :8088  │ 📋   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## SUCCESS METRICS BY PHASE
+
+### Phase 1 Success Criteria (1 Week)
+- **AIP Configuration**: ✅ Service builds successfully, all tests pass
+- **AIP Validation**: ✅ Proper rejection of invalid inputs
+- **AIP Constructor**: ✅ All required parameters included
+- **Master-Control Storage**: ✅ Service starts with file storage
+- **I/O SMS Integration**: ✅ Real Google Voice API working
+- **I/O gRPC**: ✅ Bidirectional communication with master-control
+
+### Phase 2 Success Criteria (2 Weeks)
+- **AIP Database**: ✅ PostgreSQL migration complete, <50ms queries
+- **Registry Performance**: ✅ Redis persistence, <50ms discovery latency
+- **Monitoring**: ✅ 100% observability coverage with Prometheus/Grafana
+- **Security**: ✅ Enterprise authentication implemented across all services
+
+### Phase 3 Success Criteria (4 Weeks)
+- **AI Enhancement**: ✅ Multi-LLM integration, 50% cost reduction
+- **Threat Intelligence**: ✅ 95% detection accuracy across all vectors
+- **Performance**: ✅ Production-ready performance under load
+- **New Components**: 📋 Begin development of analytics and gateway services
+
+## IMMEDIATE NEXT STEPS (THIS WEEK)
+
+### Day 1-2: AIP Configuration Crisis
+1. **CRITICAL**: Migrate fr0g-ai-aip to centralized pkg/config system
+2. **CRITICAL**: Fix API server constructor with required parameters
+3. **CRITICAL**: Implement missing configuration methods
+4. **CRITICAL**: Fix validation logic for proper input rejection
+5. **CRITICAL**: Resolve all test compilation errors
+
+### Day 3-4: Master-Control Storage Fix
+1. **CRITICAL**: Debug storage type validation error
+2. **CRITICAL**: Fix 'file' storage type acceptance
+3. **CRITICAL**: Test storage configuration validation
+4. **CRITICAL**: Verify service startup with file storage
+
+### Day 5-7: I/O API Integration
+1. **HIGH**: Implement real Google Voice API for SMS
+2. **HIGH**: Complete master-control gRPC bidirectional communication
+3. **HIGH**: Add proper error handling and retry logic
+4. **HIGH**: Test end-to-end I/O operations
+
+**FOCUS**: Resolve critical blockers before any new feature development. The project has excellent infrastructure but needs these critical fixes to unlock its full potential.
 
 ## SERVICE-SPECIFIC ENHANCEMENT ROADMAP
 
