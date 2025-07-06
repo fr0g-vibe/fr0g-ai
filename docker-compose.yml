@@ -1,3 +1,4 @@
+services:
   # Redis for Registry Persistence
   redis:
     image: redis:7-alpine
