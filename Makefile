@@ -202,6 +202,25 @@ diagnose-logs:
 
 diagnose-all: diagnose-registry diagnose-grpc diagnose-ports diagnose-logs
 
+# Health check with clean service restart
+health-clean:
+	@echo "HEALTH Performing clean health check with service restart..."
+	@echo "Stopping any running services..."
+	@docker-compose down >/dev/null 2>&1 || true
+	@echo "Starting services fresh..."
+	@docker-compose up -d >/dev/null 2>&1
+	@echo "Waiting for services to be ready..."
+	@sleep 15
+	@echo "Running health checks..."
+	@chmod +x tests/integration/health_check_test.sh
+	@./tests/integration/health_check_test.sh
+
+# Run clean integration test (stops services, starts fresh, tests, then cleans up)
+test-clean:
+	@echo "TESTING Running clean integration test with fresh services..."
+	@chmod +x tests/integration/clean_test.sh
+	@./tests/integration/clean_test.sh
+
 # Quick health check (simple curl tests)
 health-quick:
 	@echo "HEALTH Quick health check..."

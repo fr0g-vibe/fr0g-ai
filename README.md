@@ -32,12 +32,13 @@ Eliminate human-computer interaction vulnerabilities through AI-driven automated
 ```
 
 ### Components
-- **fr0g-ai-aip**: Core AI processing engine with file-based storage
-- **fr0g-ai-bridge**: Integration bridge connecting to external systems (OpenWebUI)
-- **fr0g-ai-master-control**: Orchestration and cognitive processing engine
-- **fr0g-ai-io**: Input/Output processing service for threat vector handling
+- **fr0g-ai-registry**: Service discovery and health monitoring (port 8500) ✅ OPERATIONAL
+- **fr0g-ai-aip**: Core AI processing engine with file-based storage (ports 8080/9090) ✅ OPERATIONAL
+- **fr0g-ai-bridge**: Integration bridge connecting to external systems (ports 8082/9091) ✅ OPERATIONAL
+- **fr0g-ai-master-control**: Orchestration and cognitive processing engine (port 8081) ✅ OPERATIONAL
+- **fr0g-ai-io**: Input/Output processing service for threat vector handling (ports 8083/9093) ✅ OPERATIONAL
 - **Communication**: High-performance gRPC inter-service communication
-- **Storage**: Configurable storage backends (file system, future: database)
+- **Storage**: Configurable storage backends (file system, Redis, future: database)
 
 ## Security Philosophy
 
@@ -163,10 +164,25 @@ make lint fmt
 - **gRPC**: localhost:9090
 - **Health**: http://localhost:8080/health
 
+### fr0g-ai-registry (Service Discovery)
+- **HTTP**: http://localhost:8500
+- **Health**: http://localhost:8500/health
+- **Service Registration**: http://localhost:8500/v1/agent/service/register
+- **Service Discovery**: http://localhost:8500/v1/catalog/services
+
 ### fr0g-ai-bridge (Integration)
-- **HTTP**: http://localhost:8081
+- **HTTP**: http://localhost:8082
 - **gRPC**: localhost:9091
+- **Health**: http://localhost:8082/health
+
+### fr0g-ai-master-control (Cognitive Engine)
+- **HTTP**: http://localhost:8081
 - **Health**: http://localhost:8081/health
+
+### fr0g-ai-io (Input/Output Processing)
+- **HTTP**: http://localhost:8083
+- **gRPC**: localhost:9093
+- **Health**: http://localhost:8083/health
 
 ## Configuration
 
