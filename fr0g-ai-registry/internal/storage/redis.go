@@ -108,7 +108,7 @@ func (r *RedisStorage) GetAllServices(ctx context.Context) (map[string]*ServiceI
 		return nil, fmt.Errorf("failed to execute pipeline: %w", err)
 	}
 
-	for key, cmd := range cmds {
+	for _, cmd := range cmds {
 		data, err := cmd.Result()
 		if err != nil {
 			continue // Skip failed entries
