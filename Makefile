@@ -451,5 +451,4 @@ docker-status:
 # Legacy targets for backward compatibility
 build: build-all
 clean: clean-all
-test: test-all
 run: run-mcp
