@@ -17,3 +17,4 @@ require (
 )
 
 replace github.com/fr0g-vibe/fr0g-ai/pkg/config => ../pkg/config
+replace github.com/fr0g-vibe/fr0g.ai/fr0g-ai-io => ./
