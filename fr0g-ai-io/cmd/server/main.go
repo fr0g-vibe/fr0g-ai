@@ -8,8 +8,6 @@ import (
 	"syscall"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/api"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/processors"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/outputs"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
