@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	sharedconfig "pkg/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // Example of how to integrate shared config in a subproject
