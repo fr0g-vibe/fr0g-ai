@@ -341,7 +341,7 @@ This multi-agent dispatch system enables coordinated development across the enti
 - [x] **AIP Service**: 4 personas loaded, file storage working, ports 8080/9090
 - [x] **Bridge Service**: REST API operational, ports 8082/9092
 - [x] **Master Control**: Service healthy, port 8081
-- [x] **I/O Service**: All processors operational, ports 8083/9093
+- [x] **I/O Service**: All processors operational, ports 8083/9092
 - [x] **Registry Service**: Basic health working, port 8500
 - [x] **Redis**: Persistence layer operational, port 6379
 - [x] **Docker Orchestration**: All containers healthy and communicating
@@ -832,7 +832,7 @@ Test Execution Time: 0.005s (excellent performance)
 
 **fr0g-ai-master-control**: ✅ OPERATIONAL - Service healthy and responding on port 8081, storage validation issues resolved in containerized environment.
 
-**fr0g-ai-io**: ✅ FULLY OPERATIONAL - HTTP/gRPC servers running correctly on ports 8083/9093, health endpoint responding, all processors operational.
+**fr0g-ai-io**: ✅ FULLY OPERATIONAL - HTTP/gRPC servers running correctly on ports 8083/9092, health endpoint responding, all processors operational.
 
 **fr0g-ai-registry**: ⚠️ PARTIALLY OPERATIONAL - Service healthy on port 8500, but missing Consul-compatible API endpoints for service registration/discovery.
 
@@ -1105,7 +1105,7 @@ Test Execution Time: 0.005s (excellent performance)
 - **DIAGNOSTIC RESULTS**:
   - AIP gRPC: Port 9090 open but not responding to grpcurl
   - Bridge gRPC: Port 9091 closed (using 9092 instead)
-  - IO gRPC: Port 9093 open but not responding to grpcurl
+  - IO gRPC: Port 9092 open but not responding to grpcurl
 - **EMERGENCY ACTIONS**:
   - Fix Bridge port configuration (9092 → 9091)
   - Check gRPC server initialization in all services
