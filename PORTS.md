@@ -11,7 +11,7 @@ All services are configured with specific ports to avoid conflicts:
 | fr0g-ai-aip | 8080 | 9090 | 8080:8080, 9090:9090 | ✅ Operational |
 | fr0g-ai-bridge | 8082 | 9092 | 8082:8082, 9092:9092 | ✅ Operational |
 | fr0g-ai-master-control | 8081 | N/A | 8081:8081 | ❌ Needs HTTP server |
-| fr0g-ai-io | 8083 | 9093 | 8083:8083, 9093:9093 | ❌ Port mismatch fixed |
+| fr0g-ai-io | 8083 | 9092 | 8083:8083, 9092:9092 | ✅ Port assignment correct |
 
 ### Port Conflict Resolution
 - **No conflicts**: All services use unique ports
@@ -49,11 +49,11 @@ Inter-service communication uses Docker network names:
 - `fr0g-ai-aip:9090` (gRPC)
 - `fr0g-ai-bridge:9092` (gRPC)
 - `fr0g-ai-master-control:8081` (HTTP)
-- `fr0g-ai-io:9093` (gRPC)
+- `fr0g-ai-io:9092` (gRPC)
 - `service-registry:8500` (HTTP)
 
 ### Issues Resolved
-1. **fr0g-ai-io**: Fixed port binding from 8080/9090 to 8083/9093
+1. **fr0g-ai-io**: Fixed port binding from 8080/9090 to 8083/9092
 2. **fr0g-ai-master-control**: Added HTTP server for health checks
 3. **Health checks**: Verified all ports match docker-compose configuration
 
