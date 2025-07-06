@@ -253,3 +253,25 @@ func (rc *RegistryClient) updateHealth() {
 func (rc *RegistryClient) Shutdown() error {
 	return rc.DeregisterService()
 }
+
+// NewRegistryClient creates a new registry client with URL
+func NewRegistryClient(registryURL string) (*RegistryClient, error) {
+	return NewRegistryClient(registryURL, nil), nil
+}
+
+// RegisterService registers a service with the registry
+func (rc *RegistryClient) RegisterService(serviceName, httpPort, grpcPort string) error {
+	serviceInfo := &ServiceInfo{
+		ID:      serviceName + "-" + httpPort,
+		Name:    serviceName,
+		Address: "localhost",
+		Port:    8080, // Default HTTP port
+		Tags:    []string{"http", "grpc"},
+		Meta: map[string]string{
+			"http_port": httpPort,
+			"grpc_port": grpcPort,
+		},
+	}
+	
+	return rc.RegisterService(serviceInfo)
+}

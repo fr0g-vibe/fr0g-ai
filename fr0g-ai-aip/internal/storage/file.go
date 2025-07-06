@@ -24,7 +24,7 @@ type FileStorage struct {
 }
 
 // NewFileStorage creates a new file storage instance
-func NewFileStorage(dataDir string) (*FileStorage, error) {
+func NewFileStorage(dataDir string) (Storage, error) {
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create data directory: %v", err)
 	}

@@ -13,7 +13,6 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/political"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/preferences"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/psychographics"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
@@ -23,7 +22,7 @@ import (
 // Service provides core business logic for persona and identity management
 type Service struct {
 	storage                 storage.Storage
-	config                  *config.Config
+	config                  *sharedconfig.ValidationConfig
 	demographicsProcessor   *demographics.Processor
 	psychographicsProcessor *psychographics.Processor
 	lifeHistoryProcessor    *lifehistory.Processor
@@ -36,27 +35,22 @@ type Service struct {
 
 // NewService creates a new persona service with all attribute processors
 func NewService(storage storage.Storage) *Service {
-	cfg, err := config.LoadConfig("")
-	if err != nil {
-		// Use default config if loading fails
-		cfg = &config.Config{
-			Validation: config.ValidationConfig{
-				StrictMode: false,
-			},
-		}
+	// Use default validation config
+	validationConfig := &sharedconfig.ValidationConfig{
+		EnableStrict: false,
 	}
 
 	return &Service{
 		storage:                 storage,
-		config:                  cfg,
-		demographicsProcessor:   demographics.NewProcessor(&cfg.Validation),
-		psychographicsProcessor: psychographics.NewProcessor(&cfg.Validation),
-		lifeHistoryProcessor:    lifehistory.NewProcessor(&cfg.Validation),
-		preferencesProcessor:    preferences.NewProcessor(&cfg.Validation),
-		culturalProcessor:       cultural.NewProcessor(&cfg.Validation),
-		politicalProcessor:      political.NewProcessor(&cfg.Validation),
-		healthProcessor:         health.NewProcessor(&cfg.Validation),
-		behavioralProcessor:     behavioral.NewProcessor(&cfg.Validation),
+		config:                  validationConfig,
+		demographicsProcessor:   demographics.NewProcessor(validationConfig),
+		psychographicsProcessor: psychographics.NewProcessor(validationConfig),
+		lifeHistoryProcessor:    lifehistory.NewProcessor(validationConfig),
+		preferencesProcessor:    preferences.NewProcessor(validationConfig),
+		culturalProcessor:       cultural.NewProcessor(validationConfig),
+		politicalProcessor:      political.NewProcessor(validationConfig),
+		healthProcessor:         health.NewProcessor(validationConfig),
+		behavioralProcessor:     behavioral.NewProcessor(validationConfig),
 	}
 }
 

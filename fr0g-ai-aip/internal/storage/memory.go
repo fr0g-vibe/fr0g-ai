@@ -20,7 +20,7 @@ type MemoryStorage struct {
 }
 
 // NewMemoryStorage creates a new in-memory storage instance
-func NewMemoryStorage() *MemoryStorage {
+func NewMemoryStorage() Storage {
 	return &MemoryStorage{
 		personas:    make(map[string]types.Persona),
 		identities:  make(map[string]types.Identity),
