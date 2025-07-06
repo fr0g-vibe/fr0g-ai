@@ -4,9 +4,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/registry"
 )
 
 
@@ -24,6 +26,56 @@ func main() {
 		log.Printf("Using MCP_HTTP_PORT: %s", port)
 		// Note: Would need to parse port string to int if we want to override
 		// For now, just log it
+	}
+
+	// Initialize service registry client if enabled
+	var registryClient *registry.RegistryClient
+	if os.Getenv("SERVICE_REGISTRY_ENABLED") == "true" {
+		registryURL := os.Getenv("SERVICE_REGISTRY_URL")
+		if registryURL == "" {
+			registryURL = "http://localhost:8500"
+		}
+		
+		log.Printf("🔗 Initializing service registry client: %s", registryURL)
+		registryClient = registry.NewRegistryClient(registryURL, nil)
+		
+		// Register service
+		serviceName := os.Getenv("SERVICE_NAME")
+		if serviceName == "" {
+			serviceName = "fr0g-ai-master-control"
+		}
+		
+		serviceID := os.Getenv("SERVICE_ID")
+		if serviceID == "" {
+			serviceID = serviceName + "-1"
+		}
+		
+		httpPort := mcpConfig.Input.Webhook.Port
+		grpcPort := 9093 // Default gRPC port for master control
+		
+		serviceInfo := &registry.ServiceInfo{
+			ID:      serviceID,
+			Name:    serviceName,
+			Address: "localhost",
+			Port:    httpPort,
+			Tags:    []string{"ai", "master-control", "mcp"},
+			Meta: map[string]string{
+				"version":   "1.0.0",
+				"http_port": strconv.Itoa(httpPort),
+				"grpc_port": strconv.Itoa(grpcPort),
+			},
+			Check: &registry.HealthCheck{
+				HTTP:     "http://localhost:" + strconv.Itoa(httpPort) + "/health",
+				Interval: "30s",
+				Timeout:  "10s",
+			},
+		}
+		
+		if err := registryClient.RegisterService(serviceInfo); err != nil {
+			log.Printf("⚠️  Failed to register service: %v", err)
+		} else {
+			log.Printf("✅ Service registered successfully: %s", serviceID)
+		}
 	}
 
 	log.Printf("COMPLETED Configuration loaded successfully")
@@ -74,6 +126,16 @@ func main() {
 	<-quit
 
 	log.Println("🛑 Shutting down Master Control...")
+
+	// Deregister from service registry
+	if registryClient != nil {
+		log.Println("🔗 Deregistering from service registry...")
+		if err := registryClient.DeregisterService(); err != nil {
+			log.Printf("⚠️  Failed to deregister service: %v", err)
+		} else {
+			log.Println("✅ Service deregistered successfully")
+		}
+	}
 
 	// Graceful shutdown
 	if err := mcp.Stop(); err != nil {

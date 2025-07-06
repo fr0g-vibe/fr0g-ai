@@ -230,5 +230,12 @@ func LoadConfig(configPath string) (*Config, error) {
 		}
 	}
 
+	// Add port information to service registry metadata
+	if config.ServiceRegistry.Meta == nil {
+		config.ServiceRegistry.Meta = make(map[string]string)
+	}
+	config.ServiceRegistry.Meta["http_port"] = strconv.Itoa(config.Server.HTTPPort)
+	config.ServiceRegistry.Meta["grpc_port"] = strconv.Itoa(config.Server.GRPCPort)
+
 	return config, nil
 }

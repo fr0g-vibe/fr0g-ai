@@ -578,8 +578,15 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 	
-	log.Printf("Starting optimized fr0g.ai service registry on %s", server.Addr)
-	log.Printf("Redis: %s, Cache: LRU(1000, 30s), Metrics: /metrics", os.Getenv("REDIS_ADDR"))
+	log.Printf("🚀 Starting optimized fr0g.ai service registry on %s", server.Addr)
+	log.Printf("🔧 Redis: %s, Cache: LRU(1000, 30s), Metrics: /metrics", os.Getenv("REDIS_ADDR"))
+	log.Printf("📋 Endpoints:")
+	log.Printf("   - Service Registration: PUT %s/v1/agent/service/register", server.Addr)
+	log.Printf("   - Service Deregistration: PUT %s/v1/agent/service/deregister/{serviceId}", server.Addr)
+	log.Printf("   - Service Discovery: GET %s/v1/catalog/services", server.Addr)
+	log.Printf("   - Health Check: GET %s/health", server.Addr)
+	log.Printf("   - Metrics: GET %s/metrics", server.Addr)
+	log.Printf("✅ Service registry ready for automatic lifecycle management")
 	
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("Failed to start registry server:", err)

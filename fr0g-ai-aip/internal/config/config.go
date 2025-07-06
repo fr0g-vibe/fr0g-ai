@@ -2,19 +2,32 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"time"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
+// ServiceRegistryConfig holds service registry configuration
+type ServiceRegistryConfig struct {
+	Enabled        bool              `yaml:"enabled"`
+	URL            string            `yaml:"url"`
+	ServiceName    string            `yaml:"service_name"`
+	ServiceID      string            `yaml:"service_id"`
+	Tags           []string          `yaml:"tags"`
+	Meta           map[string]string `yaml:"meta"`
+	HealthInterval time.Duration     `yaml:"health_interval"`
+}
+
 // Config represents the AIP service configuration
 type Config struct {
-	HTTP       sharedconfig.HTTPConfig     `yaml:"http"`
-	GRPC       sharedconfig.GRPCConfig     `yaml:"grpc"`
-	Storage    sharedconfig.StorageConfig  `yaml:"storage"`
-	Security   sharedconfig.SecurityConfig `yaml:"security"`
-	Validation ValidationConfig            `yaml:"validation"`
-	Client     ClientConfig                `yaml:"client"`
+	HTTP            sharedconfig.HTTPConfig     `yaml:"http"`
+	GRPC            sharedconfig.GRPCConfig     `yaml:"grpc"`
+	Storage         sharedconfig.StorageConfig  `yaml:"storage"`
+	Security        sharedconfig.SecurityConfig `yaml:"security"`
+	Validation      ValidationConfig            `yaml:"validation"`
+	Client          ClientConfig                `yaml:"client"`
+	ServiceRegistry ServiceRegistryConfig       `yaml:"service_registry"`
 }
 
 // ValidationConfig represents validation-specific configuration
@@ -70,6 +83,15 @@ func LoadConfig(configPath string) (*Config, error) {
 			Type:      getEnvOrDefault("FR0G_CLIENT_TYPE", "local"),
 			ServerURL: getEnvOrDefault("FR0G_SERVER_URL", "http://localhost:8080"),
 		},
+		ServiceRegistry: ServiceRegistryConfig{
+			Enabled:        getBoolEnv("SERVICE_REGISTRY_ENABLED", false),
+			URL:            getEnvOrDefault("SERVICE_REGISTRY_URL", "http://localhost:8500"),
+			ServiceName:    getEnvOrDefault("SERVICE_NAME", "fr0g-ai-aip"),
+			ServiceID:      getEnvOrDefault("SERVICE_ID", "fr0g-ai-aip-1"),
+			Tags:           []string{"ai", "personas", "identities"},
+			Meta:           map[string]string{"version": "1.0.0"},
+			HealthInterval: 30 * time.Second,
+		},
 	}
 
 	// Load from file if specified
@@ -77,6 +99,39 @@ func LoadConfig(configPath string) (*Config, error) {
 		if err := loader.LoadFromFile(cfg); err != nil {
 			return nil, err
 		}
+	}
+
+	// Override service registry settings from environment
+	if enableRegistry := os.Getenv("SERVICE_REGISTRY_ENABLED"); enableRegistry == "true" {
+		cfg.ServiceRegistry.Enabled = true
+	}
+
+	if registryURL := os.Getenv("SERVICE_REGISTRY_URL"); registryURL != "" {
+		cfg.ServiceRegistry.URL = registryURL
+	}
+
+	if serviceName := os.Getenv("SERVICE_NAME"); serviceName != "" {
+		cfg.ServiceRegistry.ServiceName = serviceName
+	}
+
+	if serviceID := os.Getenv("SERVICE_ID"); serviceID != "" {
+		cfg.ServiceRegistry.ServiceID = serviceID
+	}
+
+	if healthIntervalStr := os.Getenv("SERVICE_REGISTRY_HEALTH_INTERVAL"); healthIntervalStr != "" {
+		if duration, err := time.ParseDuration(healthIntervalStr); err == nil {
+			cfg.ServiceRegistry.HealthInterval = duration
+		}
+	}
+
+	// Parse HTTP port to int for service registration
+	if httpPortInt, err := strconv.Atoi(cfg.HTTP.Port); err == nil {
+		cfg.ServiceRegistry.Meta["http_port"] = cfg.HTTP.Port
+	}
+
+	// Parse GRPC port to int for service registration  
+	if grpcPortInt, err := strconv.Atoi(cfg.GRPC.Port); err == nil {
+		cfg.ServiceRegistry.Meta["grpc_port"] = cfg.GRPC.Port
 	}
 
 	return cfg, nil
@@ -118,6 +173,28 @@ func (c *Config) Validate() error {
 	// Validate storage type is supported
 	if err := sharedconfig.ValidateEnum(c.Storage.Type, []string{"file", "memory"}, "storage.type"); err != nil {
 		errors = append(errors, *err)
+	}
+	
+	// Validate Service Registry configuration
+	if c.ServiceRegistry.Enabled {
+		if err := sharedconfig.ValidateURL(c.ServiceRegistry.URL, "service_registry.url"); err != nil {
+			errors = append(errors, *err)
+		}
+
+		if err := sharedconfig.ValidateRequired(c.ServiceRegistry.ServiceName, "service_registry.service_name"); err != nil {
+			errors = append(errors, *err)
+		}
+
+		if err := sharedconfig.ValidateRequired(c.ServiceRegistry.ServiceID, "service_registry.service_id"); err != nil {
+			errors = append(errors, *err)
+		}
+
+		if c.ServiceRegistry.HealthInterval <= 0 {
+			errors = append(errors, sharedconfig.ValidationError{
+				Field:   "service_registry.health_interval",
+				Message: "health interval must be positive",
+			})
+		}
 	}
 	
 	if len(errors) > 0 {

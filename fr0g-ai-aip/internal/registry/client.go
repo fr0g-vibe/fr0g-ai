@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -261,17 +262,61 @@ func NewRegistryClientSimple(registryURL string) (*RegistryClient, error) {
 
 // RegisterServiceSimple registers a service with the registry (simple version)
 func (rc *RegistryClient) RegisterServiceSimple(serviceName, httpPort, grpcPort string) error {
+	httpPortInt, _ := strconv.Atoi(httpPort)
+	
 	serviceInfo := &ServiceInfo{
 		ID:      serviceName + "-" + httpPort,
 		Name:    serviceName,
 		Address: "localhost",
-		Port:    8080, // Default HTTP port
+		Port:    httpPortInt,
 		Tags:    []string{"http", "grpc"},
 		Meta: map[string]string{
 			"http_port": httpPort,
 			"grpc_port": grpcPort,
 		},
+		Check: &HealthCheck{
+			HTTP:     fmt.Sprintf("http://localhost:%s/health", httpPort),
+			Interval: "30s",
+			Timeout:  "10s",
+		},
 	}
 	
 	return rc.RegisterService(serviceInfo)
+}
+
+// RegisterServiceWithConfig registers a service using configuration
+func (rc *RegistryClient) RegisterServiceWithConfig(config ServiceRegistryConfig, httpPort, grpcPort int) error {
+	serviceInfo := &ServiceInfo{
+		ID:      config.ServiceID,
+		Name:    config.ServiceName,
+		Address: "localhost",
+		Port:    httpPort,
+		Tags:    config.Tags,
+		Meta:    config.Meta,
+		Check: &HealthCheck{
+			HTTP:     fmt.Sprintf("http://localhost:%d/health", httpPort),
+			Interval: config.HealthInterval.String(),
+			Timeout:  "10s",
+		},
+	}
+	
+	// Add port information to metadata
+	if serviceInfo.Meta == nil {
+		serviceInfo.Meta = make(map[string]string)
+	}
+	serviceInfo.Meta["http_port"] = strconv.Itoa(httpPort)
+	serviceInfo.Meta["grpc_port"] = strconv.Itoa(grpcPort)
+	
+	return rc.RegisterService(serviceInfo)
+}
+
+// ServiceRegistryConfig represents service registry configuration
+type ServiceRegistryConfig struct {
+	Enabled        bool
+	URL            string
+	ServiceName    string
+	ServiceID      string
+	Tags           []string
+	Meta           map[string]string
+	HealthInterval time.Duration
 }
