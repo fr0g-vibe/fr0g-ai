@@ -11,15 +11,15 @@ WORKDIR /app
 COPY go.mod go.sum ./
 COPY pkg/ ./pkg/
 
-# Copy fr0g-ai-io source
-COPY fr0g-ai-io/ ./fr0g-ai-io/
+# Copy fr0g.ai-io source
+COPY fr0g.ai-io/ ./fr0g.ai-io/
 
 # Download dependencies
 RUN go mod download
 
 # Build the application
-WORKDIR /app/fr0g-ai-io
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-io ./cmd/server
+WORKDIR /app/fr0g.ai-io
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g.ai-io ./cmd/server
 
 # Final stage
 FROM alpine:latest
@@ -34,7 +34,7 @@ RUN adduser -D -s /bin/sh fr0g
 WORKDIR /app
 
 # Copy the binary
-COPY --from=builder /app/fr0g-ai-io/fr0g-ai-io .
+COPY --from=builder /app/fr0g.ai-io/fr0g.ai-io .
 
 # Create data and logs directories
 RUN mkdir -p /app/data /app/logs && chown -R fr0g:fr0g /app
@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8083/health || exit 1
 
 # Run the application
-CMD ["./fr0g-ai-io"]
+CMD ["./fr0g.ai-io"]

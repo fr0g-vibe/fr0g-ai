@@ -11,15 +11,15 @@ WORKDIR /app
 COPY go.mod go.sum ./
 COPY pkg/ ./pkg/
 
-# Copy fr0g-ai-aip source
-COPY fr0g-ai-aip/ ./fr0g-ai-aip/
+# Copy fr0g.ai-aip source
+COPY fr0g.ai-aip/ ./fr0g.ai-aip/
 
 # Download dependencies
 RUN go mod download
 
 # Build the application
-WORKDIR /app/fr0g-ai-aip
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-aip ./cmd/fr0g-ai-aip
+WORKDIR /app/fr0g.ai-aip
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g.ai-aip ./cmd/fr0g.ai-aip
 
 # Final stage
 FROM alpine:latest
@@ -34,7 +34,7 @@ RUN adduser -D -s /bin/sh fr0g
 WORKDIR /app
 
 # Copy binary from builder stage
-COPY --from=builder /app/fr0g-ai-aip/fr0g-ai-aip .
+COPY --from=builder /app/fr0g.ai-aip/fr0g.ai-aip .
 
 # Create data directory
 RUN mkdir -p /app/data /app/logs && chown -R fr0g:fr0g /app
@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
 # Default command - start both HTTP and gRPC servers
-CMD ["./fr0g-ai-aip", "--server", "--grpc"]
+CMD ["./fr0g.ai-aip", "--server", "--grpc"]

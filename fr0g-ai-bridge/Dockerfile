@@ -11,15 +11,15 @@ WORKDIR /app
 COPY go.mod go.sum ./
 COPY pkg/ ./pkg/
 
-# Copy fr0g-ai-bridge source
-COPY fr0g-ai-bridge/ ./fr0g-ai-bridge/
+# Copy fr0g.ai-bridge source
+COPY fr0g.ai-bridge/ ./fr0g.ai-bridge/
 
 # Download dependencies
 RUN go mod download
 
 # Build the application
-WORKDIR /app/fr0g-ai-bridge
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-bridge ./cmd
+WORKDIR /app/fr0g.ai-bridge
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g.ai-bridge ./cmd
 
 # Runtime stage
 FROM alpine:latest
@@ -34,7 +34,7 @@ RUN adduser -D -s /bin/sh appuser
 WORKDIR /app
 
 # Copy binary from builder stage
-COPY --from=builder /app/fr0g-ai-bridge/fr0g-ai-bridge .
+COPY --from=builder /app/fr0g.ai-bridge/fr0g.ai-bridge .
 
 # Create config and logs directories
 RUN mkdir -p /app/config /app/logs && chown -R appuser:appuser /app
@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8082/health || exit 1
 
 # Run the application
-CMD ["./fr0g-ai-bridge"]
+CMD ["./fr0g.ai-bridge"]
