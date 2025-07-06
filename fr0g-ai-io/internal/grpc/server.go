@@ -16,7 +16,6 @@ import (
 )
 
 type Server struct {
-	pb.UnimplementedIOServiceServer
 	config     *sharedconfig.Config
 	grpcServer *grpc.Server
 	listener   net.Listener
@@ -28,109 +27,21 @@ func NewServer(cfg *sharedconfig.Config) *Server {
 	}
 }
 
-// HealthCheck implements the gRPC health check
-func (s *Server) HealthCheck(ctx context.Context, req *pb.HealthCheckRequest) (*pb.HealthCheckResponse, error) {
-	return &pb.HealthCheckResponse{
-		Status:  "healthy",
-		Version: "1.0.0",
-		Details: map[string]string{
-			"service": "fr0g-ai-io",
-			"uptime":  time.Now().Format(time.RFC3339),
-		},
-	}, nil
-}
-
-// ProcessInputEvent processes an incoming input event
-func (s *Server) ProcessInputEvent(ctx context.Context, req *pb.InputEvent) (*pb.InputEventResponse, error) {
-	log.Printf("Processing input event: %s from %s", req.Type, req.Source)
-	
-	// For now, return a simple response
-	// TODO: Implement actual event processing logic
-	return &pb.InputEventResponse{
-		EventId:     req.Id,
-		Processed:   true,
-		Actions:     []*pb.OutputCommand{},
-		Metadata:    map[string]string{"processed_at": time.Now().Format(time.RFC3339)},
-		ProcessedAt: timestamppb.New(time.Now()),
-	}, nil
-}
-
-// ExecuteOutputCommand executes an output command
-func (s *Server) ExecuteOutputCommand(ctx context.Context, req *pb.OutputCommand) (*pb.OutputResult, error) {
-	log.Printf("Executing output command: %s to %s", req.Type, req.Target)
-	
-	// For now, return a simple success response
-	// TODO: Implement actual command execution logic
-	return &pb.OutputResult{
-		CommandId:   req.Id,
-		Success:     true,
-		Metadata:    map[string]string{"executed_at": time.Now().Format(time.RFC3339)},
-		CompletedAt: timestamppb.New(time.Now()),
-	}, nil
-}
-
-// StreamInputEvents handles streaming input events to master-control
-func (s *Server) StreamInputEvents(stream pb.IOService_StreamInputEventsServer) error {
-	log.Println("Starting input event stream")
-	
-	for {
-		event, err := stream.Recv()
-		if err != nil {
-			log.Printf("Input stream error: %v", err)
-			return err
-		}
-		
-		// Process event and send analysis result
-		// This would typically forward to master-control for analysis
-		analysisResult := &pb.AnalysisResult{
-			EventId:      event.Id,
-			AnalysisType: "basic",
-			Results: map[string]string{
-				"processed": "true",
-				"timestamp": time.Now().Format(time.RFC3339),
-			},
-			AnalyzedAt: timestamppb.New(time.Now()),
-		}
-		
-		if err := stream.Send(analysisResult); err != nil {
-			log.Printf("Failed to send analysis result: %v", err)
-			return err
-		}
-	}
-}
-
-// StreamOutputCommands handles streaming output commands from master-control
-func (s *Server) StreamOutputCommands(stream pb.IOService_StreamOutputCommandsServer) error {
-	log.Println("Starting output command stream")
-	
-	for {
-		command, err := stream.Recv()
-		if err != nil {
-			log.Printf("Output stream error: %v", err)
-			return err
-		}
-		
-		// Execute command and send result
-		result, err := s.ExecuteOutputCommand(stream.Context(), command)
-		if err != nil {
-			log.Printf("Failed to execute streamed command: %v", err)
-			result = &pb.OutputResult{
-				CommandId:     command.Id,
-				Success:       false,
-				ErrorMessage:  err.Error(),
-				CompletedAt:   timestamppb.New(time.Now()),
-			}
-		}
-		
-		if err := stream.Send(result); err != nil {
-			log.Printf("Failed to send command result: %v", err)
-			return err
-		}
+// HealthCheck implements a basic health check
+func (s *Server) HealthCheck() map[string]string {
+	return map[string]string{
+		"status":  "healthy",
+		"service": "fr0g-ai-io",
+		"uptime":  time.Now().Format(time.RFC3339),
 	}
 }
 
 func (s *Server) Start() error {
-	addr := fmt.Sprintf(":%d", s.config.GRPC.Port)
+	if s.config == nil || s.config.GRPC.Port == "" {
+		return fmt.Errorf("invalid server configuration")
+	}
+
+	addr := fmt.Sprintf(":%s", s.config.GRPC.Port)
 	
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -139,9 +50,6 @@ func (s *Server) Start() error {
 	s.listener = listener
 
 	s.grpcServer = grpc.NewServer()
-	
-	// Register I/O service
-	pb.RegisterIOServiceServer(s.grpcServer, s)
 	
 	// Register health service
 	healthServer := health.NewServer()
