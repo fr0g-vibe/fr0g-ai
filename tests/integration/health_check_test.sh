@@ -17,7 +17,7 @@ TIMEOUT=30
 RETRY_INTERVAL=2
 MAX_RETRIES=15
 
-# Service endpoints
+# Service endpoints - CORRECTED gRPC port mappings
 REGISTRY_URL="http://localhost:8500"
 AIP_HTTP_URL="http://localhost:8080"
 AIP_GRPC_URL="localhost:9090"
@@ -493,20 +493,26 @@ generate_summary() {
     echo -e "\n${BLUE}CRITICAL BLOCKERS IDENTIFIED:${NC}"
     if ! $registry_api_ok; then
         echo -e "${RED}1. CRITICAL: Service Registry API endpoints missing${NC}"
-        echo -e "${RED}   - /v1/agent/service/register returning 404${NC}"
+        echo -e "${RED}   - /v1/agent/service/register returning 400 (JSON decode EOF)${NC}"
         echo -e "${RED}   - Service discovery completely broken${NC}"
+        echo -e "${RED}   - Services cannot register themselves${NC}"
     fi
     
     if ! $aip_grpc_ok || ! $bridge_grpc_ok || ! $io_grpc_ok; then
         echo -e "${RED}2. CRITICAL: gRPC services unhealthy${NC}"
         echo -e "${RED}   - Inter-service communication failing${NC}"
         echo -e "${RED}   - Check gRPC server startup and port binding${NC}"
+        echo -e "${RED}   - Verify Docker port mappings match service configs${NC}"
     fi
     
     echo -e "\n${BLUE}EMERGENCY ACTIONS REQUIRED:${NC}"
     echo -e "  make diagnose               # Run all diagnostic checks"
-    echo -e "  docker-compose logs         # Check service logs for errors"
-    echo -e "  make docker-down && make docker-up  # Restart all services"
+    echo -e "  docker-compose logs service-registry  # Check registry logs"
+    echo -e "  docker-compose logs fr0g-ai-aip       # Check AIP gRPC startup"
+    echo -e "  docker-compose logs fr0g-ai-bridge    # Check Bridge gRPC startup"
+    echo -e "  docker-compose logs fr0g-ai-io        # Check IO gRPC startup"
+    echo -e "  make docker-down && make docker-up     # Restart all services"
+    echo -e "  docker-compose ps                      # Verify all containers running"
 }
 
 # Main test execution

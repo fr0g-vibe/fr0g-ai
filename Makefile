@@ -125,14 +125,22 @@ diagnose-registry:
 
 diagnose-grpc:
 	@echo "DIAGNOSE gRPC service health..."
-	@command -v grpcurl >/dev/null && echo "✓ grpcurl available" || echo "✗ grpcurl not found"
-	@nc -z localhost 9090 && echo "✓ AIP gRPC port open" || echo "✗ AIP gRPC port closed"
-	@nc -z localhost 9091 && echo "✓ Bridge gRPC port open" || echo "✗ Bridge gRPC port closed"
+	@command -v grpcurl >/dev/null && echo "COMPLETED grpcurl available" || echo "MISSING grpcurl not found - install: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"
+	@nc -z localhost 9090 && echo "COMPLETED AIP gRPC port open" || echo "CRITICAL AIP gRPC port closed"
+	@nc -z localhost 9091 && echo "COMPLETED Bridge gRPC port open" || echo "CRITICAL Bridge gRPC port closed"
+	@nc -z localhost 9092 && echo "COMPLETED IO gRPC port open" || echo "CRITICAL IO gRPC port closed"
+	@echo "DIAGNOSE Testing gRPC service responses..."
+	@command -v grpcurl >/dev/null && grpcurl -plaintext localhost:9090 list 2>/dev/null && echo "COMPLETED AIP gRPC responding" || echo "CRITICAL AIP gRPC not responding"
+	@command -v grpcurl >/dev/null && grpcurl -plaintext localhost:9091 list 2>/dev/null && echo "COMPLETED Bridge gRPC responding" || echo "CRITICAL Bridge gRPC not responding"
+	@command -v grpcurl >/dev/null && grpcurl -plaintext localhost:9092 list 2>/dev/null && echo "COMPLETED IO gRPC responding" || echo "CRITICAL IO gRPC not responding"
 
 diagnose-ports:
 	@echo "DIAGNOSE Port configuration..."
-	@echo "Expected ports: Registry(8500), AIP(8080,9090), Bridge(8082,9091), MCP(8081), IO(8083,9093)"
-	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9093)' || echo "No services on expected ports"
+	@echo "Expected ports: Registry(8500), AIP(8080,9090), Bridge(8082,9091), MCP(8081), IO(8083,9092)"
+	@echo "CRITICAL Checking port bindings..."
+	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9092)' || echo "MISSING No services on expected ports"
+	@echo "DIAGNOSE Docker port mappings..."
+	@docker-compose ps --format "table {{.Name}}\t{{.Ports}}" 2>/dev/null || echo "MISSING Docker Compose not running"
 
 diagnose-logs:
 	@echo "DIAGNOSE Service logs for errors..."

@@ -42,12 +42,17 @@ RUN mkdir -p /app/data /app/logs && chown -R fr0g:fr0g /app
 # Switch to non-root user
 USER fr0g
 
-# Expose ports
+# Expose ports  
 EXPOSE 8083 9092
 
-# Health check - Enhanced for API integration monitoring
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
-  CMD curl -f http://localhost:8083/health || exit 1
+# Add gRPC health check capability
+RUN apk --no-cache add grpc-health-probe || echo "grpc-health-probe not available"
+
+# Enhanced health check with gRPC support and service registration verification
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=5 \
+  CMD curl -f http://localhost:8083/health && \
+      (nc -z localhost 9092 || exit 1) && \
+      (curl -sf http://service-registry:8500/v1/catalog/service/fr0g-ai-io | grep -q "fr0g-ai-io" || exit 1)
 
 # Run the application
 CMD ["./fr0g-ai-io"]
