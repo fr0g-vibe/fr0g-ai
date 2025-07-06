@@ -49,7 +49,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		GRPC: sharedconfig.GRPCConfig{
 			Port:             getEnvOrDefault("GRPC_PORT", "9090"),
 			Host:             getEnvOrDefault("GRPC_HOST", "0.0.0.0"),
-			EnableReflection: getBoolEnv("GRPC_ENABLE_REFLECTION", true),
+			EnableReflection: getBoolEnv("GRPC_ENABLE_REFLECTION", false),
 		},
 		Storage: sharedconfig.StorageConfig{
 			Type:    getEnvOrDefault("FR0G_STORAGE_TYPE", "file"),
