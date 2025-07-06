@@ -87,3 +87,10 @@ ehthumbs.db
 Thumbs.db
 
 *.backup
+
+# Agent Communication
+.agent-messages.log
+.agent-functions.sh
+
+# Agent Prompts (keep in repo)
+# .aider-prompts/ - intentionally tracked
