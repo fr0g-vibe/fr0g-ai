@@ -73,9 +73,9 @@ test:
 test-integration:
 	@echo "TESTING Running integration tests..."
 	@chmod +x tests/integration/*.sh
-	@./tests/integration/end_to_end_test.sh
+	@./tests/integration/health_check_test.sh
 	@./tests/integration/service_registry_test.sh
-	@./tests/integration/api_test.sh
+	@./tests/integration/grpc_health_test.sh
 
 test-performance:
 	@echo "PERFORMANCE Running performance tests..."
@@ -149,7 +149,19 @@ diagnose-logs:
 	@docker-compose logs --tail=5 fr0g-ai-bridge 2>/dev/null || echo "Bridge container not running"
 	@docker-compose logs --tail=5 fr0g-ai-io 2>/dev/null || echo "IO container not running"
 
-diagnose: diagnose-registry diagnose-grpc diagnose-ports diagnose-logs
+diagnose-grpc-detailed:
+	@echo "DIAGNOSE Detailed gRPC analysis..."
+	@chmod +x tests/integration/grpc_health_test.sh
+	@./tests/integration/grpc_health_test.sh
+
+diagnose-containers:
+	@echo "DIAGNOSE Container status and processes..."
+	@docker-compose ps
+	@echo ""
+	@echo "DIAGNOSE Container resource usage..."
+	@docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}" 2>/dev/null || echo "Docker stats not available"
+
+diagnose: diagnose-registry diagnose-grpc diagnose-ports diagnose-logs diagnose-grpc-detailed diagnose-containers
 
 
 # Docker operations

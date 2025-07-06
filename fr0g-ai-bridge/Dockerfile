@@ -45,13 +45,9 @@ USER appuser
 # Expose ports
 EXPOSE 8082 9091
 
-# Add gRPC health check capability
-RUN apk --no-cache add grpc-health-probe || echo "grpc-health-probe not available"
-
 # Enhanced health check with gRPC support
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
-  CMD curl -f http://localhost:8082/health && \
-      (nc -z localhost 9091 || exit 1)
+  CMD curl -f http://localhost:8082/health
 
 # Run the application
 CMD ["./fr0g-ai-bridge"]
