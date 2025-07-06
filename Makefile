@@ -106,10 +106,10 @@ run-io:
 
 # Generate protobuf files
 proto:
-	@echo "🔧 Generating protobuf files..."
-	@cd fr0g-ai-aip && $(MAKE) proto || echo "⚠️  Protobuf generation failed for AIP"
-	@cd fr0g-ai-bridge && $(MAKE) proto || echo "⚠️  Protobuf generation failed for Bridge"
-	@cd fr0g-ai-io && $(MAKE) proto || echo "⚠️  Protobuf generation failed for IO"
+	@echo "Generating protobuf files..."
+	@cd fr0g-ai-aip && $(MAKE) proto || echo "Protobuf generation failed for AIP"
+	@cd fr0g-ai-bridge && $(MAKE) proto || echo "Protobuf generation failed for Bridge"
+	@cd fr0g-ai-io && $(MAKE) proto || echo "Protobuf generation failed for IO"
 
 # Health check all services
 health:
