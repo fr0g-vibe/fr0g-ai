@@ -60,7 +60,7 @@ Inter-service communication uses Docker network names:
 ### Verification Commands
 ```bash
 # Check all service health
-make health-quick
+make health
 
 # Check Docker container status
 docker-compose ps

@@ -98,7 +98,7 @@ make health            # Check service health
 ```bash
 make dev               # Start development environment
 make docker-logs       # View container logs
-make docker-clean      # Clean containers and volumes
+make docker-down       # Stop services
 ```
 
 ## Service Development

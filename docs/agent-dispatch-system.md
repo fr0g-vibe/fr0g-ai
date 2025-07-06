@@ -253,7 +253,7 @@ tmux send-keys -t fr0g-ai:8 "docker-compose down && docker-compose up -d" C-m
 
 # Health checks
 tmux send-keys -t fr0g-ai:8 "make health" C-m
-tmux send-keys -t fr0g-ai:8 "make health-quick" C-m
+tmux send-keys -t fr0g-ai:8 "make health" C-m
 ```
 
 #### General Shell Operations (Window 9)
