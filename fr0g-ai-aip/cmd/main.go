@@ -34,8 +34,8 @@ func main() {
 	}
 
 	// Validate configuration
-	if err := cfg.Validate(); err != nil {
-		log.Fatalf("Configuration validation failed: %v", err)
+	if validationErrors := cfg.Validate(); validationErrors != nil {
+		log.Fatalf("Configuration validation failed: %v", validationErrors)
 	}
 
 	log.Println("STARTING: fr0g.ai AIP servers...")

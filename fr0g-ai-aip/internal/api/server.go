@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/community"
@@ -125,8 +126,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // handleError provides consistent error response handling
 func (s *Server) handleError(w http.ResponseWriter, err error, defaultStatus int) {
+	w.Header().Set("Content-Type", "application/json")
+	
 	if validationErr, ok := err.(sharedconfig.ValidationErrors); ok {
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"error":   "validation_failed",
@@ -136,8 +138,17 @@ func (s *Server) handleError(w http.ResponseWriter, err error, defaultStatus int
 		return
 	}
 
+	// Handle validation error strings (reject whitespace-only inputs)
+	if err != nil && (err.Error() == "name is required" || err.Error() == "persona_id is required") {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error":   "validation_failed",
+			"message": err.Error(),
+		})
+		return
+	}
+
 	// Handle other specific error types here
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(defaultStatus)
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"error":   "request_failed",
@@ -334,12 +345,12 @@ func (s *Server) identitiesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Validate required fields
-		if identity.Name == "" {
+		// Validate required fields (reject empty and whitespace-only strings)
+		if len(strings.TrimSpace(identity.Name)) == 0 {
 			s.handleError(w, fmt.Errorf("name is required"), http.StatusBadRequest)
 			return
 		}
-		if identity.PersonaId == "" {
+		if len(strings.TrimSpace(identity.PersonaId)) == 0 {
 			s.handleError(w, fmt.Errorf("persona_id is required"), http.StatusBadRequest)
 			return
 		}
@@ -600,6 +611,9 @@ func (s *Server) getCommunityService() *community.Service {
 
 // StartServerWithConfig starts the HTTP server with full configuration
 func StartServerWithConfig(cfg *config.Config, service *persona.Service, registryClient *registry.RegistryClient) error {
+	if service == nil {
+		return fmt.Errorf("persona service is required")
+	}
 	server := NewServer(cfg, service, registryClient)
 	return server.Start()
 }
