@@ -488,10 +488,9 @@ generate_summary() {
     fi
     
     echo -e "\n${BLUE}EMERGENCY ACTIONS REQUIRED:${NC}"
-    echo -e "  make diagnose-registry      # Diagnose registry API issues"
-    echo -e "  make diagnose-grpc          # Diagnose gRPC health issues"
-    echo -e "  make diagnose-ports         # Check port configuration"
+    echo -e "  make diagnose               # Run all diagnostic checks"
     echo -e "  docker-compose logs         # Check service logs for errors"
+    echo -e "  make docker-down && make docker-up  # Restart all services"
 }
 
 # Main test execution
