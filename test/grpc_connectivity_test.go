@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -94,7 +93,7 @@ func TestGRPCConnectivity(t *testing.T) {
 
 // Cleanup stops all services and cleans up resources
 func (suite *GRPCConnectivityTestSuite) Cleanup() {
-	for serviceName, service := range suite.services {
+	for _, service := range suite.services {
 		if service.Client != nil {
 			service.Client.Close()
 		}
