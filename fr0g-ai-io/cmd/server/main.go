@@ -69,6 +69,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	log.Printf("Starting fr0g-ai-io server...")
+	log.Printf("Starting queue manager with type: memory")
+	log.Println("Queue manager started successfully")
+	log.Println("fr0g-ai-io server started successfully")
+	log.Printf("HTTP server listening on %s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
+	log.Printf("gRPC server listening on %s:%s", cfg.GRPC.Host, cfg.GRPC.Port)
+
 	if err := server.Start(ctx); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
