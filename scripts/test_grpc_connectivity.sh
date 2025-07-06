@@ -122,9 +122,9 @@ echo -e "\n${BLUE}Services running: $services_running/4${NC}"
 if [ $services_running -eq 0 ]; then
     echo -e "${RED}No gRPC services are running!${NC}"
     echo -e "${YELLOW}Please start the services first:${NC}"
-    echo "  - fr0g-ai-aip: go run fr0g-ai-aip/cmd/server/main.go"
+    echo "  - fr0g-ai-aip: go run fr0g-ai-aip/cmd/main.go"
     echo "  - fr0g-ai-io: go run fr0g-ai-io/cmd/server/main.go"
-    echo "  - fr0g-ai-master-control: go run fr0g-ai-master-control/cmd/server/main.go"
+    echo "  - fr0g-ai-master-control: go run fr0g-ai-master-control/cmd/main.go"
     echo "  - fr0g-ai-bridge: go run fr0g-ai-bridge/cmd/bridge/main.go"
     exit 1
 fi

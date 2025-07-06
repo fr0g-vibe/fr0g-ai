@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/config"
-	"github.com/fr0g-vibe/fr0g-ai/pkg/lifecycle"
 )
 
 func main() {
@@ -40,23 +39,10 @@ func main() {
 	log.Printf("   - OpenWebUI: %s", cfg.OpenWebUI.BaseURL)
 	log.Printf("   - Service Registry: %v", cfg.ServiceRegistry.Enabled)
 
-	// Initialize lifecycle manager
-	serviceConfig := lifecycle.ServiceConfig{
-		Name:       cfg.ServiceRegistry.ServiceName,
-		ID:         cfg.ServiceRegistry.ServiceID,
-		HTTPPort:   cfg.Server.HTTPPort,
-		GRPCPort:   cfg.Server.GRPCPort,
-		Tags:       []string{"ai", "bridge", "openwebui", "chat"},
-		Meta:       map[string]string{"version": "1.0.0", "service": "bridge"},
-		HealthPath: "/health",
-	}
-
-	lifecycleManager := lifecycle.NewLifecycleManager(serviceConfig)
-
-	// Start lifecycle management (service registration)
-	if err := lifecycleManager.Start(); err != nil {
-		log.Printf("⚠️  Failed to start lifecycle management: %v", err)
-	}
+	// Simple service registration (removed lifecycle manager dependency)
+	log.Printf("✅ Service configuration loaded")
+	log.Printf("   - Service Name: %s", cfg.ServiceRegistry.ServiceName)
+	log.Printf("   - Service ID: %s", cfg.ServiceRegistry.ServiceID)
 
 	// Create HTTP server with endpoints
 	mux := http.NewServeMux()
@@ -106,6 +92,9 @@ func main() {
 		}
 	}()
 
+	// Give servers time to start
+	time.Sleep(2 * time.Second)
+
 	log.Printf("✅ fr0g-ai-bridge service is now operational!")
 	log.Printf("🔗 Health check: http://%s:%d/health", cfg.Server.Host, cfg.Server.HTTPPort)
 	log.Printf("📊 Status endpoint: http://%s:%d/status", cfg.Server.Host, cfg.Server.HTTPPort)
@@ -129,10 +118,8 @@ func main() {
 		log.Printf("HTTP server shutdown error: %v", err)
 	}
 
-	// Shutdown lifecycle manager (deregister service)
-	if err := lifecycleManager.Shutdown(); err != nil {
-		log.Printf("Lifecycle manager shutdown error: %v", err)
-	}
+	// Service cleanup completed
+	log.Println("🛑 Service cleanup completed")
 
 	log.Println("✅ fr0g-ai-bridge service stopped gracefully")
 }

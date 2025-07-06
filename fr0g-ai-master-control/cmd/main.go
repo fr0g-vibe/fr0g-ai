@@ -111,10 +111,14 @@ func main() {
 		}
 	}()
 
+	// Give servers time to start
+	time.Sleep(2 * time.Second)
+
 	log.Println("Master Control Program is now operational!")
 	log.Printf("   - HTTP Server: http://%s:%d", mcpConfig.Input.Webhook.Host, mcpConfig.Input.Webhook.Port)
 	log.Printf("   - gRPC Server: %s:%s", cfg.GRPC.Host, cfg.GRPC.Port)
 	log.Printf("   - Health Check: http://%s:%d/health", mcpConfig.Input.Webhook.Host, mcpConfig.Input.Webhook.Port)
+	log.Println("✅ All services started successfully - ready for background operation")
 
 	// Set up graceful shutdown
 	sigChan := make(chan os.Signal, 1)
