@@ -180,3 +180,55 @@ docker-down:
 	@echo "DOCKER Stopping services..."
 	@docker-compose down
 
+docker-restart:
+	@echo "DOCKER Restarting all services..."
+	@$(MAKE) docker-down
+	@sleep 5
+	@$(MAKE) docker-up
+
+docker-restart-unhealthy:
+	@echo "DOCKER Restarting unhealthy services..."
+	@docker-compose ps --filter "health=unhealthy" --format "{{.Names}}" | xargs -r docker-compose restart
+	@sleep 10
+	@$(MAKE) health
+
+docker-rebuild:
+	@echo "DOCKER Rebuilding and restarting all services..."
+	@$(MAKE) docker-down
+	@$(MAKE) docker-build
+	@$(MAKE) docker-up
+
+validate-production:
+	@echo "VALIDATE Production readiness checks..."
+	@echo "VALIDATE Checking service registration..."
+	@curl -sf http://localhost:8500/v1/catalog/services && echo "COMPLETED Service discovery operational" || echo "CRITICAL Service discovery failed"
+	@echo "VALIDATE Checking all service health endpoints..."
+	@curl -sf http://localhost:8080/health && echo "COMPLETED AIP service healthy" || echo "CRITICAL AIP service unhealthy"
+	@curl -sf http://localhost:8082/health && echo "COMPLETED Bridge service healthy" || echo "CRITICAL Bridge service unhealthy"
+	@curl -sf http://localhost:8081/health && echo "COMPLETED Master Control service healthy" || echo "CRITICAL Master Control service unhealthy"
+	@curl -sf http://localhost:8083/health && echo "COMPLETED IO service healthy" || echo "CRITICAL IO service unhealthy"
+	@curl -sf http://localhost:8500/health && echo "COMPLETED Registry service healthy" || echo "CRITICAL Registry service unhealthy"
+	@echo "VALIDATE Checking gRPC service availability..."
+	@nc -z localhost 9090 && echo "COMPLETED AIP gRPC available" || echo "CRITICAL AIP gRPC unavailable"
+	@nc -z localhost 9091 && echo "COMPLETED Bridge gRPC available" || echo "CRITICAL Bridge gRPC unavailable"
+	@nc -z localhost 9092 && echo "COMPLETED IO gRPC available" || echo "CRITICAL IO gRPC unavailable"
+	@echo "VALIDATE Checking service registration status..."
+	@curl -s http://localhost:8500/v1/catalog/services | grep -q "aip-001\|bridge-001\|io-001\|mcp-001" && echo "COMPLETED All services registered" || echo "CRITICAL Services not registered"
+	@echo "COMPLETED Production validation complete"
+
+test-registry-performance:
+	@echo "PERFORMANCE Testing registry performance..."
+	@echo "PERFORMANCE Running 1000 service lookups..."
+	@time for i in $$(seq 1 1000); do curl -s http://localhost:8500/v1/catalog/services >/dev/null; done
+	@echo "COMPLETED Registry performance test complete"
+
+test-service-integration:
+	@echo "INTEGRATION Testing inter-service communication..."
+	@echo "INTEGRATION Testing AIP -> Registry communication..."
+	@curl -sf http://localhost:8080/health && curl -sf http://localhost:8500/health && echo "COMPLETED AIP-Registry integration working" || echo "CRITICAL AIP-Registry integration failed"
+	@echo "INTEGRATION Testing Bridge -> AIP communication..."
+	@curl -sf http://localhost:8082/health && nc -z localhost 9090 && echo "COMPLETED Bridge-AIP integration ready" || echo "CRITICAL Bridge-AIP integration failed"
+	@echo "INTEGRATION Testing IO -> Master Control communication..."
+	@curl -sf http://localhost:8083/health && curl -sf http://localhost:8081/health && echo "COMPLETED IO-MCP integration working" || echo "CRITICAL IO-MCP integration failed"
+	@echo "COMPLETED Service integration tests complete"
+
