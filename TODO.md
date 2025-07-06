@@ -10,10 +10,10 @@
 - **fr0g-ai-io**: ⚠️ CRITICAL - HTTP healthy but gRPC unhealthy
 
 ### CRITICAL BLOCKERS REQUIRING IMMEDIATE ATTENTION
-1. **Service Registry API Implementation** - CRITICAL PRIORITY (HTTP 405 on registration endpoint)
-2. **gRPC Service Health Crisis** - CRITICAL PRIORITY (all gRPC services unhealthy)
-3. **Bridge Chat Completions API** - HIGH PRIORITY (404 errors on /v1/chat/completions)
-4. **Service Discovery Integration** - HIGH PRIORITY (no services being discovered)
+1. **Service Registry API Implementation** - CRITICAL PRIORITY (HTTP 405 on registration endpoint - CONFIRMED)
+2. **Bridge Chat Completions API** - CRITICAL PRIORITY (404 errors on /v1/chat/completions - CONFIRMED)
+3. **gRPC Service Health Crisis** - HIGH PRIORITY (all gRPC services not responding properly - CONFIRMED)
+4. **Port Configuration Issues** - HIGH PRIORITY (Bridge using 9092 instead of 9091 - CONFIRMED)
 
 ### COMPLETED INFRASTRUCTURE
 - **pkg/config System**: FULLY OPERATIONAL - All validation functions, types, and documentation ready for AIP migration
@@ -1081,7 +1081,8 @@ Test Execution Time: 0.005s (excellent performance)
 
 **PRIORITY 1: Service Registry API Emergency Implementation**
 - **TASK**: Fix missing POST handler for service registration endpoint
-- **STATUS**: Registry HTTP healthy but `/v1/agent/service/register` returning HTTP 405
+- **STATUS**: Registry HTTP healthy but `/v1/agent/service/register` returning HTTP 405 (CONFIRMED)
+- **CRITICAL ISSUE**: Service registration API completely non-functional
 - **EMERGENCY ACTIONS**:
   - Add POST method handler for `/v1/agent/service/register` endpoint
   - Fix HTTP method routing to accept POST requests for registration
@@ -1090,20 +1091,38 @@ Test Execution Time: 0.005s (excellent performance)
   - Test service registration workflow end-to-end
 - **TARGET**: Service registration endpoint accepting POST requests and storing services
 
-**PRIORITY 2: gRPC Service Health Emergency Repair**
+**PRIORITY 3: gRPC Service Health Emergency Repair**
 - **TASK**: Diagnose and fix all gRPC service startup failures
-- **STATUS**: All gRPC services unhealthy, ports not responding
+- **STATUS**: All gRPC services unhealthy, ports not responding (CONFIRMED)
+- **DIAGNOSTIC RESULTS**:
+  - AIP gRPC: Port 9090 open but not responding to grpcurl
+  - Bridge gRPC: Port 9091 closed (using 9092 instead)
+  - IO gRPC: Port 9093 open but not responding to grpcurl
 - **EMERGENCY ACTIONS**:
-  - Check gRPC server initialization in all services (AIP, Bridge, IO)
-  - Verify gRPC port binding and Docker port mapping
-  - Fix any gRPC server startup errors or configuration issues
-  - Test gRPC connectivity and health check implementations
-  - Validate gRPC service registration and reflection
+  - Fix Bridge port configuration (9092 → 9091)
+  - Check gRPC server initialization in all services
+  - Verify gRPC health check implementations
+  - Test gRPC connectivity and service registration
 - **TARGET**: All gRPC services responding and healthy
 
-**PRIORITY 3: Bridge Chat Completions Emergency Fix**
+**PRIORITY 4: Port Configuration Emergency Audit**
+- **TASK**: Fix port configuration mismatches
+- **STATUS**: Bridge using port 9092 instead of configured 9091 (CONFIRMED)
+- **CONFIGURATION ISSUES**:
+  - Bridge service configured for 9091 but running on 9092
+  - Docker port mapping inconsistency
+  - Need to verify all services using correct assigned ports
+- **EMERGENCY ACTIONS**:
+  - Fix Bridge service port configuration
+  - Update Docker port mapping consistency
+  - Verify all service port assignments
+  - Test all service endpoints on correct ports
+- **TARGET**: All services on assigned ports, zero port conflicts
+
+**PRIORITY 2: Bridge Chat Completions Emergency Fix**
 - **TASK**: Fix missing chat completions endpoint returning 404
-- **STATUS**: Bridge HTTP healthy but `/v1/chat/completions` not found
+- **STATUS**: Bridge HTTP healthy but `/v1/chat/completions` not found (CONFIRMED)
+- **CRITICAL ISSUE**: OpenWebUI integration completely broken
 - **EMERGENCY ACTIONS**:
   - Implement or fix `/v1/chat/completions` endpoint routing
   - Add proper HTTP handler for chat completions API
