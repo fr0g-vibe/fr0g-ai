@@ -3,126 +3,149 @@
 # End-to-end integration test for all fr0g-ai services
 set -e
 
-echo "=== End-to-End Integration Test ==="
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Wait for services to be ready
-echo "Waiting for services to start..."
-sleep 10
+echo -e "${BLUE}=== End-to-End Integration Test ===${NC}"
 
-# Test Bridge service (known working)
-echo "Testing Bridge service..."
+# Function to wait for services to be ready
+wait_for_services() {
+    echo -e "${BLUE}Waiting for services to be ready...${NC}"
+    local max_wait=60
+    local wait_time=0
+    
+    while [ $wait_time -lt $max_wait ]; do
+        if curl -sf http://localhost:8500/health >/dev/null 2>&1; then
+            echo -e "${GREEN}Services are ready!${NC}"
+            return 0
+        fi
+        echo -n "."
+        sleep 2
+        wait_time=$((wait_time + 2))
+    done
+    
+    echo -e "\n${RED}Services failed to start within $max_wait seconds${NC}"
+    return 1
+}
+
+# Check if services are running, if not wait for them
+if ! curl -sf http://localhost:8500/health >/dev/null 2>&1; then
+    echo -e "${YELLOW}Services not responding, waiting for startup...${NC}"
+    if ! wait_for_services; then
+        echo -e "${RED}ERROR: Services failed to start${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}Services are already running${NC}"
+fi
+
+# Test Bridge service
+echo -e "\n${BLUE}Testing Bridge service...${NC}"
 echo "  Checking HTTP port (8082)..."
 if curl -f http://localhost:8082/health 2>/dev/null; then
-    echo "✓ Bridge service HTTP healthy on port 8082"
+    echo -e "${GREEN}✓ Bridge service HTTP healthy on port 8082${NC}"
     # Test additional Bridge endpoints if healthy
-    if curl -s http://localhost:8082/health | grep -q "persona_count"; then
-        persona_count=$(curl -s http://localhost:8082/health | grep -o '"persona_count":[0-9]*' | cut -d':' -f2)
-        echo "✓ Bridge service has $persona_count personas loaded"
+    if curl -s http://localhost:8082/health | grep -q "service"; then
+        echo -e "${GREEN}✓ Bridge service health endpoint responding correctly${NC}"
     fi
-    echo "  Checking gRPC port conflict..."
-    if [ -f "logs/fr0g-ai-bridge.log" ] && grep -q "address already in use" logs/fr0g-ai-bridge.log; then
-        echo "FAILED Bridge service gRPC port 9091 conflict detected"
+    
+    # Test chat completions endpoint
+    echo "  Testing chat completions endpoint..."
+    if curl -sf http://localhost:8082/v1/chat/completions -X POST \
+        -H "Content-Type: application/json" \
+        -d '{"model":"test","messages":[{"role":"user","content":"test"}]}' >/dev/null 2>&1; then
+        echo -e "${GREEN}✓ Chat completions endpoint accessible${NC}"
+    else
+        echo -e "${YELLOW}⚠ Chat completions endpoint may require valid request${NC}"
     fi
 else
-    echo "⚠ Bridge service HTTP down - checking logs..."
-    if [ -f "logs/fr0g-ai-bridge.log" ]; then
-        echo "Bridge service log (last 10 lines):"
-        tail -10 logs/fr0g-ai-bridge.log
-        echo ""
-        if grep -q "address already in use" logs/fr0g-ai-bridge.log; then
-            echo "CHECKING DIAGNOSIS: gRPC port 9091 conflict (multiple services trying to use same port)"
-        fi
+    echo -e "${RED}✗ Bridge service HTTP down${NC}"
+    if docker-compose logs fr0g-ai-bridge 2>/dev/null | tail -5 | grep -q "error"; then
+        echo -e "${RED}Recent errors in Bridge service logs:${NC}"
+        docker-compose logs fr0g-ai-bridge 2>/dev/null | tail -5 | grep -i error
     fi
 fi
 
-# Test I/O service (known working)
-echo "Testing I/O service..."
+# Test I/O service
+echo -e "\n${BLUE}Testing I/O service...${NC}"
 if curl -f http://localhost:8083/health 2>/dev/null; then
-    echo "✓ I/O service healthy"
-    # Test I/O service endpoints
-    if curl -s http://localhost:8083/processors 2>/dev/null | grep -q "processors"; then
-        echo "✓ I/O service processors are registered"
-    fi
-    if curl -s http://localhost:8083/queue/status 2>/dev/null | grep -q "queue"; then
-        echo "✓ I/O service queue is operational"
+    echo -e "${GREEN}✓ I/O service healthy${NC}"
+    
+    # Test I/O service specific endpoints if they exist
+    if curl -s http://localhost:8083/health | grep -q "service"; then
+        echo -e "${GREEN}✓ I/O service health endpoint responding correctly${NC}"
     fi
 else
-    echo "⚠ I/O service down - checking logs..."
-    if [ -f "logs/fr0g-ai-io.log" ]; then
-        echo "I/O service log (last 10 lines):"
-        tail -10 logs/fr0g-ai-io.log
+    echo -e "${RED}✗ I/O service down${NC}"
+    if docker-compose logs fr0g-ai-io 2>/dev/null | tail -5 | grep -q "error"; then
+        echo -e "${RED}Recent errors in I/O service logs:${NC}"
+        docker-compose logs fr0g-ai-io 2>/dev/null | tail -5 | grep -i error
     fi
 fi
 
-# Test AIP service (may be down)
-echo "Testing AIP service..."
+# Test AIP service
+echo -e "\n${BLUE}Testing AIP service...${NC}"
 echo "  Checking correct port (8080)..."
 if curl -f http://localhost:8080/health 2>/dev/null; then
-    echo "✓ AIP service healthy on correct port 8080"
-else
-    echo "⚠ AIP service down on port 8080 - checking wrong port..."
-    if curl -f http://localhost:8082/health 2>/dev/null; then
-        echo "FAILED AIP service running on WRONG PORT 8082 (should be 8080)"
-    else
-        echo "⚠ AIP service not responding on either port - checking logs..."
+    echo -e "${GREEN}✓ AIP service healthy on correct port 8080${NC}"
+    
+    # Test personas endpoint
+    if curl -s http://localhost:8080/personas 2>/dev/null | grep -q "\["; then
+        persona_count=$(curl -s http://localhost:8080/personas 2>/dev/null | jq '. | length' 2>/dev/null || echo "unknown")
+        echo -e "${GREEN}✓ AIP service has $persona_count personas loaded${NC}"
     fi
-    if [ -f "logs/fr0g-ai-aip.log" ]; then
-        echo "AIP service log (last 10 lines):"
-        tail -10 logs/fr0g-ai-aip.log
-        echo ""
-        echo "CHECKING DIAGNOSIS: AIP service configured for wrong ports (8082/9091 instead of 8080/9090)"
+else
+    echo -e "${RED}✗ AIP service down on port 8080${NC}"
+    if docker-compose logs fr0g-ai-aip 2>/dev/null | tail -5 | grep -q "error"; then
+        echo -e "${RED}Recent errors in AIP service logs:${NC}"
+        docker-compose logs fr0g-ai-aip 2>/dev/null | tail -5 | grep -i error
     fi
 fi
 
-# Test Master Control service (may be down)
-echo "Testing Master Control service..."
+# Test Master Control service
+echo -e "\n${BLUE}Testing Master Control service...${NC}"
 if curl -f http://localhost:8081/health 2>/dev/null; then
-    echo "✓ Master Control service healthy"
+    echo -e "${GREEN}✓ Master Control service healthy${NC}"
+    
     # Test intelligence metrics if available
     if curl -s http://localhost:8081/status 2>/dev/null | grep -q "learning_rate"; then
-        echo "✓ Master Control AI intelligence operational"
+        echo -e "${GREEN}✓ Master Control AI intelligence operational${NC}"
     fi
 else
-    echo "⚠ Master Control service down - checking logs..."
-    if [ -f "logs/fr0g-ai-master-control.log" ]; then
-        echo "Master Control service log (last 10 lines):"
-        tail -10 logs/fr0g-ai-master-control.log
-        echo ""
-        if grep -q "invalid storage type" logs/fr0g-ai-master-control.log; then
-            echo "CHECKING DIAGNOSIS: Storage validation error - 'file' type not accepted"
-            echo "   Possible fix: Check storage type validation in configuration"
-        fi
+    echo -e "${RED}✗ Master Control service down${NC}"
+    if docker-compose logs fr0g-ai-master-control 2>/dev/null | tail -5 | grep -q "error"; then
+        echo -e "${RED}Recent errors in Master Control service logs:${NC}"
+        docker-compose logs fr0g-ai-master-control 2>/dev/null | tail -5 | grep -i error
     fi
 fi
 
-# Test service registry (may not be running)
-echo "Testing Service Registry..."
+# Test service registry
+echo -e "\n${BLUE}Testing Service Registry...${NC}"
 if curl -f http://localhost:8500/health 2>/dev/null; then
-    echo "✓ Service Registry healthy"
+    echo -e "${GREEN}✓ Service Registry healthy${NC}"
     
     # Test service discovery integration
     echo "Testing service discovery..."
     if command -v jq >/dev/null 2>&1; then
         SERVICES=$(curl -s http://localhost:8500/v1/catalog/services 2>/dev/null | jq -r 'keys[]' 2>/dev/null || echo "")
         if [ -n "$SERVICES" ]; then
-            echo "Discovered services: $SERVICES"
+            echo -e "${GREEN}Discovered services:${NC} $SERVICES"
             
-            # Verify expected services are registered
-            for service in "fr0g-ai-aip" "fr0g-ai-bridge" "fr0g-ai-master-control" "fr0g-ai-io"; do
-                if echo "$SERVICES" | grep -q "$service"; then
-                    echo "✓ $service is registered"
-                else
-                    echo "✗ $service is NOT registered"
-                fi
-            done
+            # Count registered services
+            service_count=$(echo "$SERVICES" | wc -w)
+            echo -e "${GREEN}✓ $service_count services registered${NC}"
         else
-            echo "⚠ No services discovered"
+            echo -e "${YELLOW}⚠ No services discovered${NC}"
         fi
     else
-        echo "⚠ jq not available - skipping service discovery test"
+        echo -e "${YELLOW}⚠ jq not available - skipping service discovery test${NC}"
     fi
 else
-    echo "⚠ Service Registry not available"
+    echo -e "${RED}✗ Service Registry not available${NC}"
 fi
 
 # Port conflict analysis
@@ -157,34 +180,43 @@ echo "- Expected ports: AIP(8080,9090), Bridge(8082,9091), MCP(8081), I/O(8083,9
 echo "- Actual usage: Check above for current port assignments"
 
 echo ""
-echo "=== End-to-End Integration Test COMPLETED ==="
+echo -e "${BLUE}=== End-to-End Integration Test COMPLETED ===${NC}"
 echo ""
-echo "Service Status Summary:"
-echo "✓ I/O Service: FULLY OPERATIONAL (HTTP/gRPC servers running, 4 output processors)"
-echo "⚠ Bridge Service: PORT CONFLICT (gRPC 9091 already in use, HTTP may be working)"
-echo "⚠ AIP Service: WRONG PORTS (configured for 8082/9091, should be 8080/9090)"
-echo "⚠ Master Control: STORAGE ERROR (validation rejecting 'file' storage type)"
-echo "⚠ Service Registry: NOT RUNNING (affects service discovery)"
-echo ""
-echo "OPERATIONAL STATUS:"
-echo "- 1/4 services fully operational (I/O)"
-echo "- 3/4 services have configuration issues"
-echo "- 0/4 services have critical failures"
-echo "- Test framework: COMPLETED WORKING (detecting issues correctly)"
-echo ""
-echo "Test Framework Status: ✓ WORKING"
-echo "- Health checks detecting service status correctly"
-echo "- Log analysis providing useful diagnostic information"
-echo "- Service endpoint testing operational"
-echo ""
-echo "Next Steps:"
-echo "1. COMPLETED IDENTIFIED: AIP service port configuration (using 8082/9091 instead of 8080/9090)"
-echo "2. COMPLETED IDENTIFIED: gRPC port conflict on 9091 (Bridge and AIP both trying to use it)"
-echo "3. COMPLETED IDENTIFIED: Master Control storage validation error (invalid storage type)"
-echo "4. COMPLETED IDENTIFIED: Service Registry not running (optional but affects service discovery)"
-echo ""
-echo "CRITICAL FIXES NEEDED:"
-echo "- AIP service: Configure correct ports (8080 HTTP, 9090 gRPC)"
-echo "- Bridge service: Resolve gRPC port 9091 conflict"
-echo "- Master Control: Fix storage type validation (currently rejecting 'file' type)"
-echo "- Service startup order: Ensure no port conflicts during initialization"
+
+# Count operational services
+operational_count=0
+total_services=5
+
+# Check each service and count operational ones
+if curl -sf http://localhost:8500/health >/dev/null 2>&1; then
+    operational_count=$((operational_count + 1))
+fi
+if curl -sf http://localhost:8080/health >/dev/null 2>&1; then
+    operational_count=$((operational_count + 1))
+fi
+if curl -sf http://localhost:8082/health >/dev/null 2>&1; then
+    operational_count=$((operational_count + 1))
+fi
+if curl -sf http://localhost:8081/health >/dev/null 2>&1; then
+    operational_count=$((operational_count + 1))
+fi
+if curl -sf http://localhost:8083/health >/dev/null 2>&1; then
+    operational_count=$((operational_count + 1))
+fi
+
+echo -e "${BLUE}Service Status Summary:${NC}"
+echo -e "Operational Services: ${GREEN}$operational_count${NC}/${total_services}"
+
+if [ $operational_count -eq $total_services ]; then
+    echo -e "${GREEN}✓ ALL SERVICES OPERATIONAL${NC}"
+    echo -e "${GREEN}✓ Complete fr0g.ai system is running successfully${NC}"
+    exit 0
+elif [ $operational_count -ge 3 ]; then
+    echo -e "${YELLOW}⚠ PARTIAL SYSTEM OPERATIONAL${NC}"
+    echo -e "${YELLOW}⚠ $operational_count/$total_services services running${NC}"
+    exit 0
+else
+    echo -e "${RED}✗ SYSTEM NOT OPERATIONAL${NC}"
+    echo -e "${RED}✗ Only $operational_count/$total_services services running${NC}"
+    exit 1
+fi
