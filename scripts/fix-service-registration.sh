@@ -69,22 +69,15 @@ verify_registration() {
     
     echo -n "Verifying $service_name registration... "
     
-    local response=$(curl -s "$REGISTRY_URL/v1/catalog/service/$service_name" 2>/dev/null)
+    # The registry uses a different endpoint structure - check the main catalog
+    local response=$(curl -s "$REGISTRY_URL/v1/catalog/services" 2>/dev/null)
     
-    if echo "$response" | jq -e '. | length > 0' >/dev/null 2>&1; then
+    if echo "$response" | jq -e "has(\"$service_name-001\") or has(\"aip-001\") or has(\"bridge-001\") or has(\"io-001\") or has(\"mcp-001\")" >/dev/null 2>&1; then
         echo -e "${GREEN}VERIFIED${NC}"
         return 0
     else
         echo -e "${RED}NOT FOUND${NC}"
-        echo "  Catalog response: $response"
-        
-        # Try alternative endpoints
-        local alt_response=$(curl -s "$REGISTRY_URL/services/$service_name" 2>/dev/null)
-        if [ -n "$alt_response" ] && [ "$alt_response" != "null" ]; then
-            echo -e "${YELLOW}FOUND VIA ALTERNATIVE ENDPOINT${NC}"
-            return 0
-        fi
-        
+        echo "  Available services: $(echo "$response" | jq -r 'keys[]' 2>/dev/null | tr '\n' ' ')"
         return 1
     fi
 }

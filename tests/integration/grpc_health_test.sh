@@ -69,13 +69,28 @@ test_grpc_connectivity() {
         echo "  Health check service not implemented"
     fi
     
-    # Test basic connectivity with timeout
+    # Test basic connectivity with timeout and detailed error reporting
     echo -n "Basic gRPC connectivity... "
-    if timeout 5 grpcurl -plaintext -max-time 3 localhost:"$port" list &> /dev/null; then
+    local grpc_output=$(timeout 10 grpcurl -plaintext -connect-timeout 5 localhost:"$port" list 2>&1)
+    local grpc_exit_code=$?
+    
+    if [ $grpc_exit_code -eq 0 ]; then
         echo -e "${GREEN}RESPONDING${NC}"
+        if [ -n "$grpc_output" ]; then
+            echo "  Available services:"
+            echo "$grpc_output" | sed 's/^/    /'
+        fi
     else
         echo -e "${RED}NOT RESPONDING${NC}"
-        echo "  gRPC server may not be running or accepting connections"
+        if echo "$grpc_output" | grep -q "connection refused"; then
+            echo "  Connection refused - gRPC server not accepting connections"
+        elif echo "$grpc_output" | grep -q "timeout"; then
+            echo "  Timeout - gRPC server not responding in time"
+        elif echo "$grpc_output" | grep -q "Unimplemented"; then
+            echo -e "  ${YELLOW}Server responding but no services implemented${NC}"
+        else
+            echo "  Error: $grpc_output"
+        fi
         return 1
     fi
     

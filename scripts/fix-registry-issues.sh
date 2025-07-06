@@ -40,12 +40,12 @@ test_registry_endpoints() {
         echo -e "${RED}FAILED${NC}"
     fi
     
-    # Test registration endpoint with minimal payload
-    echo -n "Registration endpoint (minimal test)... "
+    # Test registration endpoint with proper payload (address is required)
+    echo -n "Registration endpoint (proper test)... "
     local test_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/agent/service/register" \
         -X POST \
         -H "Content-Type: application/json" \
-        -d '{"ID":"test-minimal","Name":"test"}' 2>/dev/null)
+        -d '{"ID":"test-minimal","Name":"test","Address":"localhost","Port":9999}' 2>/dev/null)
     
     local test_code="${test_response: -3}"
     if [ "$test_code" = "200" ] || [ "$test_code" = "201" ]; then
