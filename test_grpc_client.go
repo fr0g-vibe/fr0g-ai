@@ -6,129 +6,159 @@ import (
 	"log"
 	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	pb "github.com/fr0g-vibe/fr0g.ai/fr0g-ai-aip/internal/grpc/pb"
+	"fr0g-ai-io/internal/grpc"
 )
 
 func main() {
-	// Connect to the gRPC server
-	conn, err := grpc.Dial("localhost:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Fatalf("Failed to connect to gRPC server: %v", err)
-	}
-	defer conn.Close()
+	fmt.Println("=== gRPC MCP Client Test for fr0g-ai-io ===")
+	fmt.Println()
 
-	client := pb.NewPersonaServiceClient(conn)
+	// Create MCP client configuration
+	config := &grpc.MCPClientConfig{
+		Host:        "localhost",
+		Port:        9092, // Master-control gRPC port
+		Timeout:     30 * time.Second,
+		MaxRetries:  3,
+		ServiceName: "fr0g-ai-io",
+	}
+
+	// Create and connect MCP client
+	fmt.Println("Test 1: Connecting to master-control...")
+	client, err := grpc.NewMCPGRPCClient(config)
+	if err != nil {
+		log.Printf("Failed to connect to master-control: %v", err)
+		fmt.Println("Note: Make sure master-control is running on localhost:9092")
+		return
+	}
+	defer client.Close()
+
+	fmt.Printf("✓ Connected to master-control at %s:%d\n", config.Host, config.Port)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fmt.Println("=== gRPC Client Test for fr0g-ai-aip ===")
-	fmt.Println()
-
-	// Test 1: Create a persona
-	fmt.Println("Test 1: Creating a persona...")
-	createReq := &pb.CreatePersonaRequest{
-		Persona: &pb.Persona{
-			Name:   "gRPC Test Persona",
-			Topic:  "gRPC Testing",
-			Prompt: "You are a test persona created via gRPC client",
-			Context: map[string]string{
-				"test_type": "grpc_client",
-				"timestamp": time.Now().Format(time.RFC3339),
-			},
-			Rag: []string{"grpc_test_document"},
+	// Test 2: Send SMS input event
+	fmt.Println("\nTest 2: Sending SMS input event...")
+	smsEvent := &grpc.InputEvent{
+		ID:      fmt.Sprintf("test-sms-%d", time.Now().Unix()),
+		Type:    "sms",
+		Source:  "+1234567890",
+		Content: "Test SMS message from gRPC client",
+		Metadata: map[string]interface{}{
+			"test_type": "grpc_client",
+			"timestamp": time.Now().Format(time.RFC3339),
 		},
+		Timestamp: time.Now(),
+		Priority:  1,
 	}
 
-	createResp, err := client.CreatePersona(ctx, createReq)
+	smsResp, err := client.SendInputEvent(ctx, smsEvent)
 	if err != nil {
-		log.Printf("Failed to create persona: %v", err)
-		return
-	}
-
-	fmt.Printf("✓ Created persona with ID: %s\n", createResp.Persona.Id)
-	personaID := createResp.Persona.Id
-
-	// Test 2: Get the persona
-	fmt.Println("\nTest 2: Retrieving the persona...")
-	getReq := &pb.GetPersonaRequest{
-		Id: personaID,
-	}
-
-	getResp, err := client.GetPersona(ctx, getReq)
-	if err != nil {
-		log.Printf("Failed to get persona: %v", err)
+		log.Printf("Failed to send SMS event: %v", err)
 	} else {
-		fmt.Printf("✓ Retrieved persona: %s\n", getResp.Persona.Name)
-		fmt.Printf("  Topic: %s\n", getResp.Persona.Topic)
-		fmt.Printf("  Context entries: %d\n", len(getResp.Persona.Context))
-	}
-
-	// Test 3: Update the persona
-	fmt.Println("\nTest 3: Updating the persona...")
-	updateReq := &pb.UpdatePersonaRequest{
-		Persona: &pb.Persona{
-			Id:     personaID,
-			Name:   "Updated gRPC Test Persona",
-			Topic:  "Updated gRPC Testing",
-			Prompt: "You are an updated test persona via gRPC client",
-			Context: map[string]string{
-				"test_type": "grpc_client",
-				"timestamp": time.Now().Format(time.RFC3339),
-				"updated":   "true",
-			},
-			Rag: []string{"updated_grpc_document"},
-		},
-	}
-
-	updateResp, err := client.UpdatePersona(ctx, updateReq)
-	if err != nil {
-		log.Printf("Failed to update persona: %v", err)
-	} else {
-		fmt.Printf("✓ Updated persona: %s\n", updateResp.Persona.Name)
-	}
-
-	// Test 4: List personas
-	fmt.Println("\nTest 4: Listing all personas...")
-	listReq := &pb.ListPersonasRequest{}
-
-	listResp, err := client.ListPersonas(ctx, listReq)
-	if err != nil {
-		log.Printf("Failed to list personas: %v", err)
-	} else {
-		fmt.Printf("✓ Found %d personas in total\n", len(listResp.Personas))
-		for i, persona := range listResp.Personas {
-			if i < 5 { // Show first 5
-				fmt.Printf("  - %s (ID: %s)\n", persona.Name, persona.Id)
-			}
-		}
-		if len(listResp.Personas) > 5 {
-			fmt.Printf("  ... and %d more\n", len(listResp.Personas)-5)
+		fmt.Printf("✓ SMS event processed: %s\n", smsResp.EventID)
+		fmt.Printf("  Actions generated: %d\n", len(smsResp.Actions))
+		for _, action := range smsResp.Actions {
+			fmt.Printf("  - %s to %s: %s\n", action.Type, action.Target, action.Content)
 		}
 	}
 
-	// Test 5: Delete the test persona
-	fmt.Println("\nTest 5: Deleting the test persona...")
-	deleteReq := &pb.DeletePersonaRequest{
-		Id: personaID,
+	// Test 3: Send IRC input event
+	fmt.Println("\nTest 3: Sending IRC input event...")
+	ircEvent := &grpc.InputEvent{
+		ID:      fmt.Sprintf("test-irc-%d", time.Now().Unix()),
+		Type:    "irc",
+		Source:  "testuser",
+		Content: "!help command test",
+		Metadata: map[string]interface{}{
+			"channel":   "#test",
+			"server":    "irc.example.com",
+			"test_type": "grpc_client",
+		},
+		Timestamp: time.Now(),
+		Priority:  2,
 	}
 
-	_, err = client.DeletePersona(ctx, deleteReq)
+	ircResp, err := client.SendInputEvent(ctx, ircEvent)
 	if err != nil {
-		log.Printf("Failed to delete persona: %v", err)
+		log.Printf("Failed to send IRC event: %v", err)
 	} else {
-		fmt.Printf("✓ Deleted persona with ID: %s\n", personaID)
+		fmt.Printf("✓ IRC event processed: %s\n", ircResp.EventID)
+		fmt.Printf("  Actions generated: %d\n", len(ircResp.Actions))
+		for _, action := range ircResp.Actions {
+			fmt.Printf("  - %s to %s: %s\n", action.Type, action.Target, action.Content)
+		}
 	}
 
-	// Test 6: Verify deletion
-	fmt.Println("\nTest 6: Verifying deletion...")
-	_, err = client.GetPersona(ctx, &pb.GetPersonaRequest{Id: personaID})
+	// Test 4: Send Discord input event
+	fmt.Println("\nTest 4: Sending Discord input event...")
+	discordEvent := &grpc.InputEvent{
+		ID:      fmt.Sprintf("test-discord-%d", time.Now().Unix()),
+		Type:    "discord",
+		Source:  "user123",
+		Content: "Hello from Discord test",
+		Metadata: map[string]interface{}{
+			"channel_id": "123456789",
+			"guild_id":   "987654321",
+			"test_type":  "grpc_client",
+		},
+		Timestamp: time.Now(),
+		Priority:  1,
+	}
+
+	discordResp, err := client.SendInputEvent(ctx, discordEvent)
 	if err != nil {
-		fmt.Printf("✓ Persona successfully deleted (not found)\n")
+		log.Printf("Failed to send Discord event: %v", err)
 	} else {
-		fmt.Printf("⚠ Persona still exists after deletion\n")
+		fmt.Printf("✓ Discord event processed: %s\n", discordResp.EventID)
+		fmt.Printf("  Actions generated: %d\n", len(discordResp.Actions))
+		for _, action := range discordResp.Actions {
+			fmt.Printf("  - %s to %s: %s\n", action.Type, action.Target, action.Content)
+		}
 	}
 
-	fmt.Println("\n=== gRPC Client Tests Completed ===")
+	// Test 5: Send Voice input event
+	fmt.Println("\nTest 5: Sending Voice input event...")
+	voiceEvent := &grpc.InputEvent{
+		ID:      fmt.Sprintf("test-voice-%d", time.Now().Unix()),
+		Type:    "voice",
+		Source:  "+1987654321",
+		Content: "Voice message transcription test",
+		Metadata: map[string]interface{}{
+			"duration":  "15.5",
+			"quality":   "high",
+			"test_type": "grpc_client",
+		},
+		Timestamp: time.Now(),
+		Priority:  3,
+	}
+
+	voiceResp, err := client.SendInputEvent(ctx, voiceEvent)
+	if err != nil {
+		log.Printf("Failed to send Voice event: %v", err)
+	} else {
+		fmt.Printf("✓ Voice event processed: %s\n", voiceResp.EventID)
+		fmt.Printf("  Actions generated: %d\n", len(voiceResp.Actions))
+		for _, action := range voiceResp.Actions {
+			fmt.Printf("  - %s to %s: %s\n", action.Type, action.Target, action.Content)
+		}
+	}
+
+	// Test 6: Check client status
+	fmt.Println("\nTest 6: Checking client status...")
+	status := client.GetStatus()
+	fmt.Printf("✓ Client status:\n")
+	for key, value := range status {
+		fmt.Printf("  %s: %v\n", key, value)
+	}
+
+	// Test 7: Test connection status
+	fmt.Println("\nTest 7: Testing connection status...")
+	if client.IsConnected() {
+		fmt.Printf("✓ Client is connected to master-control\n")
+	} else {
+		fmt.Printf("⚠ Client is not connected to master-control\n")
+	}
+
+	fmt.Println("\n=== gRPC MCP Client Tests Completed ===")
 }
