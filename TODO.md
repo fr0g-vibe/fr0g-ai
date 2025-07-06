@@ -88,42 +88,224 @@ When starting new AI coding sessions, always include these files:
 - **CROSS-SERVICE DISCOVERY**: Enable dynamic gRPC service introspection between components
 - **TESTING INTEGRATION**: Use reflection for automated gRPC endpoint testing
 
-### Tmux Agent Dispatch Capability (Project Lead Only)
-The project lead can dispatch commands to specialized agent windows:
+### Multi-Agent Development System with Tmux Dispatch
+
+fr0g.ai implements a sophisticated multi-agent development environment using tmux and aider for coordinated development across all components.
+
+#### Agent Architecture Overview
+
+The development environment consists of 10 specialized agent windows, each with dedicated system prompts and domain expertise:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    fr0g-ai Development Environment               │
+├─────────────────────────────────────────────────────────────────┤
+│ Window 0: Project-Lead    │ Architecture & Cross-Component      │
+│ Window 1: AIP Agent       │ Core AI Processing Engine           │
+│ Window 2: Bridge Agent    │ External Integrations & API Gateway │
+│ Window 3: MCP Agent       │ Cognitive Intelligence Engine       │
+│ Window 4: IO Agent        │ Input/Output & Threat Processing    │
+│ Window 5: Config Agent    │ Configuration & Environment Mgmt    │
+│ Window 6: DevOps Agent    │ Infrastructure & Deployment         │
+│ Window 7: Registry Agent  │ Service Discovery & Health Monitor  │
+│ Window 8: Build-Test      │ Build Automation & Testing          │
+│ Window 9: Shell           │ Interactive Shell & Ad-hoc Commands │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Tmux Agent Dispatch System
+
+The Project Lead (window 0) can dispatch commands to specialized agent windows for coordinated development:
+
+##### Basic Dispatch Commands
 ```bash
 # Command Format:
 tmux send-keys -t fr0g-ai:WINDOW_NUMBER "COMMAND" C-m
 
-# Agent Window Mapping (Aider Chat Clients):
-# Window 0: Project-Lead (architecture and coordination) - AIDER
-# Window 1: AIP (fr0g-ai-aip core AI service) - AIDER
-# Window 2: Bridge (fr0g-ai-bridge integration service) - AIDER
-# Window 3: MCP (fr0g-ai-master-control cognitive engine) - AIDER
-# Window 4: IO (fr0g-ai-io input/output processing) - AIDER
-# Window 5: Config (configuration and environment management) - AIDER
-# Window 6: DevOps (infrastructure and deployment) - AIDER
-# Window 7: Registry (service discovery and registration) - AIDER
-
-# Shell Windows (Direct Commands):
-# Window 8: Build-Test (build automation and testing) - SHELL
-# Window 9: Shell (general purpose interactive shell) - SHELL
-
-# Example Dispatch Commands:
-# To Aider agents (windows 0-7):
-tmux send-keys -t fr0g-ai:1 "Implement persona service with CRUD operations" C-m
-tmux send-keys -t fr0g-ai:2 "Add health check validation" C-m
-tmux send-keys -t fr0g-ai:3 "Verify learning rate metrics" C-m
-tmux send-keys -t fr0g-ai:7 "Enhance service discovery API" C-m
-
-# To shell windows (windows 8-9):
-tmux send-keys -t fr0g-ai:8 "make build-all" C-m
-tmux send-keys -t fr0g-ai:9 "git status" C-m
+# Agent Window Mapping:
+# Windows 0-7: Aider AI Agents (with specialized system prompts)
+# Windows 8-9: Shell environments (direct command execution)
 ```
 
-**Dispatch Limitations:**
+##### Specialized Agent Dispatch Examples
+
+**Core AI Development (AIP Agent - Window 1):**
+```bash
+tmux send-keys -t fr0g-ai:1 "Implement persona CRUD operations with comprehensive validation" C-m
+tmux send-keys -t fr0g-ai:1 "Add rich attribute processors for Demographics and Psychographics" C-m
+tmux send-keys -t fr0g-ai:1 "Optimize gRPC service performance for 1000+ concurrent users" C-m
+tmux send-keys -t fr0g-ai:1 "Migrate file storage to PostgreSQL with connection pooling" C-m
+```
+
+**Integration Development (Bridge Agent - Window 2):**
+```bash
+tmux send-keys -t fr0g-ai:2 "Add multi-LLM provider support for OpenAI and Anthropic" C-m
+tmux send-keys -t fr0g-ai:2 "Implement API rate limiting and quota management" C-m
+tmux send-keys -t fr0g-ai:2 "Add comprehensive health check validation with metrics" C-m
+tmux send-keys -t fr0g-ai:2 "Enhance OpenWebUI integration with streaming responses" C-m
+```
+
+**Cognitive Engine Development (MCP Agent - Window 3):**
+```bash
+tmux send-keys -t fr0g-ai:3 "Optimize learning rate algorithms for threat detection" C-m
+tmux send-keys -t fr0g-ai:3 "Implement autonomous workflow generation capabilities" C-m
+tmux send-keys -t fr0g-ai:3 "Add predictive threat modeling with 24-hour forecasting" C-m
+tmux send-keys -t fr0g-ai:3 "Enhance cognitive reflection cycles for better adaptation" C-m
+```
+
+**I/O Processing Development (IO Agent - Window 4):**
+```bash
+tmux send-keys -t fr0g-ai:4 "Complete SMS processor integration with Google Voice API" C-m
+tmux send-keys -t fr0g-ai:4 "Implement real-time threat detection for IRC channels" C-m
+tmux send-keys -t fr0g-ai:4 "Add automated response generation for email threats" C-m
+tmux send-keys -t fr0g-ai:4 "Optimize ESMTP processor for high-volume email analysis" C-m
+```
+
+**Configuration Management (Config Agent - Window 5):**
+```bash
+tmux send-keys -t fr0g-ai:5 "Add hot-reload capabilities for configuration changes" C-m
+tmux send-keys -t fr0g-ai:5 "Implement advanced validation rules for security configs" C-m
+tmux send-keys -t fr0g-ai:5 "Create configuration templates for different environments" C-m
+tmux send-keys -t fr0g-ai:5 "Add configuration audit and compliance checking" C-m
+```
+
+**Infrastructure Development (DevOps Agent - Window 6):**
+```bash
+tmux send-keys -t fr0g-ai:6 "Implement production-ready container security hardening" C-m
+tmux send-keys -t fr0g-ai:6 "Add Prometheus metrics and Grafana dashboards" C-m
+tmux send-keys -t fr0g-ai:6 "Create CI/CD pipeline with automated testing" C-m
+tmux send-keys -t fr0g-ai:6 "Optimize Docker builds for faster deployment cycles" C-m
+```
+
+**Service Discovery Development (Registry Agent - Window 7):**
+```bash
+tmux send-keys -t fr0g-ai:7 "Implement Redis persistence for zero data loss" C-m
+tmux send-keys -t fr0g-ai:7 "Optimize service discovery performance to <5ms latency" C-m
+tmux send-keys -t fr0g-ai:7 "Add automated health checking with configurable intervals" C-m
+tmux send-keys -t fr0g-ai:7 "Enhance service registry API with load balancing support" C-m
+```
+
+##### Shell Command Dispatch (Windows 8-9)
+
+**Build and Test Automation (Window 8):**
+```bash
+tmux send-keys -t fr0g-ai:8 "make build-all" C-m
+tmux send-keys -t fr0g-ai:8 "make test-all-integration" C-m
+tmux send-keys -t fr0g-ai:8 "docker-compose up -d" C-m
+tmux send-keys -t fr0g-ai:8 "make health" C-m
+tmux send-keys -t fr0g-ai:8 "make validate-production" C-m
+```
+
+**General Shell Operations (Window 9):**
+```bash
+tmux send-keys -t fr0g-ai:9 "git status" C-m
+tmux send-keys -t fr0g-ai:9 "git add . && git commit -m 'Feature implementation'" C-m
+tmux send-keys -t fr0g-ai:9 "docker-compose logs fr0g-ai-aip" C-m
+tmux send-keys -t fr0g-ai:9 "curl -s http://localhost:8080/health | jq" C-m
+```
+
+#### Advanced Dispatch Patterns
+
+**Cross-Component Coordination:**
+```bash
+# Coordinate database migration across services
+tmux send-keys -t fr0g-ai:1 "Prepare AIP service for database migration" C-m
+tmux send-keys -t fr0g-ai:5 "Add database configuration validation" C-m
+tmux send-keys -t fr0g-ai:6 "Update Docker Compose with PostgreSQL service" C-m
+tmux send-keys -t fr0g-ai:8 "make test-database-migration" C-m
+```
+
+**Performance Optimization Campaign:**
+```bash
+# System-wide performance optimization
+tmux send-keys -t fr0g-ai:1 "Implement caching layer for persona operations" C-m
+tmux send-keys -t fr0g-ai:2 "Add connection pooling for external API calls" C-m
+tmux send-keys -t fr0g-ai:7 "Optimize service discovery for <5ms response time" C-m
+tmux send-keys -t fr0g-ai:8 "make test-performance" C-m
+```
+
+**Security Hardening Initiative:**
+```bash
+# Security enhancement across all services
+tmux send-keys -t fr0g-ai:2 "Implement OAuth2 and JWT authentication" C-m
+tmux send-keys -t fr0g-ai:5 "Add security configuration validation" C-m
+tmux send-keys -t fr0g-ai:6 "Implement container security scanning" C-m
+tmux send-keys -t fr0g-ai:8 "make validate-production" C-m
+```
+
+#### Agent Communication Protocol
+
+**Message Types for Coordination:**
+```bash
+# Information sharing
+tmux send-keys -t fr0g-ai:1 "[INFO] Persona service endpoints ready for integration" C-m
+
+# Request assistance
+tmux send-keys -t fr0g-ai:2 "[REQUEST] Need AIP gRPC endpoint documentation" C-m
+
+# Task handoff
+tmux send-keys -t fr0g-ai:3 "[HANDOFF] Threat analysis logic ready for IO integration" C-m
+
+# Blocking issues
+tmux send-keys -t fr0g-ai:4 "[BLOCKED] Waiting for master-control gRPC interface" C-m
+
+# Completion notifications
+tmux send-keys -t fr0g-ai:7 "[COMPLETE] Service registry performance optimization done" C-m
+```
+
+#### Dispatch System Limitations and Best Practices
+
+**Limitations:**
 - Commands are fire-and-forget (no return data visibility)
-- Cannot see agent responses or command results
-- Use for task assignment and coordination only
+- Cannot see agent responses or command results directly
+- No built-in error handling for failed dispatches
+- Agents work independently without automatic coordination
+
+**Best Practices:**
+1. **Use for Task Assignment**: Dispatch clear, specific tasks to appropriate agents
+2. **Coordinate Dependencies**: Ensure prerequisite tasks are completed before dependent tasks
+3. **Monitor Progress**: Check agent windows manually to verify task completion
+4. **Clear Communication**: Use descriptive task descriptions for better agent understanding
+5. **Respect Boundaries**: Only dispatch tasks within each agent's domain expertise
+6. **Sequential Coordination**: For complex features, dispatch tasks in logical sequence
+
+#### Development Workflow Examples
+
+**Feature Development Workflow:**
+```bash
+# 1. Architecture planning (Project Lead)
+tmux send-keys -t fr0g-ai:0 "Design API endpoints for new feature" C-m
+
+# 2. Implementation (Specialized Agents)
+tmux send-keys -t fr0g-ai:1 "Implement core business logic" C-m
+tmux send-keys -t fr0g-ai:2 "Add API integration layer" C-m
+
+# 3. Configuration (Config Agent)
+tmux send-keys -t fr0g-ai:5 "Add configuration options for new feature" C-m
+
+# 4. Testing (Build-Test)
+tmux send-keys -t fr0g-ai:8 "make test-new-feature" C-m
+
+# 5. Deployment (DevOps)
+tmux send-keys -t fr0g-ai:6 "Update Docker configuration for feature" C-m
+```
+
+**Bug Fix Workflow:**
+```bash
+# 1. Investigation
+tmux send-keys -t fr0g-ai:9 "docker-compose logs | grep ERROR" C-m
+
+# 2. Fix implementation
+tmux send-keys -t fr0g-ai:1 "Fix validation error in persona service" C-m
+
+# 3. Testing
+tmux send-keys -t fr0g-ai:8 "make test-validation" C-m
+
+# 4. Verification
+tmux send-keys -t fr0g-ai:8 "make health" C-m
+```
+
+This multi-agent dispatch system enables coordinated development across the entire fr0g.ai platform while maintaining clear separation of concerns and specialized expertise for each component.
 
 ## EXECUTIVE SUMMARY
 

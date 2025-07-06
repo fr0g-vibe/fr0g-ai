@@ -81,6 +81,63 @@ make health
 
 ## Development
 
+### Multi-Agent Development Environment
+
+fr0g.ai uses a sophisticated multi-agent development system with tmux and aider for coordinated development across all components.
+
+#### Quick Start
+```bash
+# Start the complete development environment
+./start-fr0g-ai-dev.sh
+
+# This creates a tmux session with 10 specialized agent windows:
+# 0: Project-Lead    - Architecture & coordination
+# 1: AIP            - Core AI service (fr0g-ai-aip)
+# 2: Bridge         - Integration service (fr0g-ai-bridge)
+# 3: MCP            - Cognitive engine (fr0g-ai-master-control)
+# 4: IO             - I/O processing (fr0g-ai-io)
+# 5: Config         - Configuration management
+# 6: DevOps         - Infrastructure & deployment
+# 7: Registry       - Service discovery (fr0g-ai-registry)
+# 8: Build-Test     - Build automation
+# 9: Shell          - Interactive shell
+```
+
+#### Agent Dispatch System
+
+The Project Lead agent (window 0) can dispatch commands to other specialized agents:
+
+```bash
+# Command Format:
+tmux send-keys -t fr0g-ai:WINDOW_NUMBER "COMMAND" C-m
+
+# Example Dispatches:
+tmux send-keys -t fr0g-ai:1 "Implement persona CRUD operations with validation" C-m
+tmux send-keys -t fr0g-ai:2 "Add health check endpoint with metrics" C-m
+tmux send-keys -t fr0g-ai:3 "Optimize learning rate for threat detection" C-m
+tmux send-keys -t fr0g-ai:4 "Complete SMS processor integration" C-m
+tmux send-keys -t fr0g-ai:7 "Enhance service discovery performance" C-m
+
+# Shell Commands (windows 8-9):
+tmux send-keys -t fr0g-ai:8 "make build-all" C-m
+tmux send-keys -t fr0g-ai:9 "git status" C-m
+```
+
+#### Agent Specializations
+
+Each agent has specific domain expertise and system prompts:
+
+- **Project-Lead (0)**: Overall coordination, architecture decisions, cross-component integration
+- **AIP Agent (1)**: Core AI processing, persona management, identity processing
+- **Bridge Agent (2)**: External integrations, API gateway, protocol translation
+- **MCP Agent (3)**: Cognitive intelligence, orchestration, conscious AI
+- **IO Agent (4)**: Input/output processing, threat vector handling
+- **Config Agent (5)**: Environment variables, shared config library, validation
+- **DevOps Agent (6)**: Docker, deployment, CI/CD, infrastructure automation
+- **Registry Agent (7)**: Service discovery, registration, health monitoring
+
+#### Traditional Development (Alternative)
+
 ```bash
 # Initialize development environment
 make setup
