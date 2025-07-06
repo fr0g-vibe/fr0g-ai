@@ -42,18 +42,6 @@ func main() {
 	log.Printf("Starting fr0g-ai-io service with config: HTTP=%s:%s, gRPC=%s:%s",
 		cfg.HTTP.Host, cfg.HTTP.Port, cfg.GRPC.Host, cfg.GRPC.Port)
 
-	// Create processor manager
-	processorMgr, err := processors.NewManager(cfg)
-	if err != nil {
-		log.Fatalf("Failed to create processor manager: %v", err)
-	}
-
-	// Create output manager
-	outputMgr, err := outputs.NewManager(cfg)
-	if err != nil {
-		log.Fatalf("Failed to create output manager: %v", err)
-	}
-
 	// Create HTTP API server
 	server, err := api.NewServer(cfg)
 	if err != nil {
@@ -62,10 +50,8 @@ func main() {
 
 	// TODO: Add gRPC server once protobuf generation is fixed
 	log.Println("gRPC server temporarily disabled - protobuf generation needed")
-	log.Printf("Processor manager initialized with %d processors", len(processorMgr.GetProcessors()))
-	log.Printf("Output manager initialized with %d processors", len(outputMgr.GetProcessors()))
 
-	// Start HTTP server
+	// Start server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
