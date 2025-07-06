@@ -271,6 +271,8 @@ echo "  - OPENWEBUI_API_KEY (for OpenWebUI integration)"
 echo "  - MCP_LEARNING_ENABLED=true (for AI consciousness)"
 echo "  - LOG_LEVEL=info (for appropriate logging)"
 echo ""
+echo "COMPLETED fr0g-ai Development Environment Ready!"
+echo "Attaching to tmux session..."
 
 # Attach to the session
 tmux attach-session -t $SESSION_NAME
