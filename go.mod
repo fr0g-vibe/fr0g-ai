@@ -5,15 +5,16 @@ go 1.23.0
 toolchain go1.24.3
 
 require (
+	github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip v0.0.0-20250706052551-921398047bf2
 	github.com/gorilla/mux v1.8.1
-	github.com/sirupsen/logrus v1.9.3
-	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/grpc v1.64.0
 )
 
 require (
-	golang.org/x/net v0.17.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
+	golang.org/x/net v0.22.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 )
