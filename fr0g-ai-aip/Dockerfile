@@ -45,8 +45,8 @@ USER fr0g
 # Expose ports
 EXPOSE 8080 9090
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Health check - Enhanced for critical fixes monitoring
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
   CMD curl -f http://localhost:8080/health || exit 1
 
 # Default command - start both HTTP and gRPC servers

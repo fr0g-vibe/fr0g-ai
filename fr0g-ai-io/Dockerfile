@@ -45,8 +45,8 @@ USER fr0g
 # Expose ports
 EXPOSE 8083 9093
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Health check - Enhanced for API integration monitoring
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
   CMD curl -f http://localhost:8083/health || exit 1
 
 # Run the application

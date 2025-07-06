@@ -45,8 +45,8 @@ USER fr0g
 # Expose port
 EXPOSE 8081
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Health check - Enhanced for storage validation monitoring
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
   CMD curl -f http://localhost:8081/health || exit 1
 
 # Run the application

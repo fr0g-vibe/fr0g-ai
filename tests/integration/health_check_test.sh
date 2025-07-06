@@ -353,6 +353,51 @@ test_container_health() {
     return 0
 }
 
+# Function to verify critical fixes status
+verify_critical_fixes() {
+    echo -e "\n${BLUE}VERIFICATION Critical Fixes Status${NC}"
+    echo "===================================="
+    
+    # 1) AIP configuration migration progress
+    echo -n "TRACKING AIP configuration migration... "
+    if curl -sf "http://localhost:8080/health" >/dev/null 2>&1; then
+        local aip_health=$(curl -s "http://localhost:8080/health" 2>/dev/null)
+        if echo "$aip_health" | grep -q "config.*valid\|validation.*success" 2>/dev/null; then
+            echo -e "${GREEN}COMPLETED${NC}"
+        else
+            echo -e "${YELLOW}MISSING validation status${NC}"
+        fi
+    else
+        echo -e "${RED}CRITICAL service down${NC}"
+    fi
+    
+    # 2) Master-control storage validation fix
+    echo -n "TRACKING MCP storage validation... "
+    if curl -sf "http://localhost:8081/health" >/dev/null 2>&1; then
+        local mcp_health=$(curl -s "http://localhost:8081/health" 2>/dev/null)
+        if echo "$mcp_health" | grep -q "storage.*valid\|validation.*success" 2>/dev/null; then
+            echo -e "${GREEN}COMPLETED${NC}"
+        else
+            echo -e "${YELLOW}MISSING validation status${NC}"
+        fi
+    else
+        echo -e "${RED}CRITICAL service down${NC}"
+    fi
+    
+    # 3) I/O API integration status
+    echo -n "TRACKING IO API integration... "
+    if curl -sf "http://localhost:8083/health" >/dev/null 2>&1; then
+        local io_health=$(curl -s "http://localhost:8083/health" 2>/dev/null)
+        if echo "$io_health" | grep -q "api.*integrated\|integration.*success" 2>/dev/null; then
+            echo -e "${GREEN}COMPLETED${NC}"
+        else
+            echo -e "${YELLOW}MISSING integration status${NC}"
+        fi
+    else
+        echo -e "${RED}CRITICAL service down${NC}"
+    fi
+}
+
 # Function to generate summary report
 generate_summary() {
     echo -e "\n${BLUE}Health Check Summary${NC}"
@@ -419,6 +464,10 @@ generate_summary() {
     echo -e "  make test-grpc-reflection   # Test gRPC reflection"
     echo -e "  make test-aip-with-reflection # Test with reflection enabled"
     echo -e "  make validate-production    # Validate production security"
+    echo -e "  make verify-fixes           # Monitor critical fixes"
+    
+    # Run critical fixes verification
+    verify_critical_fixes
 }
 
 # Main test execution
@@ -435,6 +484,11 @@ main() {
     test_mcp_service || exit_code=1
     test_inter_service_communication || exit_code=1
     test_container_health || exit_code=1
+    
+    # VERIFICATION TASK: Monitor critical fixes
+    echo -e "\n${BLUE}VERIFICATION TASK: Monitoring Critical Fixes${NC}"
+    echo "=============================================="
+    verify_critical_fixes
     
     # Generate summary
     generate_summary
