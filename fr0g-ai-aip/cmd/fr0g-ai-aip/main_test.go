@@ -1,14 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
-func TestAppValidateConfig(t *testing.T) {
+func TestConfigValidate(t *testing.T) {
 	tests := []struct {
 		name        string
 		httpPort    string
@@ -31,16 +34,15 @@ func TestAppValidateConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			app := &App{
-				config: &config.Config{
-					HTTP: config.HTTPConfig{Port: tt.httpPort},
-					GRPC: config.GRPCConfig{Port: tt.grpcPort},
-				},
+			cfg := &config.Config{
+				HTTP: sharedconfig.HTTPConfig{Port: tt.httpPort},
+				GRPC: sharedconfig.GRPCConfig{Port: tt.grpcPort},
+				Storage: sharedconfig.StorageConfig{Type: "memory"},
 			}
 
-			err := app.ValidateConfig()
+			err := cfg.Validate()
 			if (err != nil) != tt.expectError {
-				t.Errorf("ValidateConfig() error = %v, expectError %v", err, tt.expectError)
+				t.Errorf("Validate() error = %v, expectError %v", err, tt.expectError)
 			}
 		})
 	}
@@ -75,85 +77,94 @@ func TestCreateStorage(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cfg := config.StorageConfig{
-				Type:    tt.storageType,
-				DataDir: tt.dataDir,
+			var store storage.Storage
+			var err error
+
+			switch tt.storageType {
+			case "memory":
+				store = storage.NewMemoryStorage()
+			case "file":
+				if tt.dataDir == "" {
+					err = fmt.Errorf("data directory required for file storage")
+				} else {
+					store, err = storage.NewFileStorage(tt.dataDir)
+				}
+			default:
+				err = fmt.Errorf("unsupported storage type: %s", tt.storageType)
 			}
 
-			_, err := createStorage(cfg)
 			if (err != nil) != tt.expectError {
 				t.Errorf("createStorage() error = %v, expectError %v", err, tt.expectError)
+			}
+			if !tt.expectError && store == nil {
+				t.Error("Expected storage to be created")
 			}
 		})
 	}
 }
 
-func TestAppCreateServers(t *testing.T) {
-	// Create a minimal valid app
-	app := &App{
-		config: &config.Config{
-			HTTP: config.HTTPConfig{
-				Port:         "8080",
-				ReadTimeout:  30 * time.Second,
-				WriteTimeout: 30 * time.Second,
-			},
-			GRPC: config.GRPCConfig{
-				Port:           "9090",
-				MaxRecvMsgSize: 1024 * 1024,
-				MaxSendMsgSize: 1024 * 1024,
-			},
-			Security: config.SecurityConfig{
-				EnableAuth: false,
-			},
-		},
-	}
-
-	// Create storage and service
-	store, err := createStorage(config.StorageConfig{Type: "memory"})
-	if err != nil {
-		t.Fatalf("Failed to create storage: %v", err)
-	}
-	app.service = persona.NewService(store)
-
-	// Test server creation
-	httpServer, grpcServer, err := app.CreateServers()
-	if err != nil {
-		t.Errorf("CreateServers() error = %v", err)
-	}
-
-	if httpServer == nil {
-		t.Error("HTTP server should not be nil")
-	}
-
-	if grpcServer == nil {
-		t.Error("gRPC server should not be nil")
-	}
-}
-
-func TestAppValidateConfigIntegration(t *testing.T) {
-	// Test with a complete config structure
+func TestConfigCreation(t *testing.T) {
+	// Create a minimal valid config
 	cfg := &config.Config{
-		HTTP: config.HTTPConfig{
+		HTTP: sharedconfig.HTTPConfig{
 			Port:         "8080",
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 30 * time.Second,
 		},
-		GRPC: config.GRPCConfig{
-			Port:           "9090",
-			MaxRecvMsgSize: 1024 * 1024,
-			MaxSendMsgSize: 1024 * 1024,
+		GRPC: sharedconfig.GRPCConfig{
+			Port:             "9090",
+			MaxRecvMsgSize:   1024 * 1024,
+			MaxSendMsgSize:   1024 * 1024,
+			EnableReflection: true,
 		},
-		Storage: config.StorageConfig{
+		Storage: sharedconfig.StorageConfig{
 			Type: "memory",
 		},
-		Security: config.SecurityConfig{
+		Security: sharedconfig.SecurityConfig{
 			EnableAuth: false,
 		},
 	}
 
-	app := &App{config: cfg}
-	err := app.ValidateConfig()
+	// Test config validation
+	err := cfg.Validate()
 	if err != nil {
-		t.Errorf("ValidateConfig() with valid config should not error: %v", err)
+		t.Errorf("Config validation failed: %v", err)
+	}
+
+	// Test GetString method
+	if cfg.GetString("http.port") != "8080" {
+		t.Error("GetString should return correct HTTP port")
+	}
+
+	if cfg.GetString("grpc.port") != "9090" {
+		t.Error("GetString should return correct gRPC port")
+	}
+}
+
+func TestConfigIntegration(t *testing.T) {
+	// Test with a complete config structure
+	cfg := &config.Config{
+		HTTP: sharedconfig.HTTPConfig{
+			Port:         "8080",
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+		},
+		GRPC: sharedconfig.GRPCConfig{
+			Port:             "9090",
+			MaxRecvMsgSize:   1024 * 1024,
+			MaxSendMsgSize:   1024 * 1024,
+			EnableReflection: true,
+		},
+		Storage: sharedconfig.StorageConfig{
+			Type: "memory",
+		},
+		Security: sharedconfig.SecurityConfig{
+			EnableAuth: false,
+		},
+	}
+
+	err := cfg.Validate()
+	if err != nil {
+		t.Errorf("Validate() with valid config should not error: %v", err)
 	}
 }

@@ -224,8 +224,8 @@ func TestHandleGenerateRandomCommunity(t *testing.T) {
 		t.Fatalf("failed to generate random community: %v", err)
 	}
 
-	// Check that community was created
-	communities, err := service.ListCommunities(nil)
+	// Check that community was created by checking storage directly
+	communities, err := service.GetStorage().ListCommunities(nil)
 	if err != nil {
 		t.Fatalf("failed to list communities: %v", err)
 	}

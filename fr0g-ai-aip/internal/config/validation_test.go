@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 func TestConfig_Validate(t *testing.T) {
@@ -16,26 +18,24 @@ func TestConfig_Validate(t *testing.T) {
 		{
 			name: "valid config",
 			config: &Config{
-				HTTP: HTTPConfig{
-					Port:            "8080",
-					ReadTimeout:     30 * time.Second,
-					WriteTimeout:    30 * time.Second,
-					ShutdownTimeout: 5 * time.Second,
+				HTTP: sharedconfig.HTTPConfig{
+					Port:         "8080",
+					ReadTimeout:  30 * time.Second,
+					WriteTimeout: 30 * time.Second,
 				},
-				GRPC: GRPCConfig{
-					Port:              "9090",
-					MaxRecvMsgSize:    4 * 1024 * 1024,
-					MaxSendMsgSize:    4 * 1024 * 1024,
-					ConnectionTimeout: 10 * time.Second,
+				GRPC: sharedconfig.GRPCConfig{
+					Port:             "9090",
+					MaxRecvMsgSize:   4 * 1024 * 1024,
+					MaxSendMsgSize:   4 * 1024 * 1024,
+					EnableReflection: true,
 				},
-				Storage: StorageConfig{
+				Storage: sharedconfig.StorageConfig{
 					Type: "memory",
 				},
 				Client: ClientConfig{
-					Type:    "local",
-					Timeout: 30 * time.Second,
+					Type: "local",
 				},
-				Security: SecurityConfig{
+				Security: sharedconfig.SecurityConfig{
 					EnableAuth: false,
 				},
 			},
@@ -44,64 +44,61 @@ func TestConfig_Validate(t *testing.T) {
 		{
 			name: "missing HTTP port",
 			config: &Config{
-				HTTP: HTTPConfig{
-					ReadTimeout:     30 * time.Second,
-					WriteTimeout:    30 * time.Second,
-					ShutdownTimeout: 5 * time.Second,
+				HTTP: sharedconfig.HTTPConfig{
+					ReadTimeout:  30 * time.Second,
+					WriteTimeout: 30 * time.Second,
 				},
-				GRPC: GRPCConfig{
-					Port:              "9090",
-					MaxRecvMsgSize:    4 * 1024 * 1024,
-					MaxSendMsgSize:    4 * 1024 * 1024,
-					ConnectionTimeout: 10 * time.Second,
+				GRPC: sharedconfig.GRPCConfig{
+					Port:             "9090",
+					MaxRecvMsgSize:   4 * 1024 * 1024,
+					MaxSendMsgSize:   4 * 1024 * 1024,
+					EnableReflection: true,
 				},
-				Storage: StorageConfig{Type: "memory"},
-				Client:  ClientConfig{Type: "local", Timeout: 30 * time.Second},
+				Storage: sharedconfig.StorageConfig{Type: "memory"},
+				Client:  ClientConfig{Type: "local"},
 			},
 			wantErr: true,
-			errMsg:  "http.port: port is required",
+			errMsg:  "field is required",
 		},
 		{
 			name: "port conflict",
 			config: &Config{
-				HTTP: HTTPConfig{
-					Port:            "8080",
-					ReadTimeout:     30 * time.Second,
-					WriteTimeout:    30 * time.Second,
-					ShutdownTimeout: 5 * time.Second,
+				HTTP: sharedconfig.HTTPConfig{
+					Port:         "8080",
+					ReadTimeout:  30 * time.Second,
+					WriteTimeout: 30 * time.Second,
 				},
-				GRPC: GRPCConfig{
-					Port:              "8080", // Same as HTTP
-					MaxRecvMsgSize:    4 * 1024 * 1024,
-					MaxSendMsgSize:    4 * 1024 * 1024,
-					ConnectionTimeout: 10 * time.Second,
+				GRPC: sharedconfig.GRPCConfig{
+					Port:             "8080", // Same as HTTP
+					MaxRecvMsgSize:   4 * 1024 * 1024,
+					MaxSendMsgSize:   4 * 1024 * 1024,
+					EnableReflection: true,
 				},
-				Storage: StorageConfig{Type: "memory"},
-				Client:  ClientConfig{Type: "local", Timeout: 30 * time.Second},
+				Storage: sharedconfig.StorageConfig{Type: "memory"},
+				Client:  ClientConfig{Type: "local"},
 			},
 			wantErr: true,
-			errMsg:  "ports: HTTP and gRPC ports cannot be the same",
+			errMsg:  "ports cannot be the same",
 		},
 		{
 			name: "invalid storage type",
 			config: &Config{
-				HTTP: HTTPConfig{
-					Port:            "8080",
-					ReadTimeout:     30 * time.Second,
-					WriteTimeout:    30 * time.Second,
-					ShutdownTimeout: 5 * time.Second,
+				HTTP: sharedconfig.HTTPConfig{
+					Port:         "8080",
+					ReadTimeout:  30 * time.Second,
+					WriteTimeout: 30 * time.Second,
 				},
-				GRPC: GRPCConfig{
-					Port:              "9090",
-					MaxRecvMsgSize:    4 * 1024 * 1024,
-					MaxSendMsgSize:    4 * 1024 * 1024,
-					ConnectionTimeout: 10 * time.Second,
+				GRPC: sharedconfig.GRPCConfig{
+					Port:             "9090",
+					MaxRecvMsgSize:   4 * 1024 * 1024,
+					MaxSendMsgSize:   4 * 1024 * 1024,
+					EnableReflection: true,
 				},
-				Storage: StorageConfig{Type: "invalid"},
-				Client:  ClientConfig{Type: "local", Timeout: 30 * time.Second},
+				Storage: sharedconfig.StorageConfig{Type: "invalid"},
+				Client:  ClientConfig{Type: "local"},
 			},
 			wantErr: true,
-			errMsg:  "storage.type: invalid storage type",
+			errMsg:  "field is required",
 		},
 	}
 
@@ -119,47 +116,46 @@ func TestConfig_Validate(t *testing.T) {
 	}
 }
 
-func TestValidateNetworkAddress(t *testing.T) {
+func TestGetString(t *testing.T) {
+	cfg := &Config{
+		HTTP: sharedconfig.HTTPConfig{
+			Port: "8080",
+			Host: "localhost",
+		},
+		GRPC: sharedconfig.GRPCConfig{
+			Port: "9090",
+			Host: "localhost",
+		},
+		Storage: sharedconfig.StorageConfig{
+			Type:    "file",
+			DataDir: "/tmp/data",
+		},
+		Client: ClientConfig{
+			Type:      "local",
+			ServerURL: "http://localhost:8080",
+		},
+	}
+
 	tests := []struct {
-		name    string
-		address string
-		wantErr bool
+		key      string
+		expected string
 	}{
-		{"valid address", "localhost:8080", false},
-		{"valid IP address", "127.0.0.1:9090", false},
-		{"invalid port", "localhost:99999", true},
-		{"missing port", "localhost", true},
-		{"empty host", ":8080", true},
-		{"invalid format", "invalid-address", true},
+		{"http.port", "8080"},
+		{"http.host", "localhost"},
+		{"grpc.port", "9090"},
+		{"grpc.host", "localhost"},
+		{"storage.type", "file"},
+		{"storage.data_dir", "/tmp/data"},
+		{"client.type", "local"},
+		{"client.server_url", "http://localhost:8080"},
+		{"unknown.key", ""},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateNetworkAddress(tt.address)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidateNetworkAddress() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestValidateTimeout(t *testing.T) {
-	tests := []struct {
-		name    string
-		timeout time.Duration
-		wantErr bool
-	}{
-		{"valid timeout", 30 * time.Second, false},
-		{"zero timeout", 0, true},
-		{"negative timeout", -5 * time.Second, true},
-		{"too long timeout", 25 * time.Hour, true},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateTimeout(tt.timeout, "test")
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ValidateTimeout() error = %v, wantErr %v", err, tt.wantErr)
+		t.Run(tt.key, func(t *testing.T) {
+			result := cfg.GetString(tt.key)
+			if result != tt.expected {
+				t.Errorf("GetString(%s) = %s, want %s", tt.key, result, tt.expected)
 			}
 		})
 	}

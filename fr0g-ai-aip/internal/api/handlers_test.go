@@ -12,23 +12,24 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 func createTestServer() *Server {
 	cfg := &config.Config{
-		HTTP: config.HTTPConfig{
+		HTTP: sharedconfig.HTTPConfig{
 			Port:         "8080",
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 30 * time.Second,
 		},
-		Security: config.SecurityConfig{
+		Security: sharedconfig.SecurityConfig{
 			EnableAuth: false,
 		},
 	}
 
 	store := storage.NewMemoryStorage()
 	service := persona.NewService(store)
-	return NewServer(cfg, service)
+	return NewServer(cfg, service, nil) // nil registry client for tests
 }
 
 func TestHealthHandler(t *testing.T) {
