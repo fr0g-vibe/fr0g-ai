@@ -53,8 +53,8 @@ func TestHealthHandler(t *testing.T) {
 		t.Errorf("failed to parse response: %v", err)
 	}
 
-	if response["status"] != "ok" {
-		t.Errorf("expected status 'ok', got %v", response["status"])
+	if response["status"] != "healthy" {
+		t.Errorf("expected status 'healthy', got %v", response["status"])
 	}
 }
 

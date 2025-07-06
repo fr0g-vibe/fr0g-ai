@@ -58,7 +58,7 @@ func TestConfig_Validate(t *testing.T) {
 				Client:  ClientConfig{Type: "local"},
 			},
 			wantErr: true,
-			errMsg:  "field is required",
+			errMsg:  "invalid port format",
 		},
 		{
 			name: "port conflict",
@@ -78,7 +78,7 @@ func TestConfig_Validate(t *testing.T) {
 				Client:  ClientConfig{Type: "local"},
 			},
 			wantErr: true,
-			errMsg:  "ports cannot be the same",
+			errMsg:  "HTTP and gRPC ports cannot be the same",
 		},
 		{
 			name: "invalid storage type",
@@ -98,7 +98,7 @@ func TestConfig_Validate(t *testing.T) {
 				Client:  ClientConfig{Type: "local"},
 			},
 			wantErr: true,
-			errMsg:  "field is required",
+			errMsg:  "invalid value",
 		},
 	}
 

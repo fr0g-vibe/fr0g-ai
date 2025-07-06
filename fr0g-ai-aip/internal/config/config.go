@@ -101,8 +101,21 @@ func (c *Config) Validate() error {
 		errors = append(errors, *err)
 	}
 	
+	// Check for port conflicts
+	if c.HTTP.Port == c.GRPC.Port {
+		errors = append(errors, sharedconfig.ValidationError{
+			Field:   "ports",
+			Message: "HTTP and gRPC ports cannot be the same",
+		})
+	}
+	
 	// Validate storage config
 	if err := sharedconfig.ValidateRequired(c.Storage.Type, "storage.type"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	// Validate storage type is supported
+	if err := sharedconfig.ValidateEnum(c.Storage.Type, []string{"file", "memory"}, "storage.type"); err != nil {
 		errors = append(errors, *err)
 	}
 	

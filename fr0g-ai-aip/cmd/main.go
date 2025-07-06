@@ -70,7 +70,7 @@ func main() {
 			Port:    getPortFromEnv("HTTP_PORT", 8080),
 			Tags:    []string{"ai", "persona", "identity"},
 			Check: &registry.HealthCheck{
-				HTTP:     fmt.Sprintf("http://localhost:%d/health", getPortFromEnv("HTTP_PORT", 8080)),
+				HTTP:     fmt.Sprintf("http://localhost:%s/health", cfg.HTTP.Port),
 				Interval: "30s",
 				Timeout:  "10s",
 			},
