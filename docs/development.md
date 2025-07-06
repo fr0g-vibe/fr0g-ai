@@ -99,6 +99,7 @@ make health            # Check service health
 make dev               # Start development environment
 make docker-logs       # View container logs
 make docker-down       # Stop services
+make docker-clean      # Clean Docker resources
 ```
 
 ## Service Development
