@@ -1,7 +1,7 @@
 # AI Assistant files
 .aider.*
 # Agent Prompts (keep in repo)
-# .aider-prompts/ - intentionally tracked
+# .prompts/ - intentionally tracked
 
 # Environment configuration
 .env
