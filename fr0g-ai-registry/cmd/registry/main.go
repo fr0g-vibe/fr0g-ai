@@ -310,20 +310,31 @@ func (r *Registry) registerHandler(w http.ResponseWriter, req *http.Request) {
 		metrics.DiscoveryRequests.WithLabelValues("register").Inc()
 	}()
 	
+	// CRITICAL: Add debug logging to verify handler is called
+	log.Printf("REGISTER HANDLER CALLED: Method=%s, URL=%s", req.Method, req.URL.Path)
+	
 	if req.Method != http.MethodPut && req.Method != http.MethodPost {
+		log.Printf("REGISTER HANDLER: Method not allowed: %s", req.Method)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Method not allowed"})
 		return
 	}
 	
+	log.Printf("REGISTER HANDLER: Processing %s request", req.Method)
+	
 	var service ServiceInfo
+	log.Printf("REGISTER HANDLER: Reading request body...")
 	if err := json.NewDecoder(req.Body).Decode(&service); err != nil {
+		log.Printf("REGISTER HANDLER: JSON decode error: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid JSON: " + err.Error()})
 		return
 	}
+	
+	log.Printf("REGISTER HANDLER: Decoded service: ID=%s, Name=%s, Address=%s, Port=%d", 
+		service.ID, service.Name, service.Address, service.Port)
 	
 	// Validate required fields
 	if service.ID == "" {
@@ -354,21 +365,31 @@ func (r *Registry) registerHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	
+	log.Printf("REGISTER HANDLER: Calling Register method...")
 	if err := r.Register(&service); err != nil {
+		log.Printf("REGISTER HANDLER: Register failed: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 	
+	log.Printf("REGISTER HANDLER: Service registered successfully: %s", service.ID)
+	
 	// Return success response with service details
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	response := map[string]interface{}{
 		"status":  "success",
 		"message": "Service registered successfully",
 		"service": service,
-	})
+	}
+	
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("REGISTER HANDLER: Failed to encode response: %v", err)
+	} else {
+		log.Printf("REGISTER HANDLER: Response sent successfully")
+	}
 }
 
 func (r *Registry) deregisterHandler(w http.ResponseWriter, req *http.Request) {
@@ -513,17 +534,17 @@ func main() {
 	// Setup routes with optimized handlers
 	router := mux.NewRouter()
 	
-	// Service registration endpoints
-	router.HandleFunc("/v1/agent/service/register", registry.registerHandler).Methods("PUT", "POST")
-	router.HandleFunc("/v1/agent/service/deregister/{serviceId}", registry.deregisterHandler).Methods("PUT")
-	router.HandleFunc("/v1/catalog/services", registry.servicesHandler).Methods("GET")
-	router.HandleFunc("/v1/health/service/{serviceId}", registry.healthServiceHandler).Methods("GET")
+	// Service registration endpoints - CRITICAL: Remove method restrictions to ensure handlers are called
+	router.HandleFunc("/v1/agent/service/register", registry.registerHandler)
+	router.HandleFunc("/v1/agent/service/deregister/{serviceId}", registry.deregisterHandler)
+	router.HandleFunc("/v1/catalog/services", registry.servicesHandler)
+	router.HandleFunc("/v1/health/service/{serviceId}", registry.healthServiceHandler)
 	
 	// Health check endpoint
-	router.HandleFunc("/health", registry.healthHandler).Methods("GET")
+	router.HandleFunc("/health", registry.healthHandler)
 	
 	// Prometheus metrics endpoint
-	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
+	router.Handle("/metrics", promhttp.Handler())
 	
 	// Start server with optimized settings
 	server := &http.Server{
