@@ -9,9 +9,12 @@ import (
 
 // Config represents the AIP service configuration
 type Config struct {
-	sharedconfig.ServerConfig `yaml:",inline"`
-	Validation                ValidationConfig `yaml:"validation"`
-	Client                    ClientConfig     `yaml:"client"`
+	HTTP       sharedconfig.HTTPConfig     `yaml:"http"`
+	GRPC       sharedconfig.GRPCConfig     `yaml:"grpc"`
+	Storage    sharedconfig.StorageConfig  `yaml:"storage"`
+	Security   sharedconfig.SecurityConfig `yaml:"security"`
+	Validation ValidationConfig            `yaml:"validation"`
+	Client     ClientConfig                `yaml:"client"`
 }
 
 // ValidationConfig represents validation-specific configuration
@@ -33,33 +36,31 @@ func LoadConfig(configPath string) (*Config, error) {
 		EnvPrefix:  "FR0G",
 	})
 
-	// Create config with embedded ServerConfig
+	// Create config with direct field assignment
 	cfg := &Config{
-		ServerConfig: sharedconfig.ServerConfig{
-			HTTP: sharedconfig.HTTPConfig{
-				Port:         getEnvOrDefault("HTTP_PORT", "8080"),
-				Host:         getEnvOrDefault("HTTP_HOST", "0.0.0.0"),
-				ReadTimeout:  30 * time.Second,
-				WriteTimeout: 30 * time.Second,
-				EnableTLS:    false,
-			},
-			GRPC: sharedconfig.GRPCConfig{
-				Port:             getEnvOrDefault("GRPC_PORT", "9090"),
-				Host:             getEnvOrDefault("GRPC_HOST", "0.0.0.0"),
-				EnableReflection: getBoolEnv("GRPC_ENABLE_REFLECTION", true),
-			},
-			Storage: sharedconfig.StorageConfig{
-				Type:    getEnvOrDefault("FR0G_STORAGE_TYPE", "file"),
-				DataDir: getEnvOrDefault("FR0G_DATA_DIR", "./data"),
-			},
-			Security: sharedconfig.SecurityConfig{
-				EnableAuth:       getBoolEnv("ENABLE_AUTH", false),
-				EnableCORS:       getBoolEnv("ENABLE_CORS", true),
-				AllowedOrigins:   []string{"*"},
-				RateLimitRPM:     60,
-				RequireAPIKey:    getBoolEnv("REQUIRE_API_KEY", false),
-				EnableReflection: getBoolEnv("GRPC_ENABLE_REFLECTION", true),
-			},
+		HTTP: sharedconfig.HTTPConfig{
+			Port:         getEnvOrDefault("HTTP_PORT", "8080"),
+			Host:         getEnvOrDefault("HTTP_HOST", "0.0.0.0"),
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			EnableTLS:    false,
+		},
+		GRPC: sharedconfig.GRPCConfig{
+			Port:             getEnvOrDefault("GRPC_PORT", "9090"),
+			Host:             getEnvOrDefault("GRPC_HOST", "0.0.0.0"),
+			EnableReflection: getBoolEnv("GRPC_ENABLE_REFLECTION", true),
+		},
+		Storage: sharedconfig.StorageConfig{
+			Type:    getEnvOrDefault("FR0G_STORAGE_TYPE", "file"),
+			DataDir: getEnvOrDefault("FR0G_DATA_DIR", "./data"),
+		},
+		Security: sharedconfig.SecurityConfig{
+			EnableAuth:       getBoolEnv("ENABLE_AUTH", false),
+			EnableCORS:       getBoolEnv("ENABLE_CORS", true),
+			AllowedOrigins:   []string{"*"},
+			RateLimitRPM:     60,
+			RequireAPIKey:    getBoolEnv("REQUIRE_API_KEY", false),
+			EnableReflection: getBoolEnv("GRPC_ENABLE_REFLECTION", true),
 		},
 		Validation: ValidationConfig{
 			StrictMode: getBoolEnv("VALIDATION_STRICT_MODE", false),
@@ -72,7 +73,7 @@ func LoadConfig(configPath string) (*Config, error) {
 
 	// Load from file if specified
 	if configPath != "" {
-		if err := loader.LoadFromFile(cfg, configPath); err != nil {
+		if err := loader.LoadFromFile(cfg); err != nil {
 			return nil, err
 		}
 	}
@@ -88,7 +89,28 @@ func Load() *Config {
 
 // Validate validates the configuration using centralized validation
 func (c *Config) Validate() error {
-	return c.ServerConfig.Validate()
+	var errors sharedconfig.ValidationErrors
+	
+	// Validate HTTP config
+	if err := sharedconfig.ValidatePort(c.HTTP.Port, "http.port"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	// Validate gRPC config
+	if err := sharedconfig.ValidatePort(c.GRPC.Port, "grpc.port"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	// Validate storage config
+	if err := sharedconfig.ValidateRequired(c.Storage.Type, "storage.type"); err != nil {
+		errors = append(errors, *err)
+	}
+	
+	if len(errors) > 0 {
+		return errors
+	}
+	
+	return nil
 }
 
 // GetString implements the interface for getting string configuration values
