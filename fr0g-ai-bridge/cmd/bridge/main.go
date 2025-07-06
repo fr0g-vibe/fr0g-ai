@@ -4,11 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-bridge/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/pkg/lifecycle"
@@ -91,6 +97,15 @@ func main() {
 		}
 	}()
 
+	// Start gRPC server for bridge
+	go func() {
+		grpcAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.GRPCPort)
+		log.Printf("🚀 gRPC server starting on %s", grpcAddr)
+		if err := startBridgeGRPCServer(grpcAddr); err != nil {
+			log.Printf("gRPC server error: %v", err)
+		}
+	}()
+
 	log.Printf("✅ fr0g-ai-bridge service is now operational!")
 	log.Printf("🔗 Health check: http://%s:%d/health", cfg.Server.Host, cfg.Server.HTTPPort)
 	log.Printf("📊 Status endpoint: http://%s:%d/status", cfg.Server.Host, cfg.Server.HTTPPort)
@@ -120,4 +135,25 @@ func main() {
 	}
 
 	log.Println("✅ fr0g-ai-bridge service stopped gracefully")
+}
+
+// startBridgeGRPCServer starts a gRPC server for the bridge service
+func startBridgeGRPCServer(addr string) error {
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("failed to listen on %s: %w", addr, err)
+	}
+
+	s := grpc.NewServer()
+
+	// Register health service
+	healthServer := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(s, healthServer)
+	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
+
+	// Enable reflection for testing
+	reflection.Register(s)
+
+	log.Printf("Bridge gRPC server listening on %s", addr)
+	return s.Serve(lis)
 }

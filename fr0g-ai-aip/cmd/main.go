@@ -88,6 +88,9 @@ func main() {
 		}
 	}()
 
+	// Give servers time to start
+	time.Sleep(2 * time.Second)
+
 	// Start REST API server
 	restServer := api.NewServer(cfg, personaService, registryClient)
 
