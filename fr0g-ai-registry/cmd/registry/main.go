@@ -99,7 +99,18 @@ func (r *Registry) loadFromRedis() error {
 	defer r.mu.Unlock()
 	
 	for id, service := range services {
-		r.services[id] = service
+		// Convert storage.ServiceInfo to main.ServiceInfo
+		mainService := &ServiceInfo{
+			ID:       service.ID,
+			Name:     service.Name,
+			Address:  service.Address,
+			Port:     service.Port,
+			Tags:     service.Tags,
+			Meta:     service.Meta,
+			Health:   service.Health,
+			LastSeen: service.LastSeen,
+		}
+		r.services[id] = mainService
 		log.Printf("Loaded service from Redis: %s (%s)", service.Name, service.ID)
 	}
 	
@@ -115,8 +126,18 @@ func (r *Registry) Register(service *ServiceInfo) error {
 	service.LastSeen = time.Now()
 	service.Health = "passing"
 	
-	// Save to Redis first
-	if err := r.storage.SaveService(r.ctx, service); err != nil {
+	// Convert to storage.ServiceInfo and save to Redis first
+	storageService := &storage.ServiceInfo{
+		ID:       service.ID,
+		Name:     service.Name,
+		Address:  service.Address,
+		Port:     service.Port,
+		Tags:     service.Tags,
+		Meta:     service.Meta,
+		Health:   service.Health,
+		LastSeen: service.LastSeen,
+	}
+	if err := r.storage.SaveService(r.ctx, storageService); err != nil {
 		metrics.RedisOperations.WithLabelValues("save", "error").Inc()
 		return fmt.Errorf("failed to persist service: %w", err)
 	}
@@ -259,8 +280,18 @@ func (r *Registry) checkServiceHealth() {
 		if now.Sub(service.LastSeen) > 2*time.Minute {
 			if service.Health != "critical" {
 				service.Health = "critical"
-				// Persist health change to Redis
-				r.storage.SaveService(r.ctx, service)
+				// Convert to storage.ServiceInfo and persist health change to Redis
+				storageService := &storage.ServiceInfo{
+					ID:       service.ID,
+					Name:     service.Name,
+					Address:  service.Address,
+					Port:     service.Port,
+					Tags:     service.Tags,
+					Meta:     service.Meta,
+					Health:   service.Health,
+					LastSeen: service.LastSeen,
+				}
+				r.storage.SaveService(r.ctx, storageService)
 				// Invalidate cache
 				r.cache.Delete("all_services")
 				r.cache.Delete("service:" + service.ID)

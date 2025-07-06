@@ -68,7 +68,7 @@ TOTAL_REQUESTS=$(wc -l < "$RESULTS_FILE")
 AVG_LATENCY=$(awk '{sum+=$1} END {print sum/NR}' "$RESULTS_FILE")
 MAX_LATENCY=$(sort -n "$RESULTS_FILE" | tail -1)
 MIN_LATENCY=$(sort -n "$RESULTS_FILE" | head -1)
-P95_LATENCY=$(sort -n "$RESULTS_FILE" | awk -v p=95 'NR==int(NR*p/100){print}')
+P95_LATENCY=$(sort -n "$RESULTS_FILE" | awk 'END{print $(int(NR*0.95))}')
 
 echo
 echo "📊 Performance Results:"
@@ -79,9 +79,9 @@ echo "Max Latency: ${MAX_LATENCY}ms"
 echo "95th Percentile: ${P95_LATENCY}ms"
 echo
 
-# Check if target is met
+# Check if target is met (using awk for arithmetic)
 TARGET_LATENCY=50
-if (( $(echo "$AVG_LATENCY < $TARGET_LATENCY" | bc -l) )); then
+if awk "BEGIN {exit !($AVG_LATENCY < $TARGET_LATENCY)}"; then
     echo "COMPLETED SUCCESS: Average latency (${AVG_LATENCY}ms) is below target (${TARGET_LATENCY}ms)"
     SUCCESS=true
 else
@@ -89,7 +89,7 @@ else
     SUCCESS=false
 fi
 
-if (( $(echo "$P95_LATENCY < $TARGET_LATENCY" | bc -l) )); then
+if awk "BEGIN {exit !($P95_LATENCY < $TARGET_LATENCY)}"; then
     echo "COMPLETED SUCCESS: 95th percentile (${P95_LATENCY}ms) is below target (${TARGET_LATENCY}ms)"
 else
     echo "CRITICAL FAILED: 95th percentile (${P95_LATENCY}ms) exceeds target (${TARGET_LATENCY}ms)"
