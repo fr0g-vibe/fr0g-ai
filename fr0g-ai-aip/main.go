@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,44 +12,69 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/api"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	grpcserver "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc"
-	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
-	"google.golang.org/grpc"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/registry"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 )
 
 func main() {
 	// Load configuration
-	cfg := config.Load()
-
-	// Start gRPC server
-	grpcServer := grpc.NewServer()
-	grpcPersonaServer := grpcserver.NewServer()
-	pb.RegisterPersonaServiceServer(grpcServer, grpcPersonaServer)
-
-	grpcPort := cfg.GetString("GRPC_PORT", "50051")
-	grpcListener, err := net.Listen("tcp", ":"+grpcPort)
+	cfg, err := config.LoadConfig("")
 	if err != nil {
-		log.Fatalf("Failed to listen on gRPC port %s: %v", grpcPort, err)
+		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	// Validate configuration
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("Configuration validation failed: %v", err)
+	}
+
+	// Initialize storage
+	var store storage.Storage
+	var err2 error
+	switch cfg.Storage.Type {
+	case "memory":
+		store = storage.NewMemoryStorage()
+	case "file":
+		store, err2 = storage.NewFileStorage(cfg.Storage.DataDir)
+		if err2 != nil {
+			log.Fatalf("Failed to initialize file storage: %v", err2)
+		}
+	default:
+		log.Fatalf("Unsupported storage type: %s", cfg.Storage.Type)
+	}
+
+	// Initialize persona service
+	personaService := persona.NewService(store)
+
+	// Initialize registry client
+	var registryClient *registry.RegistryClient
+	if os.Getenv("ENABLE_REGISTRY") != "false" {
+		registryClient, err = registry.NewRegistryClient("http://localhost:8500")
+		if err != nil {
+			log.Printf("Warning: Failed to create registry client: %v", err)
+		} else {
+			// Register service
+			if err := registryClient.RegisterService("fr0g-ai-aip", cfg.HTTP.Port, cfg.GRPC.Port); err != nil {
+				log.Printf("Warning: Failed to register service: %v", err)
+			}
+		}
+	}
+
+	// Start gRPC server
 	go func() {
-		log.Printf("gRPC server starting on port %s", grpcPort)
-		if err := grpcServer.Serve(grpcListener); err != nil {
+		log.Printf("Starting gRPC server on port %s", cfg.GRPC.Port)
+		if err := grpcserver.StartGRPCServerWithConfig(cfg, personaService); err != nil {
 			log.Printf("gRPC server error: %v", err)
 		}
 	}()
 
 	// Start REST API server
-	restServer := api.NewServer(cfg, nil)
-	restPort := cfg.GetString("REST_PORT", "8080")
-
-	httpServer := &http.Server{
-		Addr:    ":" + restPort,
-		Handler: restServer,
-	}
-
+	restServer := api.NewServer(cfg, personaService, registryClient)
+	
 	go func() {
-		log.Printf("REST API server starting on port %s", restPort)
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Printf("Starting REST API server on port %s", cfg.HTTP.Port)
+		if err := restServer.Start(); err != nil {
 			log.Printf("REST server error: %v", err)
 		}
 	}()
@@ -67,12 +91,9 @@ func main() {
 	defer shutdownCancel()
 
 	// Shutdown REST server
-	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+	if err := restServer.Shutdown(shutdownCtx); err != nil {
 		log.Printf("REST server shutdown error: %v", err)
 	}
-
-	// Shutdown gRPC server
-	grpcServer.GracefulStop()
 
 	log.Println("Servers stopped")
 }
