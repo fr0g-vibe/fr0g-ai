@@ -47,7 +47,7 @@ fr0g-ai-io/
 - **Input Processors**: All 5 processors operational (SMS, Voice, Email, IRC, Discord)
 - **Output Framework**: Complete output manager with 4 processors registered
 - **Message Queuing**: Memory-based queuing with Redis persistence planned
-- **API Integration**: HTTP server on port 8083, gRPC on port 9093
+- **API Integration**: HTTP server on port 8083, gRPC on port 9092
 - **Health Monitoring**: Service health checks and status reporting
 - **Container Support**: Docker containerization with health checks
 

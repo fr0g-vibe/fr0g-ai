@@ -46,7 +46,7 @@ fr0g.ai is designed as a comprehensive microservices-based AI security platform 
 │     Persona Storage                 External APIs              ┌─────────────────┐
 │     (293 personas)                  (OpenWebUI)               │   fr0g-ai-io    │
 │                                                               │ (Input/Output)  │
-│                                                               │   :8083/:9093   │
+│                                                               │   :8083/:9092   │
 │                                                               └─────────────────┘
 │                                                                        │
 │                                                                        ▼
@@ -171,7 +171,7 @@ fr0g.ai is designed as a comprehensive microservices-based AI security platform 
 
 **Ports**:
 - HTTP: 8083
-- gRPC: 9093
+- gRPC: 9092
 
 **Status**: OPERATIONAL - All 5 input processors working, output framework complete
 

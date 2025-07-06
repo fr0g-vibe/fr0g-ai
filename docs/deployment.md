@@ -139,7 +139,7 @@ DATABASE_URL=postgres://user:pass@host:5432/fr0g_ai
 - **fr0g-ai-aip**: HTTP 8080, gRPC 9090
 - **fr0g-ai-bridge**: HTTP 8082, gRPC 9091
 - **fr0g-ai-master-control**: HTTP 8081
-- **fr0g-ai-io**: HTTP 8083, gRPC 9093
+- **fr0g-ai-io**: HTTP 8083, gRPC 9092
 
 #### Load Balancer Configuration
 ```nginx
