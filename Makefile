@@ -169,46 +169,6 @@ health-quick:
 	@echo "Checking fr0g-ai-io (port 8083)..."
 	@curl -sf http://localhost:8083/health && echo "COMPLETED IO service healthy" || echo "FAILED IO service down"
 
-# VERIFICATION TASK: Monitor critical fixes across all services
-verify-fixes:
-	@echo "VERIFICATION Starting critical fixes monitoring..."
-	@echo "TRACKING 1) AIP configuration migration progress"
-	@echo "TRACKING 2) Master-control storage validation fix"
-	@echo "TRACKING 3) I/O API integration status"
-	@$(MAKE) verify-aip-config
-	@$(MAKE) verify-mcp-storage
-	@$(MAKE) verify-io-integration
-	@$(MAKE) verify-build-success
-	@$(MAKE) verify-service-startup
-	@$(MAKE) verify-health-checks
-	@echo "COMPLETED Critical fixes verification completed"
-
-verify-aip-config:
-	@echo "CHECKING AIP configuration migration progress..."
-	@cd fr0g-ai-aip && go build -v ./... >/dev/null 2>&1 && echo "COMPLETED AIP builds successfully" || echo "CRITICAL AIP build failed"
-	@curl -sf http://localhost:8080/health >/dev/null 2>&1 && echo "COMPLETED AIP service operational" || echo "MISSING AIP service not responding"
-
-verify-mcp-storage:
-	@echo "CHECKING Master-control storage validation fix..."
-	@cd fr0g-ai-master-control && go build -v ./... >/dev/null 2>&1 && echo "COMPLETED MCP builds successfully" || echo "CRITICAL MCP build failed"
-	@curl -sf http://localhost:8081/health >/dev/null 2>&1 && echo "COMPLETED MCP service operational" || echo "MISSING MCP service not responding"
-
-verify-io-integration:
-	@echo "CHECKING I/O API integration status..."
-	@cd fr0g-ai-io && go build -v ./... >/dev/null 2>&1 && echo "COMPLETED IO builds successfully" || echo "CRITICAL IO build failed"
-	@curl -sf http://localhost:8083/health >/dev/null 2>&1 && echo "COMPLETED IO service operational" || echo "MISSING IO service not responding"
-
-verify-build-success:
-	@echo "CHECKING Build success across all services..."
-	@$(MAKE) build-all >/dev/null 2>&1 && echo "COMPLETED All services build successfully" || echo "CRITICAL Build failures detected"
-
-verify-service-startup:
-	@echo "CHECKING Service startup verification..."
-	@docker-compose ps --format "table {{.Name}}\t{{.Status}}" | grep -v "Exit" >/dev/null 2>&1 && echo "COMPLETED All containers running" || echo "CRITICAL Container startup issues"
-
-verify-health-checks:
-	@echo "CHECKING Health checks verification..."
-	@$(MAKE) health-quick >/dev/null 2>&1 && echo "COMPLETED All health checks passing" || echo "CRITICAL Health check failures"
 
 # AIP-specific testing (delegates to subproject)
 test-aip-service:
