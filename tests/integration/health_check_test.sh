@@ -62,31 +62,33 @@ check_grpc_health() {
     local host=$(echo $url | cut -d: -f1)
     local port=$(echo $url | cut -d: -f2)
     if ! nc -z "$host" "$port" 2>/dev/null; then
-        echo -e "${RED}PORT CLOSED${NC}"
+        echo -e "${RED}CRITICAL PORT CLOSED${NC}"
         echo -e "${RED}   gRPC server not listening on $url${NC}"
+        echo -e "${RED}   Check Docker port mapping and service startup${NC}"
         return 1
     fi
     
     # Check if grpcurl is available
     if command -v grpcurl >/dev/null 2>&1; then
-        # Try health check
+        # Try health check first
         if grpcurl -plaintext "$url" grpc.health.v1.Health/Check >/dev/null 2>&1; then
-            echo -e "${GREEN}HEALTHY${NC}"
+            echo -e "${GREEN}COMPLETED HEALTHY${NC}"
             return 0
         else
             # Try listing services to see if gRPC is responding
             if grpcurl -plaintext "$url" list >/dev/null 2>&1; then
-                echo -e "${YELLOW}RESPONDING (no health service)${NC}"
+                echo -e "${YELLOW}COMPLETED RESPONDING (no health service)${NC}"
+                echo -e "${YELLOW}   gRPC server operational but missing health check${NC}"
                 return 0
             else
-                echo -e "${RED}UNHEALTHY${NC}"
-                echo -e "${RED}   gRPC server not responding properly${NC}"
+                echo -e "${RED}CRITICAL UNHEALTHY${NC}"
+                echo -e "${RED}   gRPC server not responding - check service logs${NC}"
                 return 1
             fi
         fi
     else
-        echo -e "${YELLOW}PORT OPEN (grpcurl not available)${NC}"
-        echo -e "${YELLOW}   Install grpcurl for detailed gRPC testing${NC}"
+        echo -e "${YELLOW}COMPLETED PORT OPEN (grpcurl not available)${NC}"
+        echo -e "${YELLOW}   Install grpcurl: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest${NC}"
         return 0
     fi
 }
@@ -106,9 +108,9 @@ test_service_registry() {
     local reg_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/agent/service/register" -X POST -H "Content-Type: application/json" -d '{"ID":"test","Name":"test","Port":8000}' 2>/dev/null)
     local reg_code="${reg_response: -3}"
     if [ "$reg_code" = "200" ] || [ "$reg_code" = "201" ]; then
-        echo -e "${GREEN}OPERATIONAL${NC}"
+        echo -e "${GREEN}COMPLETED OPERATIONAL${NC}"
     else
-        echo -e "${RED}CRITICAL - ENDPOINT MISSING (HTTP $reg_code)${NC}"
+        echo -e "${RED}CRITICAL ENDPOINT MISSING (HTTP $reg_code)${NC}"
         echo -e "${RED}   This is blocking all service discovery${NC}"
     fi
     
@@ -117,16 +119,17 @@ test_service_registry() {
     local disc_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/catalog/services" 2>/dev/null)
     local disc_code="${disc_response: -3}"
     if [ "$disc_code" = "200" ]; then
-        echo -e "${GREEN}OPERATIONAL${NC}"
+        echo -e "${GREEN}COMPLETED OPERATIONAL${NC}"
         local services="${disc_response%???}"
         if [ -n "$services" ] && [ "$services" != "{}" ]; then
-            echo "Registered services:"
+            echo "COMPLETED Registered services found:"
             echo "$services" | jq -r 'keys[]' 2>/dev/null || echo "$services"
         else
-            echo -e "${YELLOW}   No services currently registered${NC}"
+            echo -e "${YELLOW}MISSING No services currently registered${NC}"
+            echo -e "${YELLOW}   Services should auto-register on startup${NC}"
         fi
     else
-        echo -e "${RED}CRITICAL - ENDPOINT MISSING (HTTP $disc_code)${NC}"
+        echo -e "${RED}CRITICAL ENDPOINT MISSING (HTTP $disc_code)${NC}"
         echo -e "${RED}   Service discovery completely broken${NC}"
     fi
     
@@ -135,10 +138,23 @@ test_service_registry() {
     local health_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/health/service/test" 2>/dev/null)
     local health_code="${health_response: -3}"
     if [ "$health_code" = "200" ] || [ "$health_code" = "404" ]; then
-        echo -e "${GREEN}OPERATIONAL${NC}"
+        echo -e "${GREEN}COMPLETED OPERATIONAL${NC}"
     else
-        echo -e "${RED}CRITICAL - ENDPOINT MISSING (HTTP $health_code)${NC}"
+        echo -e "${RED}CRITICAL ENDPOINT MISSING (HTTP $health_code)${NC}"
     fi
+    
+    # Test service registration status for all expected services
+    echo -e "\n${BLUE}CRITICAL Checking service registration status:${NC}"
+    local expected_services=("fr0g-ai-aip" "fr0g-ai-bridge" "fr0g-ai-io" "fr0g-ai-master-control")
+    for service in "${expected_services[@]}"; do
+        echo -n "  $service registration... "
+        local svc_response=$(curl -s "$REGISTRY_URL/v1/catalog/service/$service" 2>/dev/null)
+        if echo "$svc_response" | jq -e '. | length > 0' >/dev/null 2>&1; then
+            echo -e "${GREEN}COMPLETED REGISTERED${NC}"
+        else
+            echo -e "${RED}CRITICAL NOT REGISTERED${NC}"
+        fi
+    done
     
     return 0
 }
@@ -375,8 +391,8 @@ test_container_health() {
 
 # Function to generate summary report
 generate_summary() {
-    echo -e "\n${BLUE}CRITICAL ISSUES SUMMARY${NC}"
-    echo "======================="
+    echo -e "\n${BLUE}CRITICAL INFRASTRUCTURE STATUS SUMMARY${NC}"
+    echo "======================================="
     
     # Test actual service status
     local registry_http_ok=false
@@ -412,64 +428,64 @@ generate_summary() {
     echo "------------------|-------|-------|-------|--------"
     
     # Registry
-    local reg_status="${GREEN}OPERATIONAL${NC}"
+    local reg_status="${GREEN}COMPLETED OPERATIONAL${NC}"
     if ! $registry_http_ok; then
-        reg_status="${RED}CRITICAL${NC}"
+        reg_status="${RED}CRITICAL FAILED${NC}"
     elif ! $registry_api_ok; then
-        reg_status="${RED}API MISSING${NC}"
+        reg_status="${RED}CRITICAL API MISSING${NC}"
     fi
     printf "%-17s | %-5s | %-5s | %-5s | %s\n" "Registry" \
-        "$($registry_http_ok && echo "✓" || echo "✗")" \
+        "$($registry_http_ok && echo "OK" || echo "FAIL")" \
         "N/A" \
-        "$($registry_api_ok && echo "✓" || echo "✗")" \
+        "$($registry_api_ok && echo "OK" || echo "FAIL")" \
         "$reg_status"
     
     # AIP
-    local aip_status="${GREEN}OPERATIONAL${NC}"
+    local aip_status="${GREEN}COMPLETED OPERATIONAL${NC}"
     if ! $aip_http_ok; then
-        aip_status="${RED}CRITICAL${NC}"
+        aip_status="${RED}CRITICAL FAILED${NC}"
     elif ! $aip_grpc_ok; then
-        aip_status="${YELLOW}gRPC ISSUE${NC}"
+        aip_status="${YELLOW}MISSING gRPC${NC}"
     fi
     printf "%-17s | %-5s | %-5s | %-5s | %s\n" "AIP" \
-        "$($aip_http_ok && echo "✓" || echo "✗")" \
-        "$($aip_grpc_ok && echo "✓" || echo "✗")" \
+        "$($aip_http_ok && echo "OK" || echo "FAIL")" \
+        "$($aip_grpc_ok && echo "OK" || echo "FAIL")" \
         "N/A" \
         "$aip_status"
     
     # Bridge
-    local bridge_status="${GREEN}OPERATIONAL${NC}"
+    local bridge_status="${GREEN}COMPLETED OPERATIONAL${NC}"
     if ! $bridge_http_ok; then
-        bridge_status="${RED}CRITICAL${NC}"
+        bridge_status="${RED}CRITICAL FAILED${NC}"
     elif ! $bridge_grpc_ok; then
-        bridge_status="${YELLOW}gRPC ISSUE${NC}"
+        bridge_status="${YELLOW}MISSING gRPC${NC}"
     fi
     printf "%-17s | %-5s | %-5s | %-5s | %s\n" "Bridge" \
-        "$($bridge_http_ok && echo "✓" || echo "✗")" \
-        "$($bridge_grpc_ok && echo "✓" || echo "✗")" \
+        "$($bridge_http_ok && echo "OK" || echo "FAIL")" \
+        "$($bridge_grpc_ok && echo "OK" || echo "FAIL")" \
         "N/A" \
         "$bridge_status"
     
     # IO
-    local io_status="${GREEN}OPERATIONAL${NC}"
+    local io_status="${GREEN}COMPLETED OPERATIONAL${NC}"
     if ! $io_http_ok; then
-        io_status="${RED}CRITICAL${NC}"
+        io_status="${RED}CRITICAL FAILED${NC}"
     elif ! $io_grpc_ok; then
-        io_status="${YELLOW}gRPC ISSUE${NC}"
+        io_status="${YELLOW}MISSING gRPC${NC}"
     fi
     printf "%-17s | %-5s | %-5s | %-5s | %s\n" "IO" \
-        "$($io_http_ok && echo "✓" || echo "✗")" \
-        "$($io_grpc_ok && echo "✓" || echo "✗")" \
+        "$($io_http_ok && echo "OK" || echo "FAIL")" \
+        "$($io_grpc_ok && echo "OK" || echo "FAIL")" \
         "N/A" \
         "$io_status"
     
     # Master Control
-    local mcp_status="${GREEN}OPERATIONAL${NC}"
+    local mcp_status="${GREEN}COMPLETED OPERATIONAL${NC}"
     if ! $mcp_http_ok; then
-        mcp_status="${RED}CRITICAL${NC}"
+        mcp_status="${RED}CRITICAL FAILED${NC}"
     fi
     printf "%-17s | %-5s | %-5s | %-5s | %s\n" "Master Control" \
-        "$($mcp_http_ok && echo "✓" || echo "✗")" \
+        "$($mcp_http_ok && echo "OK" || echo "FAIL")" \
         "N/A" \
         "N/A" \
         "$mcp_status"

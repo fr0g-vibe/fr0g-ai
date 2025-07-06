@@ -43,7 +43,7 @@ RUN mkdir -p /app/data /app/logs && chown -R fr0g:fr0g /app
 USER fr0g
 
 # Expose ports
-EXPOSE 8083 9093
+EXPOSE 8083 9092
 
 # Health check - Enhanced for API integration monitoring
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
