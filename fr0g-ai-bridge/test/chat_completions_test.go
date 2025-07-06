@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -72,7 +73,7 @@ func validateRole(role string) error {
 }
 
 func validateRequired(value, fieldName string) error {
-	if len(value) == 0 || len(value) == 0 {
+	if strings.TrimSpace(value) == "" {
 		return fmt.Errorf("%s is required", fieldName)
 	}
 	return nil
@@ -232,7 +233,7 @@ func validateChatCompletionRequest(req *models.ChatCompletionRequest) error {
 	}
 	
 	if len(req.Messages) == 0 {
-		return fmt.Errorf("at least one message is required")
+		return fmt.Errorf("messages are required")
 	}
 	
 	if len(req.Messages) > 100 {
