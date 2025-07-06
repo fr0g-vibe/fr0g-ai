@@ -83,20 +83,10 @@ func main() {
 		}
 	}
 
-	// Start gRPC server
-	grpcServer := grpc.NewServer()
-	grpcPersonaServer := grpcserver.NewPersonaServer(cfg, personaService)
-	pb.RegisterPersonaServiceServer(grpcServer, grpcPersonaServer)
-
-	grpcPort := cfg.GRPC.Port
-	grpcListener, err := net.Listen("tcp", ":"+grpcPort)
-	if err != nil {
-		log.Fatalf("Failed to listen on gRPC port %s: %v", grpcPort, err)
-	}
-
+	// Start gRPC server with proper configuration
 	go func() {
-		log.Printf("SUCCESS: gRPC server starting on port %s", grpcPort)
-		if err := grpcServer.Serve(grpcListener); err != nil {
+		log.Printf("SUCCESS: gRPC server starting on port %s", cfg.GRPC.Port)
+		if err := grpcserver.StartGRPCServerWithConfig(cfg, personaService); err != nil {
 			log.Printf("gRPC server error: %v", err)
 		}
 	}()

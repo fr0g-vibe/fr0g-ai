@@ -43,6 +43,12 @@ func StartGRPCServer(port string) error {
 
 	pb.RegisterPersonaServiceServer(s, personaServer)
 
+	// Enable reflection for development/testing
+	if os.Getenv("GRPC_ENABLE_REFLECTION") == "true" {
+		fmt.Println("WARNING: gRPC reflection is ENABLED - DO NOT use in production!")
+		reflection.Register(s)
+	}
+
 	fmt.Printf("gRPC server listening on port %s\n", port)
 	fmt.Println("Using real gRPC with protobuf")
 
@@ -51,7 +57,12 @@ func StartGRPCServer(port string) error {
 
 // NewServer creates a new gRPC server instance (simple version for main.go)
 func NewServer() *PersonaServer {
-	return &PersonaServer{}
+	// Create a default service for standalone usage
+	memStorage := storage.NewMemoryStorage()
+	service := persona.NewService(memStorage)
+	return &PersonaServer{
+		service: service,
+	}
 }
 
 // NewPersonaServer creates a new gRPC persona server
@@ -124,6 +135,11 @@ func (s *PersonaServer) CreatePersona(ctx context.Context, req *pb.CreatePersona
 
 	if s.service == nil {
 		return nil, status.Errorf(codes.Internal, "persona service not available")
+	}
+
+	// Validate required fields
+	if req.Persona.Name == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "persona name is required")
 	}
 
 	// Convert proto to internal type
@@ -235,6 +251,14 @@ func (s *PersonaServer) CreateIdentity(ctx context.Context, req *pb.CreateIdenti
 
 	if s.service == nil {
 		return nil, status.Errorf(codes.Internal, "persona service not available")
+	}
+
+	// Validate required fields
+	if req.Identity.Name == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "identity name is required")
+	}
+	if req.Identity.PersonaId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "persona_id is required")
 	}
 
 	// Convert proto to internal type
