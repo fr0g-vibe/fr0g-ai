@@ -112,10 +112,6 @@ func main() {
 
 	log.Println("Shutdown signal received...")
 
-	// Create shutdown context with timeout
-	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer shutdownCancel()
-
 	// Stop the MCP service
 	if err := mcp.Stop(); err != nil {
 		log.Printf("Error during shutdown: %v", err)
