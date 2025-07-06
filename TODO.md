@@ -1000,33 +1000,75 @@ Test Execution Time: 0.005s (excellent performance)
 - **Performance**: ✅ Production-ready performance under load
 - **New Components**: 📋 Begin development of analytics and gateway services
 
-## IMMEDIATE NEXT STEPS (THIS WEEK) - AGENT DISPATCH INITIATED
+## IMMEDIATE NEXT STEPS (THIS WEEK) - CRITICAL AGENT DISPATCH IN PROGRESS
 
-### CRITICAL BLOCKER RESOLUTION - COORDINATED AGENT DISPATCH
+### CRITICAL BLOCKER RESOLUTION - COORDINATED AGENT DISPATCH ACTIVE
 
-**DISPATCH STATUS**: Coordinating critical fixes across specialized agents
+**DISPATCH STATUS**: Dispatching critical tasks to specialized aider agents (windows 0-7)
 
-### Day 1-2: AIP Configuration Crisis - DISPATCHED TO AIP AGENT
-1. **CRITICAL**: Migrate fr0g-ai-aip to centralized pkg/config system
-2. **CRITICAL**: Fix API server constructor with required parameters
-3. **CRITICAL**: Implement missing configuration methods
-4. **CRITICAL**: Fix validation logic for proper input rejection
-5. **CRITICAL**: Resolve all test compilation errors
+### CRITICAL BLOCKER 1: AIP Configuration Crisis - DISPATCHING TO AIP AGENT (Window 1)
+**TASK**: Fix fr0g-ai-aip configuration system migration and test failures
+**ISSUES**: Using old local config, missing constructor parameters, test compilation failures
+**COMMAND DISPATCH**:
+```bash
+tmux send-keys -t fr0g-ai:1 "CRITICAL TASK: Fix fr0g-ai-aip configuration system migration. Issues: 1) Using old local config instead of centralized pkg/config 2) API server constructor missing required parameters 3) Missing GetString method 4) Test compilation failures 5) Validation logic not rejecting invalid inputs. PRIORITY: Fix configuration migration first, then constructor, then tests. TARGET: All tests pass, service builds successfully." C-m
+```
 
-### Day 3-4: Master-Control Storage Fix - DISPATCHED TO MCP AGENT
-1. **CRITICAL**: Debug storage type validation error
-2. **CRITICAL**: Fix 'file' storage type acceptance
-3. **CRITICAL**: Test storage configuration validation
-4. **CRITICAL**: Verify service startup with file storage
+### CRITICAL BLOCKER 2: Master-Control Storage Validation - DISPATCHING TO MCP AGENT (Window 3)
+**TASK**: Fix storage type validation error preventing service startup
+**ISSUE**: Service rejecting 'file' storage type configuration
+**COMMAND DISPATCH**:
+```bash
+tmux send-keys -t fr0g-ai:3 "CRITICAL TASK: Fix storage type validation error in fr0g-ai-master-control. ISSUE: Service rejecting 'file' storage type configuration preventing startup. DEBUG: Storage validation logic incorrectly rejecting valid 'file' type. FIX: Update validation to accept 'file' storage type. TEST: Verify service starts with file storage. TARGET: Service startup success with file storage." C-m
+```
 
-### Day 5-7: I/O API Integration - DISPATCHED TO IO AGENT
-1. **HIGH**: Implement real Google Voice API for SMS
-2. **HIGH**: Complete master-control gRPC bidirectional communication
-3. **HIGH**: Add proper error handling and retry logic
-4. **HIGH**: Test end-to-end I/O operations
+### HIGH PRIORITY: I/O External API Integration - DISPATCHING TO IO AGENT (Window 4)
+**TASK**: Complete external API integration for production I/O operations
+**GAPS**: SMS API, master-control gRPC communication, external integrations
+**COMMAND DISPATCH**:
+```bash
+tmux send-keys -t fr0g-ai:4 "HIGH PRIORITY TASK: Complete external API integration for fr0g-ai-io. GAPS: 1) SMS output needs real Google Voice API 2) Master-control gRPC bidirectional communication incomplete 3) Missing external API integrations. IMPLEMENT: Real Google Voice API client, complete gRPC communication, add error handling and retries. TARGET: Production-ready SMS with 99% delivery rate." C-m
+```
 
-**COORDINATION STATUS**: All critical agents dispatched with specific tasks
-**FOCUS**: Resolve critical blockers before any new feature development. The project has excellent infrastructure but needs these critical fixes to unlock its full potential.
+### SUPPORT COORDINATION - DISPATCHING TO CONFIG AGENT (Window 5)
+**TASK**: Ensure centralized config system supports AIP migration
+**SUPPORT**: Verify pkg/config system readiness for AIP migration
+**COMMAND DISPATCH**:
+```bash
+tmux send-keys -t fr0g-ai:5 "SUPPORT TASK: Verify pkg/config system is ready for AIP migration. ENSURE: All validation functions available, proper import patterns documented, no missing dependencies. COORDINATE: Support AIP agent with any config system issues. STATUS: Centralized config system must be fully operational for AIP migration." C-m
+```
+
+### VERIFICATION COORDINATION - DISPATCHING TO DEVOPS AGENT (Window 6)
+**TASK**: Monitor and verify critical fixes across all services
+**MONITORING**: Track build status and service health during fixes
+**COMMAND DISPATCH**:
+```bash
+tmux send-keys -t fr0g-ai:6 "VERIFICATION TASK: Monitor critical fixes across all services. TRACK: 1) AIP configuration migration progress 2) Master-control storage validation fix 3) I/O API integration status. VERIFY: Build success, service startup, health checks. COORDINATE: Report any infrastructure issues blocking fixes. TARGET: All services operational after fixes." C-m
+```
+
+### REGISTRY OPTIMIZATION - DISPATCHING TO REGISTRY AGENT (Window 7)
+**TASK**: Optimize service discovery performance during critical fixes
+**ENHANCEMENT**: Improve registry performance while other services are being fixed
+**COMMAND DISPATCH**:
+```bash
+tmux send-keys -t fr0g-ai:7 "OPTIMIZATION TASK: Enhance service registry performance during critical fixes. CURRENT: 606ms latency under load needs improvement. IMPLEMENT: Redis persistence, discovery caching, performance optimization. TARGET: <50ms discovery latency, zero data loss. COORDINATE: Support other services during their fixes." C-m
+```
+
+**COORDINATION PROTOCOL**: 
+- Each agent focuses on their specialized domain
+- Config agent supports AIP migration with centralized config system
+- DevOps agent monitors overall system health and build status
+- Registry agent optimizes service discovery during fixes
+- All agents coordinate to resolve critical blockers systematically
+
+**EXPECTED OUTCOMES**:
+1. **AIP Service**: Configuration migrated, tests passing, service building successfully
+2. **Master-Control**: Storage validation fixed, service starting with file storage
+3. **I/O Service**: Real SMS API integrated, gRPC communication operational
+4. **Build System**: All services building and starting successfully
+5. **Service Discovery**: Optimized performance supporting all services
+
+**FOCUS**: Resolve critical blockers systematically before any new feature development. The project has excellent infrastructure but needs these critical fixes to unlock its full potential.
 
 ## SERVICE-SPECIFIC ENHANCEMENT ROADMAP
 
