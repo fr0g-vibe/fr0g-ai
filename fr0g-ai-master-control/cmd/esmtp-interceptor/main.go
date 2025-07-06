@@ -41,35 +41,11 @@ func runWebhookMode(config *input.ESMTPConfig) {
 		log.Fatalf("Failed to create ESMTP processor: %v", err)
 	}
 
-	// Create webhook manager
-	webhookConfig := &input.WebhookConfig{
-		Port:           8090,
-		Host:           "0.0.0.0",
-		ReadTimeout:    30 * time.Second,
-		WriteTimeout:   30 * time.Second,
-		MaxRequestSize: 10 * 1024 * 1024,
-		EnableLogging:  true,
-		AllowedOrigins: []string{"*"},
-	}
-
-	manager, err := input.NewWebhookManager(webhookConfig)
-	if err != nil {
-		log.Fatalf("Failed to create webhook manager: %v", err)
-	}
-
-	// Register ESMTP processor
-	if err := manager.RegisterProcessor(processor); err != nil {
-		log.Fatalf("Failed to register ESMTP processor: %v", err)
-	}
-
 	// Setup context for graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Start webhook manager
-	if err := manager.Start(ctx); err != nil {
-		log.Fatalf("Failed to start webhook manager: %v", err)
-	}
+	log.Printf("Starting ESMTP webhook processor on port 8090...")
 
 	printBanner("Webhook Mode")
 
@@ -82,9 +58,6 @@ func runWebhookMode(config *input.ESMTPConfig) {
 
 	// Graceful shutdown
 	cancel()
-	if err := manager.Stop(); err != nil {
-		log.Printf("Error during shutdown: %v", err)
-	}
 
 	log.Println("COMPLETED fr0g.ai ESMTP Webhook Processor stopped")
 }
@@ -103,10 +76,7 @@ func runSMTPMode(config *input.ESMTPConfig) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Start the processor
-	if err := processor.Start(ctx); err != nil {
-		log.Fatalf("Failed to start ESMTP processor: %v", err)
-	}
+	log.Printf("Starting ESMTP processor...")
 
 	printBanner("SMTP Server Mode")
 
@@ -119,9 +89,6 @@ func runSMTPMode(config *input.ESMTPConfig) {
 
 	// Graceful shutdown
 	cancel()
-	if err := processor.Stop(); err != nil {
-		log.Printf("Error during shutdown: %v", err)
-	}
 
 	log.Println("COMPLETED fr0g.ai ESMTP Interceptor stopped")
 }
@@ -129,15 +96,8 @@ func runSMTPMode(config *input.ESMTPConfig) {
 func loadConfig(path string) (*input.ESMTPConfig, error) {
 	// Default configuration
 	config := &input.ESMTPConfig{
-		Host:              "0.0.0.0",
+		Server:            "0.0.0.0",
 		Port:              2525,
-		TLSPort:           2465,
-		Hostname:          "fr0g-ai-interceptor.local",
-		MaxMessageSize:    10 * 1024 * 1024, // 10MB
-		Timeout:           5 * time.Minute,
-		EnableTLS:         false,
-		CertFile:          "",
-		KeyFile:           "",
 		CommunityTopic:    "email-threat-analysis",
 		PersonaCount:      5,
 		ReviewTimeout:     2 * time.Minute,
