@@ -53,7 +53,7 @@ check_service_health() {
     if ! nc -z localhost 8080 2>/dev/null; then
         log_test "HTTP Port Check" "FAIL" "Port 8080 not listening - service not running"
         echo -e "${YELLOW}TIP To start the AIP service, run:${NC}"
-        echo -e "${YELLOW}   docker-compose up fr0g-ai-aip${NC}"
+        echo -e "${YELLOW}   make docker-up${NC}"
         echo -e "${YELLOW}   OR${NC}"
         echo -e "${YELLOW}   cd fr0g-ai-aip && make run${NC}"
         return 1
@@ -437,7 +437,7 @@ main() {
         echo -e "${YELLOW}To start the AIP service for testing:${NC}"
         echo ""
         echo -e "${GREEN}Option 1: Docker Compose (Recommended)${NC}"
-        echo -e "  docker-compose up fr0g-ai-aip"
+        echo -e "  make docker-up"
         echo ""
         echo -e "${GREEN}Option 2: Direct Build and Run${NC}"
         echo -e "  cd fr0g-ai-aip"
@@ -445,7 +445,7 @@ main() {
         echo -e "  make run"
         echo ""
         echo -e "${GREEN}Option 3: Background Service${NC}"
-        echo -e "  docker-compose up -d fr0g-ai-aip"
+        echo -e "  make docker-up"
         echo -e "  ./test_aip_service.sh  # Run tests again"
         echo ""
     fi

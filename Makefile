@@ -106,41 +106,7 @@ run-io:
 	@echo "STARTING Starting fr0g-ai-io service..."
 	@cd fr0g-ai-io && $(MAKE) run
 
-# Install dependencies for all components
-deps:
-	@echo "INSTALLING Installing dependencies for all components..."
-	@echo "Installing shared config dependencies..."
-	@cd pkg/config && go mod tidy && go mod download
-	@echo "Installing fr0g-ai-aip dependencies..."
-	@cd fr0g-ai-aip && $(MAKE) deps
-	@echo "Installing fr0g-ai-bridge dependencies..."
-	@cd fr0g-ai-bridge && $(MAKE) deps
-	@echo "Installing fr0g-ai-master-control dependencies..."
-	@cd fr0g-ai-master-control && $(MAKE) deps
-	@echo "Installing fr0g-ai-io dependencies..."
-	@cd fr0g-ai-io && $(MAKE) deps
-	@echo "Installing fr0g-ai-registry dependencies..."
-	@cd fr0g-ai-registry && $(MAKE) deps
-	@echo "COMPLETED All dependencies installed!"
 
-# Code quality checks for all components
-lint:
-	@echo "CHECKING Running linters on all components..."
-	@cd pkg/config && golangci-lint run || echo "⚠️  Install golangci-lint for better linting"
-	@cd fr0g-ai-aip && $(MAKE) lint
-	@cd fr0g-ai-bridge && $(MAKE) lint
-	@cd fr0g-ai-master-control && $(MAKE) lint
-	@cd fr0g-ai-io && $(MAKE) lint
-	@cd fr0g-ai-registry && $(MAKE) lint
-
-fmt:
-	@echo "🎨 Formatting code for all components..."
-	@cd pkg/config && go fmt ./...
-	@cd fr0g-ai-aip && $(MAKE) fmt
-	@cd fr0g-ai-bridge && $(MAKE) fmt
-	@cd fr0g-ai-master-control && $(MAKE) fmt
-	@cd fr0g-ai-io && $(MAKE) fmt
-	@cd fr0g-ai-registry && $(MAKE) fmt
 
 # Generate protobuf files
 proto:
