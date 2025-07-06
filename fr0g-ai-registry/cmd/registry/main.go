@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -325,7 +326,29 @@ func (r *Registry) registerHandler(w http.ResponseWriter, req *http.Request) {
 	
 	var service ServiceInfo
 	log.Printf("REGISTER HANDLER: Reading request body...")
-	if err := json.NewDecoder(req.Body).Decode(&service); err != nil {
+	
+	// Read the entire body first to debug
+	body, err := io.ReadAll(req.Body)
+	if err != nil {
+		log.Printf("REGISTER HANDLER: Failed to read body: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to read request body: " + err.Error()})
+		return
+	}
+	
+	log.Printf("REGISTER HANDLER: Request body: %s", string(body))
+	
+	if len(body) == 0 {
+		log.Printf("REGISTER HANDLER: Empty request body")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Request body is empty"})
+		return
+	}
+	
+	// Parse JSON from the body
+	if err := json.Unmarshal(body, &service); err != nil {
 		log.Printf("REGISTER HANDLER: JSON decode error: %v", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
