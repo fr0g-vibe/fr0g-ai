@@ -24,8 +24,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-bridge ./
 # Runtime stage
 FROM alpine:latest
 
-# Install ca-certificates and curl for health checks
-RUN apk --no-cache add ca-certificates curl
+# Install ca-certificates, curl, and netcat for health checks
+RUN apk --no-cache add ca-certificates curl netcat-openbsd
 
 # Create non-root user
 RUN adduser -D -s /bin/sh appuser
@@ -45,9 +45,9 @@ USER appuser
 # Expose ports
 EXPOSE 8082 9091
 
-# Enhanced health check with gRPC support
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=5 \
-  CMD curl -f http://localhost:8082/health
+# Enhanced health check with HTTP and gRPC support
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=5 \
+  CMD curl -f http://localhost:8082/health && nc -z localhost 9091 || exit 1
 
 # Run the application
 CMD ["./fr0g-ai-bridge"]

@@ -24,8 +24,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o fr0g-ai-io ./cmd/
 # Final stage
 FROM alpine:latest
 
-# Install ca-certificates and curl for health checks
-RUN apk --no-cache add ca-certificates curl
+# Install ca-certificates, curl, and netcat for health checks
+RUN apk --no-cache add ca-certificates curl netcat-openbsd
 
 # Create non-root user
 RUN adduser -D -s /bin/sh fr0g
@@ -45,9 +45,9 @@ USER fr0g
 # Expose ports  
 EXPOSE 8083 9092
 
-# Enhanced health check with service registration verification
-HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=5 \
-  CMD curl -f http://localhost:8083/health
+# Enhanced health check with HTTP and gRPC support
+HEALTHCHECK --interval=15s --timeout=5s --start-period=45s --retries=5 \
+  CMD curl -f http://localhost:8083/health && nc -z localhost 9092 || exit 1
 
 # Run the application
 CMD ["./fr0g-ai-io"]
