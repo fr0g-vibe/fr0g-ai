@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	sharedconfig "pkg/config"
+	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // ValidationError represents a validation error

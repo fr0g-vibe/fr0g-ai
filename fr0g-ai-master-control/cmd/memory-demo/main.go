@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"fr0g-ai-master-control/internal/mastercontrol"
-	"fr0g-ai-master-control/internal/mastercontrol/memory"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/memory"
 )
 
 func main() {

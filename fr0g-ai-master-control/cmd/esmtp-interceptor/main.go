@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"fr0g-ai-master-control/internal/mastercontrol/input"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/input"
 	"gopkg.in/yaml.v2"
 )
 
