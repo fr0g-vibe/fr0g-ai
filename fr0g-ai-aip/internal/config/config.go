@@ -124,15 +124,9 @@ func LoadConfig(configPath string) (*Config, error) {
 		}
 	}
 
-	// Parse HTTP port to int for service registration
-	if httpPortInt, err := strconv.Atoi(cfg.HTTP.Port); err == nil {
-		cfg.ServiceRegistry.Meta["http_port"] = cfg.HTTP.Port
-	}
-
-	// Parse GRPC port to int for service registration  
-	if grpcPortInt, err := strconv.Atoi(cfg.GRPC.Port); err == nil {
-		cfg.ServiceRegistry.Meta["grpc_port"] = cfg.GRPC.Port
-	}
+	// Add port information to service registry metadata
+	cfg.ServiceRegistry.Meta["http_port"] = cfg.HTTP.Port
+	cfg.ServiceRegistry.Meta["grpc_port"] = cfg.GRPC.Port
 
 	return cfg, nil
 }
