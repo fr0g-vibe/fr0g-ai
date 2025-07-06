@@ -56,9 +56,8 @@ for i in {1..30}; do
 done
 
 # Step 4: Run health checks
-echo -e "\n${BLUE}Step 4: Running comprehensive health checks...${NC}"
-chmod +x tests/integration/health_check_test.sh
-if ./tests/integration/health_check_test.sh; then
+echo -e "\n${BLUE}Step 4: Running health checks...${NC}"
+if make health; then
     echo -e "\n${GREEN}Health checks passed!${NC}"
 else
     echo -e "\n${RED}Health checks failed!${NC}"
@@ -67,8 +66,7 @@ fi
 
 # Step 5: Run integration tests
 echo -e "\n${BLUE}Step 5: Running integration tests...${NC}"
-chmod +x tests/integration/end_to_end_test.sh
-if ./tests/integration/end_to_end_test.sh; then
+if make test-integration; then
     echo -e "\n${GREEN}Integration tests passed!${NC}"
 else
     echo -e "\n${RED}Integration tests failed!${NC}"
