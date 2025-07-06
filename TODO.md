@@ -364,35 +364,43 @@ This multi-agent dispatch system enables coordinated development across the enti
 - ✅ All tests now passing (make test - SUCCESS)
 **RESULT**: AIP service fully operational and production-ready
 
-### PRIORITY 1: Service Registry API Enhancement - HIGH PRIORITY
-**IMPACT**: Service discovery endpoints need implementation for full functionality
-**STATUS**: Registry service healthy, basic health working, discovery endpoints missing
-**ENHANCEMENT NEEDED**:
-- Implement `/v1/agent/service/register` endpoint for service registration
-- Implement `/v1/catalog/services` endpoint for service discovery
-- Add automatic service registration from other fr0g.ai services
-- Enable inter-service communication through discovery
-**ACTION REQUIRED**: Complete Consul-compatible API implementation
+### PRIORITY 1: Service Registry API Emergency Implementation - CRITICAL PRIORITY
+**IMPACT**: Service discovery completely broken, blocking all inter-service communication
+**STATUS**: Registry HTTP healthy but API endpoints returning HTTP 405 Method Not Allowed
+**CRITICAL GAPS IDENTIFIED**:
+- `/v1/agent/service/register` endpoint returning HTTP 405 instead of accepting POST
+- Service registration API completely non-functional
+- No services being registered or discovered (empty catalog: {})
+- All service-to-service discovery failing
+**ACTION REQUIRED**: Implement missing POST handler for service registration endpoint immediately
 
-### PRIORITY 2: Bridge Service Chat Completions Validation - MEDIUM PRIORITY
-**IMPACT**: Chat completions API functionality needs verification for OpenWebUI integration
-**STATUS**: Bridge service healthy, endpoint accessible, needs request validation
-**VERIFICATION NEEDED**:
-- Test `/v1/chat/completions` endpoint with valid OpenAI-format requests
-- Verify response format matches OpenAI specification
-- Test integration with actual OpenWebUI instance
-- Validate error handling for malformed requests
-**ACTION REQUIRED**: Comprehensive API testing and validation
+### PRIORITY 2: gRPC Service Health Emergency Repair - CRITICAL PRIORITY
+**IMPACT**: All gRPC services unhealthy, blocking inter-service communication
+**STATUS**: All HTTP services healthy, all gRPC services failing health checks
+**CRITICAL ISSUES IDENTIFIED**:
+- AIP gRPC (port 9090): Server not responding properly
+- Bridge gRPC (port 9091): Port closed, server not listening
+- IO gRPC (port 9093): Server not responding properly
+- gRPC servers may not be starting or binding to ports correctly
+**ACTION REQUIRED**: Diagnose and fix gRPC server startup failures across all services
 
-### PRIORITY 3: System Integration Testing - MEDIUM PRIORITY
-**IMPACT**: End-to-end system functionality verification
-**STATUS**: All individual services healthy, integration testing needed
-**TESTING AREAS**:
-- Service-to-service communication through registry
-- Complete request flow: OpenWebUI → Bridge → AIP
-- Error handling and fallback scenarios
-- Performance under concurrent load
-**ACTION REQUIRED**: Complete integration testing and optimization
+### PRIORITY 3: Bridge Chat Completions API Emergency Fix - HIGH PRIORITY
+**IMPACT**: OpenWebUI integration completely broken
+**STATUS**: Bridge HTTP healthy but chat completions endpoint returning 404
+**CRITICAL ISSUE**:
+- `/v1/chat/completions` endpoint returning "404 page not found"
+- OpenWebUI integration non-functional
+- API routing or handler implementation missing
+**ACTION REQUIRED**: Implement or fix chat completions endpoint routing and handlers
+
+### PRIORITY 4: Service Discovery Integration Crisis - HIGH PRIORITY
+**IMPACT**: No service-to-service communication possible
+**STATUS**: Registry healthy but no services discovered, empty catalog
+**INTEGRATION ISSUES**:
+- Services not auto-registering with registry on startup
+- Service discovery returning empty results: {}
+- Inter-service communication failing due to discovery issues
+**ACTION REQUIRED**: Implement automatic service registration and discovery workflow
 
 ### PRIORITY 2: Production Deployment Optimization - MEDIUM PRIORITY
 **IMPACT**: System performance under production load conditions

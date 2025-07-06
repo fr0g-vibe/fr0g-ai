@@ -32,12 +32,12 @@ Eliminate human-computer interaction vulnerabilities through AI-driven automated
 ```
 
 ### Components
-- **fr0g-ai-registry**: Service discovery and health monitoring (port 8500) ✅ OPERATIONAL
-- **fr0g-ai-aip**: Core AI processing engine with file-based storage (ports 8080/9090) ✅ OPERATIONAL
-- **fr0g-ai-bridge**: Integration bridge connecting to external systems (ports 8082/9091) ✅ OPERATIONAL
+- **fr0g-ai-registry**: Service discovery and health monitoring (port 8500) ⚠️ CRITICAL ISSUES
+- **fr0g-ai-aip**: Core AI processing engine with file-based storage (ports 8080/9090) ⚠️ gRPC ISSUES
+- **fr0g-ai-bridge**: Integration bridge connecting to external systems (ports 8082/9091) ⚠️ CRITICAL ISSUES
 - **fr0g-ai-master-control**: Orchestration and cognitive processing engine (port 8081) ✅ OPERATIONAL
-- **fr0g-ai-io**: Input/Output processing service for threat vector handling (ports 8083/9093) ✅ OPERATIONAL
-- **Communication**: High-performance gRPC inter-service communication
+- **fr0g-ai-io**: Input/Output processing service for threat vector handling (ports 8083/9093) ⚠️ gRPC ISSUES
+- **Communication**: High-performance gRPC inter-service communication ⚠️ NEEDS REPAIR
 - **Storage**: Configurable storage backends (file system, Redis, future: database)
 
 ## Security Philosophy
