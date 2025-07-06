@@ -15,7 +15,6 @@
 - ALWAYS use quadruple backticks (````) for search/replace blocks
 
 ## COMPONENT BOUNDARIES
-- Ports: HTTP :8083, gRPC :9092
 - Dependencies: pkg/config, master-control integration
 - Interfaces: Input processors, output commands
 - Threat Vectors: SMS, Voice, IRC, ESMTP, Discord

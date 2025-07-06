@@ -15,7 +15,6 @@
 - ALWAYS use quadruple backticks (````) for search/replace blocks
 
 ## COMPONENT BOUNDARIES
-- Ports: HTTP :8082, gRPC :9091
 - Dependencies: pkg/config, OpenWebUI API
 - Interfaces: REST API, gRPC bridge
 - Integration: OpenWebUI, multiple LLM providers

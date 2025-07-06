@@ -15,7 +15,6 @@
 - ALWAYS use quadruple backticks (````) for search/replace blocks
 
 ## COMPONENT BOUNDARIES
-- Ports: HTTP :8080, gRPC :9090
 - Dependencies: pkg/config, service registry
 - Interfaces: PersonaService gRPC, REST API
 - Storage: File-based (migrate to database planned)

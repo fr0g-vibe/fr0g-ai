@@ -15,7 +15,6 @@
 - ALWAYS use quadruple backticks (````) for search/replace blocks
 
 ## COMPONENT BOUNDARIES
-- Ports: HTTP :8500
 - Dependencies: pkg/config
 - Interfaces: Consul-compatible API, service registration
 - Performance: 9,553+ ops/sec capability

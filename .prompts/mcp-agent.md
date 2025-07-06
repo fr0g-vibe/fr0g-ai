@@ -15,7 +15,6 @@
 - ALWAYS use quadruple backticks (````) for search/replace blocks
 
 ## COMPONENT BOUNDARIES
-- Ports: HTTP :8081
 - Dependencies: pkg/config, service registry
 - Interfaces: Cognitive engine, workflow orchestration
 - Intelligence: Conscious AI with 0.154 learning rate

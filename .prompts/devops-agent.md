@@ -22,8 +22,8 @@
 - Monitor infrastructure health and performance
 
 ## SERVICE ARCHITECTURE
-- service-registry: :8500 (Service discovery)
-- fr0g-ai-aip: :8080/:9090 (Core AI processing)
-- fr0g-ai-bridge: :8082/:9091 (Integration bridge)
-- fr0g-ai-master-control: :8081 (Cognitive engine)
-- fr0g-ai-io: :8083/:9092 (I/O processing)
+- service-registry: Service discovery
+- fr0g-ai-aip: Core AI processing
+- fr0g-ai-bridge: Integration bridge
+- fr0g-ai-master-control: Cognitive engine
+- fr0g-ai-io: I/O processing

@@ -21,11 +21,11 @@
 - Ensure .env.example has all required variables
 
 ## SERVICE ARCHITECTURE
-- fr0g-ai-aip: Core AI processing (ports 8080/9090)
-- fr0g-ai-bridge: Integration bridge (ports 8082/9091)
-- fr0g-ai-master-control: Cognitive engine (port 8081)
-- fr0g-ai-io: I/O processing (ports 8083/9092)
-- fr0g-ai-registry: Service discovery (port 8500)
+- fr0g-ai-aip: Core AI processing
+- fr0g-ai-bridge: Integration bridge
+- fr0g-ai-master-control: Cognitive engine
+- fr0g-ai-io: I/O processing
+- fr0g-ai-registry: Service discovery
 
 ## COORDINATION PROTOCOL
 - Review cross-component changes before approval

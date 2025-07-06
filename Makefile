@@ -136,11 +136,10 @@ diagnose-grpc:
 
 diagnose-ports:
 	@echo "DIAGNOSE Port configuration..."
-	@echo "Expected ports: Registry(8500), AIP(8080,9090), Bridge(8082,9091), MCP(8081), IO(8083,9092)"
-	@echo "CRITICAL Checking port bindings..."
-	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9092)' || echo "MISSING No services on expected ports"
-	@echo "DIAGNOSE Docker port mappings..."
+	@echo "DIAGNOSE Checking Docker port mappings (see docker-compose.yml for port assignments)..."
 	@docker-compose ps --format "table {{.Name}}\t{{.Ports}}" 2>/dev/null || echo "MISSING Docker Compose not running"
+	@echo "DIAGNOSE Checking active port bindings..."
+	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9092)' || echo "MISSING No services on expected ports"
 
 diagnose-logs:
 	@echo "DIAGNOSE Service logs for errors..."
