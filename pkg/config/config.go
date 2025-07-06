@@ -175,6 +175,23 @@ type MasterControlConfig struct {
 	RetryDelay time.Duration `yaml:"retry_delay" json:"retry_delay"`
 }
 
+// ValidationConfig holds validation configuration
+type ValidationConfig struct {
+	EnableStrict       bool     `yaml:"enable_strict" json:"enable_strict"`
+	MaxNameLength      int      `yaml:"max_name_length" json:"max_name_length"`
+	MaxPromptLength    int      `yaml:"max_prompt_length" json:"max_prompt_length"`
+	AllowedTopics      []string `yaml:"allowed_topics" json:"allowed_topics"`
+	RequiredFields     []string `yaml:"required_fields" json:"required_fields"`
+	EnableSanitization bool     `yaml:"enable_sanitization" json:"enable_sanitization"`
+}
+
+// ClientConfig holds client configuration
+type ClientConfig struct {
+	Type      string `yaml:"type" json:"type"`           // "local", "rest", "grpc"
+	ServerURL string `yaml:"server_url" json:"server_url"`
+	Timeout   int    `yaml:"timeout" json:"timeout"`
+}
+
 // Config represents the main configuration structure used by applications
 type Config struct {
 	HTTP          HTTPConfig          `yaml:"http" json:"http"`
