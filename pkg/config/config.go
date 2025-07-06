@@ -354,25 +354,139 @@ func (c *MonitoringConfig) Validate() ValidationErrors {
 	return ValidationErrors(errors)
 }
 
+// Validate validates the ValidationConfig
+func (c *ValidationConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+
+	if c.MaxNameLength <= 0 {
+		errors = append(errors, ValidationError{
+			Field:   "max_name_length",
+			Message: "max name length must be positive",
+		})
+	}
+
+	if c.MaxPromptLength <= 0 {
+		errors = append(errors, ValidationError{
+			Field:   "max_prompt_length", 
+			Message: "max prompt length must be positive",
+		})
+	}
+
+	return ValidationErrors(errors)
+}
+
+// Validate validates the ClientConfig
+func (c *ClientConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+
+	validTypes := []string{"local", "rest", "grpc"}
+	if err := ValidateEnum(c.Type, validTypes, "client.type"); err != nil {
+		errors = append(errors, *err)
+	}
+
+	if c.Type == "rest" || c.Type == "grpc" {
+		if err := ValidateRequired(c.ServerURL, "client.server_url"); err != nil {
+			errors = append(errors, *err)
+		} else if err := ValidateURL(c.ServerURL, "client.server_url"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	if c.Timeout <= 0 {
+		errors = append(errors, ValidationError{
+			Field:   "client.timeout",
+			Message: "timeout must be positive",
+		})
+	}
+
+	return ValidationErrors(errors)
+}
+
+// Validate validates the HTTPConfig
+func (c *HTTPConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+
+	if c.Port != "" {
+		if err := ValidatePort(c.Port, "http.port"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	if c.EnableTLS {
+		if err := ValidateRequired(c.CertFile, "http.cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := ValidateRequired(c.KeyFile, "http.key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	if c.ReadTimeout > 0 {
+		if err := ValidateTimeout(c.ReadTimeout, "http.read_timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	if c.WriteTimeout > 0 {
+		if err := ValidateTimeout(c.WriteTimeout, "http.write_timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	return ValidationErrors(errors)
+}
+
+// Validate validates the GRPCConfig
+func (c *GRPCConfig) Validate() ValidationErrors {
+	var errors []ValidationError
+
+	if c.Port != "" {
+		if err := ValidatePort(c.Port, "grpc.port"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	if c.EnableTLS || c.TLS {
+		if err := ValidateRequired(c.CertFile, "grpc.cert_file"); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := ValidateRequired(c.KeyFile, "grpc.key_file"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	if c.MaxRecvMsgSize <= 0 {
+		errors = append(errors, ValidationError{
+			Field:   "grpc.max_recv_msg_size",
+			Message: "max receive message size must be positive",
+		})
+	}
+
+	if c.MaxSendMsgSize <= 0 {
+		errors = append(errors, ValidationError{
+			Field:   "grpc.max_send_msg_size", 
+			Message: "max send message size must be positive",
+		})
+	}
+
+	if c.ConnectionTimeout > 0 {
+		if err := ValidateTimeout(c.ConnectionTimeout, "grpc.connection_timeout"); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
+	return ValidationErrors(errors)
+}
+
 // Validate validates the main Config
 func (c *Config) Validate() error {
 	var allErrors []ValidationError
 
 	// Validate HTTP config
-	if c.HTTP.Port == "" {
-		allErrors = append(allErrors, ValidationError{
-			Field:   "http.port",
-			Message: "HTTP port is required",
-		})
-	}
+	allErrors = append(allErrors, c.HTTP.Validate()...)
 
-	// Validate gRPC config
-	if c.GRPC.Port == "" {
-		allErrors = append(allErrors, ValidationError{
-			Field:   "grpc.port",
-			Message: "gRPC port is required",
-		})
-	}
+	// Validate gRPC config  
+	allErrors = append(allErrors, c.GRPC.Validate()...)
 
 	// Validate other components
 	allErrors = append(allErrors, c.Security.Validate()...)

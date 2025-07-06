@@ -176,6 +176,37 @@ import sharedconfig "pkg/config"
 type ValidationError = sharedconfig.ValidationError
 ```
 
+**AIP-Specific Integration:**
+```go
+package config
+
+import (
+    sharedconfig "pkg/config"
+)
+
+type Config struct {
+    HTTP       sharedconfig.HTTPConfig       `yaml:"http"`
+    GRPC       sharedconfig.GRPCConfig       `yaml:"grpc"`
+    Storage    sharedconfig.StorageConfig    `yaml:"storage"`
+    Security   sharedconfig.SecurityConfig   `yaml:"security"`
+    Validation sharedconfig.ValidationConfig `yaml:"validation"`
+    Client     sharedconfig.ClientConfig     `yaml:"client"`
+}
+
+func (c *Config) Validate() sharedconfig.ValidationErrors {
+    var errors []sharedconfig.ValidationError
+    
+    errors = append(errors, c.HTTP.Validate()...)
+    errors = append(errors, c.GRPC.Validate()...)
+    errors = append(errors, c.Storage.Validate()...)
+    errors = append(errors, c.Security.Validate()...)
+    errors = append(errors, c.Validation.Validate()...)
+    errors = append(errors, c.Client.Validate()...)
+    
+    return sharedconfig.ValidationErrors(errors)
+}
+```
+
 #### From fr0g-ai-bridge
 Use shared SecurityConfig:
 ```go

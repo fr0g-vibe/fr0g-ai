@@ -315,6 +315,104 @@ func ValidateFilePath(path string, fieldName string) *ValidationError {
 	return nil
 }
 
+// ValidatePersonaName validates persona name format and length
+func ValidatePersonaName(name string, fieldName string) *ValidationError {
+	if err := ValidateRequired(name, fieldName); err != nil {
+		return err
+	}
+
+	if err := ValidateLength(name, 1, 100, fieldName); err != nil {
+		return err
+	}
+
+	// Check for valid characters (alphanumeric, spaces, hyphens, underscores)
+	validNamePattern := regexp.MustCompile(`^[a-zA-Z0-9\s\-_]+$`)
+	if !validNamePattern.MatchString(name) {
+		return &ValidationError{
+			Field:   fieldName,
+			Message: "name can only contain letters, numbers, spaces, hyphens, and underscores",
+		}
+	}
+
+	return nil
+}
+
+// ValidatePersonaTopic validates persona topic format
+func ValidatePersonaTopic(topic string, fieldName string) *ValidationError {
+	if err := ValidateRequired(topic, fieldName); err != nil {
+		return err
+	}
+
+	if err := ValidateLength(topic, 1, 200, fieldName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ValidatePersonaPrompt validates persona prompt content
+func ValidatePersonaPrompt(prompt string, fieldName string) *ValidationError {
+	if err := ValidateRequired(prompt, fieldName); err != nil {
+		return err
+	}
+
+	if err := ValidateLength(prompt, 10, 5000, fieldName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ValidatePersonaContext validates persona context map
+func ValidatePersonaContext(context map[string]string, fieldName string) *ValidationError {
+	if context == nil {
+		return nil // Context is optional
+	}
+
+	for key, value := range context {
+		if key == "" {
+			return &ValidationError{
+				Field:   fieldName,
+				Message: "context keys cannot be empty",
+			}
+		}
+
+		if len(key) > 50 {
+			return &ValidationError{
+				Field:   fieldName,
+				Message: "context keys must be 50 characters or less",
+			}
+		}
+
+		if len(value) > 500 {
+			return &ValidationError{
+				Field:   fieldName,
+				Message: "context values must be 500 characters or less",
+			}
+		}
+	}
+
+	return nil
+}
+
+// ValidateIdentityName validates identity name format
+func ValidateIdentityName(name string, fieldName string) *ValidationError {
+	return ValidatePersonaName(name, fieldName) // Same rules as persona names
+}
+
+// ValidateIdentityBackground validates identity background content
+func ValidateIdentityBackground(background string, fieldName string) *ValidationError {
+	if background == "" {
+		return nil // Background is optional
+	}
+
+	if err := ValidateLength(background, 0, 2000, fieldName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ValidateLogLevel validates log level values
 func ValidateLogLevel(level string, fieldName string) *ValidationError {
 	validLevels := []string{"debug", "info", "warn", "error", "fatal", "panic"}
