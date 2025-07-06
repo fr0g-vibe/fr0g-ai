@@ -13,7 +13,6 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
-	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/pb/proto"
 )
 
 type Server struct {
