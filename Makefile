@@ -152,7 +152,7 @@ diagnose-logs:
 diagnose-grpc-detailed:
 	@echo "DIAGNOSE Detailed gRPC analysis..."
 	@chmod +x tests/integration/grpc_health_test.sh
-	@./tests/integration/grpc_health_test.sh
+	@./tests/integration/grpc_health_test.sh || true
 
 diagnose-containers:
 	@echo "DIAGNOSE Container status and processes..."

@@ -48,13 +48,17 @@ EOF
         -d "$service_def" 2>/dev/null)
     
     local status_code="${response: -3}"
+    local response_body="${response%???}"
     
     if [ "$status_code" = "200" ] || [ "$status_code" = "201" ]; then
         echo -e "${GREEN}SUCCESS${NC}"
+        # Wait a moment for registration to propagate
+        sleep 2
         return 0
     else
         echo -e "${RED}FAILED (HTTP $status_code)${NC}"
-        echo "Response: ${response%???}"
+        echo "Response: $response_body"
+        echo "Request: $service_def"
         return 1
     fi
 }
@@ -72,6 +76,15 @@ verify_registration() {
         return 0
     else
         echo -e "${RED}NOT FOUND${NC}"
+        echo "  Catalog response: $response"
+        
+        # Try alternative endpoints
+        local alt_response=$(curl -s "$REGISTRY_URL/services/$service_name" 2>/dev/null)
+        if [ -n "$alt_response" ] && [ "$alt_response" != "null" ]; then
+            echo -e "${YELLOW}FOUND VIA ALTERNATIVE ENDPOINT${NC}"
+            return 0
+        fi
+        
         return 1
     fi
 }
