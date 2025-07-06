@@ -825,14 +825,14 @@ func TestPersonaServer_LargeDataHandling(t *testing.T) {
 	client, cleanup := setupTestServer(t)
 	defer cleanup()
 
-	// Test with large context and RAG data
+	// Test with large context and RAG data (within validation limits)
 	largeContext := make(map[string]string)
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 50; i++ { // Reduced to 50 to stay within validation limit
 		largeContext[fmt.Sprintf("key_%d", i)] = fmt.Sprintf("value_%d_with_some_longer_content", i)
 	}
 
-	largeRAG := make([]string, 100)
-	for i := 0; i < 100; i++ {
+	largeRAG := make([]string, 50) // Reduced to 50 to stay within validation limit
+	for i := 0; i < 50; i++ {
 		largeRAG[i] = fmt.Sprintf("document_%d_with_some_longer_filename.txt", i)
 	}
 
@@ -852,11 +852,11 @@ func TestPersonaServer_LargeDataHandling(t *testing.T) {
 	}
 
 	// Verify large data was preserved
-	if len(resp.Persona.Context) != 100 {
-		t.Errorf("Expected 100 context items, got %d", len(resp.Persona.Context))
+	if len(resp.Persona.Context) != 50 {
+		t.Errorf("Expected 50 context items, got %d", len(resp.Persona.Context))
 	}
-	if len(resp.Persona.Rag) != 100 {
-		t.Errorf("Expected 100 RAG items, got %d", len(resp.Persona.Rag))
+	if len(resp.Persona.Rag) != 50 {
+		t.Errorf("Expected 50 RAG items, got %d", len(resp.Persona.Rag))
 	}
 
 	// Test retrieval of large data
@@ -866,11 +866,11 @@ func TestPersonaServer_LargeDataHandling(t *testing.T) {
 		t.Fatalf("GetPersona with large data failed: %v", err)
 	}
 
-	if len(getResp.Persona.Context) != 100 {
-		t.Errorf("Expected 100 context items on retrieval, got %d", len(getResp.Persona.Context))
+	if len(getResp.Persona.Context) != 50 {
+		t.Errorf("Expected 50 context items on retrieval, got %d", len(getResp.Persona.Context))
 	}
-	if len(getResp.Persona.Rag) != 100 {
-		t.Errorf("Expected 100 RAG items on retrieval, got %d", len(getResp.Persona.Rag))
+	if len(getResp.Persona.Rag) != 50 {
+		t.Errorf("Expected 50 RAG items on retrieval, got %d", len(getResp.Persona.Rag))
 	}
 }
 
