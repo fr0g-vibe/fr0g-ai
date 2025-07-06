@@ -8,7 +8,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	pb "github.com/fr0g-vibe/fr0g.ai/fr0g.ai-aip/internal/grpc/pb"
+	pb "github.com/fr0g-vibe/fr0g.ai/fr0g-ai-aip/internal/grpc/pb"
 )
 
 func main() {
@@ -23,7 +23,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	fmt.Println("=== gRPC Client Test for fr0g.ai-aip ===")
+	fmt.Println("=== gRPC Client Test for fr0g-ai-aip ===")
 	fmt.Println()
 
 	// Test 1: Create a persona
