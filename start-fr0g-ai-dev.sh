@@ -57,7 +57,8 @@ tmux send-keys -t $SESSION_NAME:0 "echo 'Role: Overall project coordination, arc
 tmux send-keys -t $SESSION_NAME:0 "echo 'Focus: README.md, docker-compose.yml, Makefile, project-wide decisions'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Key Files: README.md, docker-compose.yml, Makefile, TODO.md, .env.example'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Environment: .env file ready COMPLETED'" C-m
-tmux send-keys -t $SESSION_NAME:0 "$AIDER_CMD --message-file .prompts/project-lead.md README.md docker-compose.yml Makefile TODO.md .env.example" C-m
+tmux send-keys -t $SESSION_NAME:0 "$AIDER_CMD --file README.md --file docker-compose.yml --file Makefile --file TODO.md --file .env.example" C-m
+tmux send-keys -t $SESSION_NAME:0 "/load .prompts/project-lead.md" C-m
 
 # ============================================================================
 # CORE SUBPROJECT AGENTS
@@ -69,7 +70,9 @@ tmux send-keys -t $SESSION_NAME:1 "echo 'FR0G-AI-AIP AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Role: Core AI processing engine, persona management, identity processing'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Ports: HTTP :8080, gRPC :9090'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Status: Demographics COMPLETED, Other attributes need implementation'" C-m
-tmux send-keys -t $SESSION_NAME:1 "$AIDER_CMD --message-file .prompts/aip-agent.md TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:1 "cd fr0g-ai-aip" C-m
+tmux send-keys -t $SESSION_NAME:1 "$AIDER_CMD --file TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:1 "/load ../.prompts/aip-agent.md" C-m
 
 # Window 2: fr0g-ai-bridge (Integration Service)
 tmux new-window -t $SESSION_NAME -n "Bridge" -c "$PROJECT_ROOT/fr0g-ai-bridge"
@@ -77,7 +80,9 @@ tmux send-keys -t $SESSION_NAME:2 "echo 'FR0G-AI-BRIDGE AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Role: OpenWebUI integration, REST/gRPC bridge services'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Ports: HTTP :8082, gRPC :9091'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Status: Fully operational COMPLETED'" C-m
-tmux send-keys -t $SESSION_NAME:2 "$AIDER_CMD --message-file .prompts/bridge-agent.md TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:2 "cd fr0g-ai-bridge" C-m
+tmux send-keys -t $SESSION_NAME:2 "$AIDER_CMD --file TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:2 "/load ../.prompts/bridge-agent.md" C-m
 
 # Window 3: fr0g-ai-master-control (Cognitive Engine)
 tmux new-window -t $SESSION_NAME -n "MCP" -c "$PROJECT_ROOT/fr0g-ai-master-control"
@@ -85,7 +90,9 @@ tmux send-keys -t $SESSION_NAME:3 "echo 'FR0G-AI-MASTER-CONTROL AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Role: System orchestration, cognitive engine, threat processing'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Port: HTTP :8081'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL COMPLETED (Learning Rate: 0.100+)'" C-m
-tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD --message-file .prompts/mcp-agent.md TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:3 "cd fr0g-ai-master-control" C-m
+tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD --file TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:3 "/load ../.prompts/mcp-agent.md" C-m
 
 # Window 4: fr0g-ai-io (Input/Output Processing)
 tmux new-window -t $SESSION_NAME -n "IO" -c "$PROJECT_ROOT/fr0g-ai-io"
@@ -93,7 +100,9 @@ tmux send-keys -t $SESSION_NAME:4 "echo 'FR0G-AI-IO AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Role: Input/Output processing, threat vector handling, external integrations'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Ports: HTTP :8083, gRPC :9092'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Status: NEW SERVICE - SMS, Voice, IRC, ESMTP, Discord processors'" C-m
-tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD --message-file .prompts/io-agent.md TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:4 "cd fr0g-ai-io" C-m
+tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD --file TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:4 "/load ../.prompts/io-agent.md" C-m
 
 # Window 5: Configuration Expert
 tmux new-window -t $SESSION_NAME -n "Config" -c "$PROJECT_ROOT"
@@ -101,7 +110,8 @@ tmux send-keys -t $SESSION_NAME:5 "echo 'CONFIGURATION EXPERT'" C-m
 tmux send-keys -t $SESSION_NAME:5 "echo 'Role: Environment variables, shared config library, validation systems'" C-m
 tmux send-keys -t $SESSION_NAME:5 "echo 'Focus: .env, pkg/config/ - validation, loading, shared types'" C-m
 tmux send-keys -t $SESSION_NAME:5 "echo 'Key Files: .env, pkg/config/*.go'" C-m
-tmux send-keys -t $SESSION_NAME:5 "$AIDER_CMD --message-file .prompts/config-agent.md .env.example .env pkg/config/config.go pkg/config/validation.go pkg/config/loader.go pkg/config/examples_test.go pkg/config/README.md" C-m
+tmux send-keys -t $SESSION_NAME:5 "$AIDER_CMD --file .env.example --file .env --file pkg/config/config.go --file pkg/config/validation.go --file pkg/config/loader.go --file pkg/config/examples_test.go --file pkg/config/README.md" C-m
+tmux send-keys -t $SESSION_NAME:5 "/load .prompts/config-agent.md" C-m
 
 # ============================================================================
 # ESSENTIAL SUPPORT AGENTS
@@ -113,7 +123,8 @@ tmux send-keys -t $SESSION_NAME:6 "echo 'DEVOPS & INFRASTRUCTURE AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:6 "echo 'Role: Docker, deployment, CI/CD, infrastructure automation'" C-m
 tmux send-keys -t $SESSION_NAME:6 "echo 'Focus: docker-compose.yml, Makefile, .env configuration'" C-m
 tmux send-keys -t $SESSION_NAME:6 "echo 'Services: service-registry:8500, aip:8080/9090, bridge:8082/9091, mcp:8081, io:8083/9092'" C-m
-tmux send-keys -t $SESSION_NAME:6 "$AIDER_CMD --message-file .prompts/devops-agent.md docker-compose.yml Makefile .env.example" C-m
+tmux send-keys -t $SESSION_NAME:6 "$AIDER_CMD --file docker-compose.yml --file Makefile --file .env.example" C-m
+tmux send-keys -t $SESSION_NAME:6 "/load .prompts/devops-agent.md" C-m
 
 # Window 7: Registry Agent
 tmux new-window -t $SESSION_NAME -n "Registry" -c "$PROJECT_ROOT/fr0g-ai-registry"
@@ -121,7 +132,9 @@ tmux send-keys -t $SESSION_NAME:7 "echo 'FR0G-AI-REGISTRY AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Service discovery, registration, and health monitoring'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Port: HTTP :8500'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
-tmux send-keys -t $SESSION_NAME:7 "$AIDER_CMD --message-file .prompts/registry-agent.md TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:7 "cd fr0g-ai-registry" C-m
+tmux send-keys -t $SESSION_NAME:7 "$AIDER_CMD --file TODO.md" C-m
+tmux send-keys -t $SESSION_NAME:7 "/load ../.prompts/registry-agent.md" C-m
 
 # Window 8: Build & Test Runner
 tmux new-window -t $SESSION_NAME -n "Build-Test" -c "$PROJECT_ROOT"
