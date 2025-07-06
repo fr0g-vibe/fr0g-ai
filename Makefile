@@ -167,7 +167,7 @@ diagnose: diagnose-registry diagnose-grpc diagnose-ports diagnose-logs diagnose-
 # Docker operations
 docker-build:
 	@echo "DOCKER Building Docker images..."
-	@docker-compose build
+	@docker-compose build 1>/dev/null
 
 docker-up:
 	@echo "DOCKER Starting services..."
