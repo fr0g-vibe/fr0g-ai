@@ -311,22 +311,64 @@ func (r *Registry) registerHandler(w http.ResponseWriter, req *http.Request) {
 	}()
 	
 	if req.Method != http.MethodPut && req.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Method not allowed"})
 		return
 	}
 	
 	var service ServiceInfo
 	if err := json.NewDecoder(req.Body).Decode(&service); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid JSON: " + err.Error()})
+		return
+	}
+	
+	// Validate required fields
+	if service.ID == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Service ID is required"})
+		return
+	}
+	
+	if service.Name == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Service name is required"})
+		return
+	}
+	
+	if service.Address == "" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Service address is required"})
+		return
+	}
+	
+	if service.Port == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Service port is required"})
 		return
 	}
 	
 	if err := r.Register(&service); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 	
+	// Return success response with service details
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":  "success",
+		"message": "Service registered successfully",
+		"service": service,
+	})
 }
 
 func (r *Registry) deregisterHandler(w http.ResponseWriter, req *http.Request) {
@@ -360,13 +402,21 @@ func (r *Registry) servicesHandler(w http.ResponseWriter, req *http.Request) {
 	}()
 	
 	if req.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Method not allowed"})
 		return
 	}
 	
 	services := r.GetServices()
 	
+	// Ensure we always return a valid JSON object, even if empty
+	if services == nil {
+		services = make(map[string]*ServiceInfo)
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(services)
 }
 
