@@ -11,6 +11,34 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// InputEvent represents an input event to be processed by master-control
+type InputEvent struct {
+	ID        string                 `json:"id"`
+	Type      string                 `json:"type"`
+	Source    string                 `json:"source"`
+	Content   string                 `json:"content"`
+	Metadata  map[string]interface{} `json:"metadata"`
+	Timestamp time.Time              `json:"timestamp"`
+	Priority  int                    `json:"priority"`
+}
+
+// InputEventResponse represents the response from master-control
+type InputEventResponse struct {
+	EventID     string                 `json:"event_id"`
+	Processed   bool                   `json:"processed"`
+	Actions     []OutputAction         `json:"actions"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	ProcessedAt time.Time              `json:"processed_at"`
+}
+
+// OutputAction represents an action to be taken
+type OutputAction struct {
+	Type     string                 `json:"type"`
+	Target   string                 `json:"target"`
+	Content  string                 `json:"content"`
+	Metadata map[string]interface{} `json:"metadata"`
+}
+
 // MCPGRPCClient implements the MCPClient interface for communicating with master-control
 type MCPGRPCClient struct {
 	conn        *grpc.ClientConn
