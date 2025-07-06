@@ -1,5 +1,7 @@
 # AI Assistant files
-.aider*
+.aider.*
+# Agent Prompts (keep in repo)
+# .aider-prompts/ - intentionally tracked
 
 # Environment configuration
 .env
@@ -92,5 +94,3 @@ Thumbs.db
 .agent-messages.log
 .agent-functions.sh
 
-# Agent Prompts (keep in repo)
-# .aider-prompts/ - intentionally tracked
