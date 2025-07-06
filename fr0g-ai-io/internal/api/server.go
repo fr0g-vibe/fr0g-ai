@@ -50,11 +50,12 @@ func NewServer(cfg *sharedconfig.Config) (*Server, error) {
 
 	// Create HTTP server
 	httpMux := http.NewServeMux()
+	httpAddr := fmt.Sprintf("%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
 	httpServer := &http.Server{
-		Addr:         cfg.HTTP.Address,
+		Addr:         httpAddr,
 		Handler:      httpMux,
-		ReadTimeout:  cfg.HTTP.ReadTimeout,
-		WriteTimeout: cfg.HTTP.WriteTimeout,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
 
 	// Create gRPC server
@@ -107,7 +108,8 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start HTTP server
 	go func() {
-		log.Printf("HTTP server listening on %s", s.config.HTTP.Address)
+		httpAddr := fmt.Sprintf("%s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
+		log.Printf("HTTP server listening on %s", httpAddr)
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("HTTP server error: %v", err)
 		}
@@ -115,13 +117,14 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start gRPC server
 	go func() {
-		lis, err := net.Listen("tcp", s.config.GRPC.Address)
+		grpcAddr := fmt.Sprintf("%s:%s", s.config.GRPC.Host, s.config.GRPC.Port)
+		lis, err := net.Listen("tcp", grpcAddr)
 		if err != nil {
-			log.Printf("Failed to listen on gRPC address %s: %v", s.config.GRPC.Address, err)
+			log.Printf("Failed to listen on gRPC address %s: %v", grpcAddr, err)
 			return
 		}
 
-		log.Printf("gRPC server listening on %s", s.config.GRPC.Address)
+		log.Printf("gRPC server listening on %s", grpcAddr)
 		if err := s.grpcServer.Serve(lis); err != nil {
 			log.Printf("gRPC server error: %v", err)
 		}
