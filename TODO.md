@@ -331,7 +331,7 @@ This multi-agent dispatch system enables coordinated development across the enti
 **IMPACT**: Test infrastructure fully operational with proper separation
 **ISSUES RESOLVED**:
 - True unit tests implemented that test business logic without network calls
-- Integration tests properly separated and documented
+- Integration tests properly separated and documented (require running service)
 - Load tests fixed to handle zero operations without panicking
 - Service builds, starts, and shuts down gracefully
 - Test categorization and execution strategy documented
@@ -341,13 +341,16 @@ This multi-agent dispatch system enables coordinated development across the enti
 - [x] Fix divide by zero panic in load tests
 - [x] Separate unit tests from integration tests properly
 - [x] **COMPLETED**: Unit tests never make HTTP/network calls
+- [x] **COMPLETED**: Integration tests properly require running service
 - [x] **COMPLETED**: Document test execution strategy (unit vs integration)
 - [x] **COMPLETED**: Service startup and graceful shutdown working
 **RESULTS**: 
 - Unit tests execute in 0.012s with 100% pass rate, no network dependencies
+- Integration tests correctly fail when service not running (expected behavior)
 - Service starts successfully on port 8500 with Redis fallback
 - Graceful shutdown handling with proper cleanup
 - Build system integration working perfectly
+**TEST STRATEGY**: Unit tests for logic validation, integration tests for service verification
 
 ### BLOCKER 2: fr0g-ai-master-control Storage Validation - CRITICAL
 **IMPACT**: Service startup failures in production
