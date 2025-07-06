@@ -155,6 +155,53 @@ health:
 	@chmod +x tests/integration/health_check_test.sh
 	@./tests/integration/health_check_test.sh
 
+# Emergency diagnostic commands
+diagnose-registry:
+	@echo "DIAGNOSE Service Registry API endpoints..."
+	@echo "Testing registry health..."
+	@curl -sf http://localhost:8500/health && echo "✓ Registry health OK" || echo "✗ Registry health FAILED"
+	@echo "Testing service registration endpoint..."
+	@curl -s -w "HTTP %{http_code}\n" http://localhost:8500/v1/agent/service/register -X POST -H "Content-Type: application/json" -d '{"ID":"test","Name":"test","Port":8000}' || echo "✗ Registration endpoint test FAILED"
+	@echo "Testing service discovery endpoint..."
+	@curl -s -w "HTTP %{http_code}\n" http://localhost:8500/v1/catalog/services || echo "✗ Discovery endpoint test FAILED"
+	@echo "Testing service health endpoint..."
+	@curl -s -w "HTTP %{http_code}\n" http://localhost:8500/v1/health/service/test || echo "✗ Health endpoint test FAILED"
+
+diagnose-grpc:
+	@echo "DIAGNOSE gRPC service health..."
+	@echo "Checking if grpcurl is available..."
+	@command -v grpcurl >/dev/null && echo "✓ grpcurl available" || echo "✗ grpcurl not found - install with: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"
+	@echo "Testing AIP gRPC (port 9090)..."
+	@nc -z localhost 9090 && echo "✓ Port 9090 open" || echo "✗ Port 9090 closed"
+	@command -v grpcurl >/dev/null && (grpcurl -plaintext localhost:9090 list >/dev/null 2>&1 && echo "✓ AIP gRPC responding" || echo "✗ AIP gRPC not responding") || echo "  (grpcurl not available)"
+	@echo "Testing Bridge gRPC (port 9091)..."
+	@nc -z localhost 9091 && echo "✓ Port 9091 open" || echo "✗ Port 9091 closed"
+	@command -v grpcurl >/dev/null && (grpcurl -plaintext localhost:9091 list >/dev/null 2>&1 && echo "✓ Bridge gRPC responding" || echo "✗ Bridge gRPC not responding") || echo "  (grpcurl not available)"
+	@echo "Testing IO gRPC (port 9093)..."
+	@nc -z localhost 9093 && echo "✓ Port 9093 open" || echo "✗ Port 9093 closed"
+	@command -v grpcurl >/dev/null && (grpcurl -plaintext localhost:9093 list >/dev/null 2>&1 && echo "✓ IO gRPC responding" || echo "✗ IO gRPC not responding") || echo "  (grpcurl not available)"
+
+diagnose-ports:
+	@echo "DIAGNOSE Port configuration..."
+	@echo "Checking port usage..."
+	@echo "Expected ports: Registry(8500), AIP(8080,9090), Bridge(8082,9091), MCP(8081), IO(8083,9093)"
+	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9092|9093)' || echo "No services listening on expected ports"
+	@echo "Checking Docker port mapping..."
+	@docker-compose ps 2>/dev/null || echo "Docker Compose not running"
+
+diagnose-logs:
+	@echo "DIAGNOSE Service logs for errors..."
+	@echo "=== Registry Logs ==="
+	@docker-compose logs --tail=10 service-registry 2>/dev/null || echo "Registry container not running"
+	@echo "=== AIP Logs ==="
+	@docker-compose logs --tail=10 fr0g-ai-aip 2>/dev/null || echo "AIP container not running"
+	@echo "=== Bridge Logs ==="
+	@docker-compose logs --tail=10 fr0g-ai-bridge 2>/dev/null || echo "Bridge container not running"
+	@echo "=== IO Logs ==="
+	@docker-compose logs --tail=10 fr0g-ai-io 2>/dev/null || echo "IO container not running"
+
+diagnose-all: diagnose-registry diagnose-grpc diagnose-ports diagnose-logs
+
 # Quick health check (simple curl tests)
 health-quick:
 	@echo "HEALTH Quick health check..."

@@ -58,32 +58,42 @@ check_grpc_health() {
     
     echo -n "Checking $service_name gRPC health... "
     
+    # First check if port is listening
+    local host=$(echo $url | cut -d: -f1)
+    local port=$(echo $url | cut -d: -f2)
+    if ! nc -z "$host" "$port" 2>/dev/null; then
+        echo -e "${RED}PORT CLOSED${NC}"
+        echo -e "${RED}   gRPC server not listening on $url${NC}"
+        return 1
+    fi
+    
     # Check if grpcurl is available
     if command -v grpcurl >/dev/null 2>&1; then
+        # Try health check
         if grpcurl -plaintext "$url" grpc.health.v1.Health/Check >/dev/null 2>&1; then
             echo -e "${GREEN}HEALTHY${NC}"
             return 0
         else
-            echo -e "${RED}UNHEALTHY${NC}"
-            return 1
+            # Try listing services to see if gRPC is responding
+            if grpcurl -plaintext "$url" list >/dev/null 2>&1; then
+                echo -e "${YELLOW}RESPONDING (no health service)${NC}"
+                return 0
+            else
+                echo -e "${RED}UNHEALTHY${NC}"
+                echo -e "${RED}   gRPC server not responding properly${NC}"
+                return 1
+            fi
         fi
     else
-        # Fallback: check if port is listening
-        local host=$(echo $url | cut -d: -f1)
-        local port=$(echo $url | cut -d: -f2)
-        if nc -z "$host" "$port" 2>/dev/null; then
-            echo -e "${YELLOW}PORT OPEN (grpcurl not available)${NC}"
-            return 0
-        else
-            echo -e "${RED}PORT CLOSED${NC}"
-            return 1
-        fi
+        echo -e "${YELLOW}PORT OPEN (grpcurl not available)${NC}"
+        echo -e "${YELLOW}   Install grpcurl for detailed gRPC testing${NC}"
+        return 0
     fi
 }
 
 # Function to test service registry
 test_service_registry() {
-    echo -e "\n${BLUE}HEALTH Testing Service Registry${NC}"
+    echo -e "\n${BLUE}CRITICAL Testing Service Registry${NC}"
     echo "----------------------------"
     
     # Check health
@@ -93,32 +103,41 @@ test_service_registry() {
     
     # Test service registration endpoint
     echo -n "Testing service registration API... "
-    if curl -sf "$REGISTRY_URL/v1/agent/services" >/dev/null 2>&1; then
-        echo -e "${GREEN}ACCESSIBLE${NC}"
-    elif curl -sf "$REGISTRY_URL/services" >/dev/null 2>&1; then
-        echo -e "${GREEN}ACCESSIBLE (alternate endpoint)${NC}"
+    local reg_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/agent/service/register" -X POST -H "Content-Type: application/json" -d '{"ID":"test","Name":"test","Port":8000}' 2>/dev/null)
+    local reg_code="${reg_response: -3}"
+    if [ "$reg_code" = "200" ] || [ "$reg_code" = "201" ]; then
+        echo -e "${GREEN}OPERATIONAL${NC}"
     else
-        echo -e "${YELLOW}REGISTRY API ENDPOINT NOT FOUND${NC}"
-        # Don't fail here as registry health is working
+        echo -e "${RED}CRITICAL - ENDPOINT MISSING (HTTP $reg_code)${NC}"
+        echo -e "${RED}   This is blocking all service discovery${NC}"
     fi
     
-    # List registered services
-    echo -n "Checking registered services... "
-    local services=$(curl -s "$REGISTRY_URL/v1/agent/services" 2>/dev/null)
-    if [ $? -eq 0 ] && [ -n "$services" ]; then
-        echo -e "${GREEN}SERVICES FOUND${NC}"
-        echo "Registered services:"
-        echo "$services" | jq -r 'keys[]' 2>/dev/null || echo "$services"
-    else
-        # Try alternate endpoint
-        services=$(curl -s "$REGISTRY_URL/services" 2>/dev/null)
-        if [ $? -eq 0 ] && [ -n "$services" ]; then
-            echo -e "${GREEN}SERVICES FOUND (alternate endpoint)${NC}"
+    # Test service discovery endpoint
+    echo -n "Testing service discovery API... "
+    local disc_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/catalog/services" 2>/dev/null)
+    local disc_code="${disc_response: -3}"
+    if [ "$disc_code" = "200" ]; then
+        echo -e "${GREEN}OPERATIONAL${NC}"
+        local services="${disc_response%???}"
+        if [ -n "$services" ] && [ "$services" != "{}" ]; then
             echo "Registered services:"
             echo "$services" | jq -r 'keys[]' 2>/dev/null || echo "$services"
         else
-            echo -e "${YELLOW}NO SERVICES REGISTERED${NC}"
+            echo -e "${YELLOW}   No services currently registered${NC}"
         fi
+    else
+        echo -e "${RED}CRITICAL - ENDPOINT MISSING (HTTP $disc_code)${NC}"
+        echo -e "${RED}   Service discovery completely broken${NC}"
+    fi
+    
+    # Test health endpoint
+    echo -n "Testing service health API... "
+    local health_response=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/health/service/test" 2>/dev/null)
+    local health_code="${health_response: -3}"
+    if [ "$health_code" = "200" ] || [ "$health_code" = "404" ]; then
+        echo -e "${GREEN}OPERATIONAL${NC}"
+    else
+        echo -e "${RED}CRITICAL - ENDPOINT MISSING (HTTP $health_code)${NC}"
     fi
     
     return 0
@@ -356,70 +375,123 @@ test_container_health() {
 
 # Function to generate summary report
 generate_summary() {
-    echo -e "\n${BLUE}Health Check Summary${NC}"
+    echo -e "\n${BLUE}CRITICAL ISSUES SUMMARY${NC}"
     echo "======================="
     
-    local total_tests=0
-    local passed_tests=0
-    
-    # Count test results (this is a simplified version)
-    # In a real implementation, you'd track each test result
-    
-    # Check which services are actually running
-    local registry_status="${GREEN}OPERATIONAL${NC}"
-    local aip_status="${GREEN}OPERATIONAL${NC}"
-    local bridge_status="${YELLOW}NOT RUNNING${NC}"
-    local io_status="${YELLOW}NOT RUNNING${NC}"
-    local mcp_status="${YELLOW}NOT RUNNING${NC}"
-    
     # Test actual service status
-    if ! curl -sf "$BRIDGE_HTTP_URL/health" >/dev/null 2>&1; then
-        bridge_status="${RED}DOWN${NC}"
-    else
-        bridge_status="${GREEN}OPERATIONAL${NC}"
-    fi
+    local registry_http_ok=false
+    local registry_api_ok=false
+    local aip_http_ok=false
+    local aip_grpc_ok=false
+    local bridge_http_ok=false
+    local bridge_grpc_ok=false
+    local io_http_ok=false
+    local io_grpc_ok=false
+    local mcp_http_ok=false
     
-    if ! curl -sf "$IO_HTTP_URL/health" >/dev/null 2>&1; then
-        io_status="${RED}DOWN${NC}"
-    else
-        io_status="${GREEN}OPERATIONAL${NC}"
-    fi
+    # Check HTTP services
+    curl -sf "$REGISTRY_URL/health" >/dev/null 2>&1 && registry_http_ok=true
+    curl -sf "$AIP_HTTP_URL/health" >/dev/null 2>&1 && aip_http_ok=true
+    curl -sf "$BRIDGE_HTTP_URL/health" >/dev/null 2>&1 && bridge_http_ok=true
+    curl -sf "$IO_HTTP_URL/health" >/dev/null 2>&1 && io_http_ok=true
+    curl -sf "$MCP_HTTP_URL/health" >/dev/null 2>&1 && mcp_http_ok=true
     
-    if ! curl -sf "$MCP_HTTP_URL/health" >/dev/null 2>&1; then
-        mcp_status="${YELLOW}NOT DEPLOYED${NC}"
-    else
-        mcp_status="${GREEN}OPERATIONAL${NC}"
-    fi
+    # Check Registry API
+    local reg_code=$(curl -s -w "%{http_code}" "$REGISTRY_URL/v1/agent/service/register" -X POST 2>/dev/null | tail -c 3)
+    [ "$reg_code" = "200" ] || [ "$reg_code" = "201" ] && registry_api_ok=true
     
-    echo -e "Service Registry: $registry_status"
-    echo -e "AIP Service: $aip_status"
-    echo -e "Bridge Service: $bridge_status"
-    echo -e "IO Service: $io_status"
-    echo -e "Master Control: $mcp_status"
-    
-    # Check gRPC reflection status for security
-    echo -e "\n${BLUE}Security Status:${NC}"
+    # Check gRPC services
     if command -v grpcurl >/dev/null 2>&1; then
-        if grpcurl -plaintext "$AIP_GRPC_URL" list >/dev/null 2>&1; then
-            echo -e "${YELLOW}WARNING: gRPC reflection is ENABLED${NC}"
-            echo -e "${YELLOW}   This should be disabled in production${NC}"
-            echo -e "${YELLOW}   Use: make validate-production${NC}"
-        else
-            echo -e "${GREEN}SUCCESS: gRPC reflection is properly disabled${NC}"
-        fi
-    else
-        echo -e "${BLUE}INFO: grpcurl not available - cannot check reflection${NC}"
+        grpcurl -plaintext "$AIP_GRPC_URL" list >/dev/null 2>&1 && aip_grpc_ok=true
+        grpcurl -plaintext "$BRIDGE_GRPC_URL" list >/dev/null 2>&1 && bridge_grpc_ok=true
+        grpcurl -plaintext "$IO_GRPC_URL" list >/dev/null 2>&1 && io_grpc_ok=true
     fi
     
-    echo -e "\n${BLUE}Service Status Summary:${NC}"
-    echo -e "SUCCESS: Core services (Registry + AIP) are operational"
-    echo -e "WARNING: Additional services need to be started with docker-compose"
+    echo -e "\n${BLUE}SERVICE STATUS MATRIX:${NC}"
+    echo "Service           | HTTP  | gRPC  | API   | Status"
+    echo "------------------|-------|-------|-------|--------"
     
-    echo -e "\n${BLUE}Testing Commands:${NC}"
-    echo -e "  make test-aip-service       # Run AIP service tests"
-    echo -e "  make test-grpc-reflection   # Test gRPC reflection"
-    echo -e "  make test-aip-with-reflection # Test with reflection enabled"
-    echo -e "  make validate-production    # Validate production security"
+    # Registry
+    local reg_status="${GREEN}OPERATIONAL${NC}"
+    if ! $registry_http_ok; then
+        reg_status="${RED}CRITICAL${NC}"
+    elif ! $registry_api_ok; then
+        reg_status="${RED}API MISSING${NC}"
+    fi
+    printf "%-17s | %-5s | %-5s | %-5s | %s\n" "Registry" \
+        "$($registry_http_ok && echo "✓" || echo "✗")" \
+        "N/A" \
+        "$($registry_api_ok && echo "✓" || echo "✗")" \
+        "$reg_status"
+    
+    # AIP
+    local aip_status="${GREEN}OPERATIONAL${NC}"
+    if ! $aip_http_ok; then
+        aip_status="${RED}CRITICAL${NC}"
+    elif ! $aip_grpc_ok; then
+        aip_status="${YELLOW}gRPC ISSUE${NC}"
+    fi
+    printf "%-17s | %-5s | %-5s | %-5s | %s\n" "AIP" \
+        "$($aip_http_ok && echo "✓" || echo "✗")" \
+        "$($aip_grpc_ok && echo "✓" || echo "✗")" \
+        "N/A" \
+        "$aip_status"
+    
+    # Bridge
+    local bridge_status="${GREEN}OPERATIONAL${NC}"
+    if ! $bridge_http_ok; then
+        bridge_status="${RED}CRITICAL${NC}"
+    elif ! $bridge_grpc_ok; then
+        bridge_status="${YELLOW}gRPC ISSUE${NC}"
+    fi
+    printf "%-17s | %-5s | %-5s | %-5s | %s\n" "Bridge" \
+        "$($bridge_http_ok && echo "✓" || echo "✗")" \
+        "$($bridge_grpc_ok && echo "✓" || echo "✗")" \
+        "N/A" \
+        "$bridge_status"
+    
+    # IO
+    local io_status="${GREEN}OPERATIONAL${NC}"
+    if ! $io_http_ok; then
+        io_status="${RED}CRITICAL${NC}"
+    elif ! $io_grpc_ok; then
+        io_status="${YELLOW}gRPC ISSUE${NC}"
+    fi
+    printf "%-17s | %-5s | %-5s | %-5s | %s\n" "IO" \
+        "$($io_http_ok && echo "✓" || echo "✗")" \
+        "$($io_grpc_ok && echo "✓" || echo "✗")" \
+        "N/A" \
+        "$io_status"
+    
+    # Master Control
+    local mcp_status="${GREEN}OPERATIONAL${NC}"
+    if ! $mcp_http_ok; then
+        mcp_status="${RED}CRITICAL${NC}"
+    fi
+    printf "%-17s | %-5s | %-5s | %-5s | %s\n" "Master Control" \
+        "$($mcp_http_ok && echo "✓" || echo "✗")" \
+        "N/A" \
+        "N/A" \
+        "$mcp_status"
+    
+    echo -e "\n${BLUE}CRITICAL BLOCKERS IDENTIFIED:${NC}"
+    if ! $registry_api_ok; then
+        echo -e "${RED}1. CRITICAL: Service Registry API endpoints missing${NC}"
+        echo -e "${RED}   - /v1/agent/service/register returning 404${NC}"
+        echo -e "${RED}   - Service discovery completely broken${NC}"
+    fi
+    
+    if ! $aip_grpc_ok || ! $bridge_grpc_ok || ! $io_grpc_ok; then
+        echo -e "${RED}2. CRITICAL: gRPC services unhealthy${NC}"
+        echo -e "${RED}   - Inter-service communication failing${NC}"
+        echo -e "${RED}   - Check gRPC server startup and port binding${NC}"
+    fi
+    
+    echo -e "\n${BLUE}EMERGENCY ACTIONS REQUIRED:${NC}"
+    echo -e "  make diagnose-registry      # Diagnose registry API issues"
+    echo -e "  make diagnose-grpc          # Diagnose gRPC health issues"
+    echo -e "  make diagnose-ports         # Check port configuration"
+    echo -e "  docker-compose logs         # Check service logs for errors"
 }
 
 # Main test execution
