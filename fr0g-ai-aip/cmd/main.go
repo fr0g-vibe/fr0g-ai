@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"os/signal"
 	"strconv"
@@ -17,9 +16,7 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/registry"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
-	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 )
 
 func main() {
@@ -118,9 +115,6 @@ func main() {
 	if err := restServer.Shutdown(shutdownCtx); err != nil {
 		log.Printf("REST server shutdown error: %v", err)
 	}
-
-	// Shutdown gRPC server
-	grpcServer.GracefulStop()
 
 	log.Println("COMPLETE: fr0g.ai AIP shutdown complete")
 }
