@@ -63,14 +63,17 @@ services:
       - aip_data:/app/data
       - ./logs:/app/logs
     depends_on:
-      - service-registry
+      service-registry:
+        condition: service_healthy
     networks:
       - fr0g-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health && nc -z localhost 9090"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
   # AI Bridge Service
   fr0g-ai-bridge:
@@ -94,14 +97,19 @@ services:
       - bridge_config:/app/config
       - ./logs:/app/logs
     depends_on:
-      - service-registry
+      service-registry:
+        condition: service_healthy
+      fr0g-ai-aip:
+        condition: service_healthy
     networks:
       - fr0g-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/health && nc -z localhost 9091"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
 
   # AI Master Control (Cognitive Engine)
   fr0g-ai-master-control:
@@ -115,6 +123,7 @@ services:
       - SERVICE_NAME=fr0g-ai-master-control
       - SERVICE_ID=mcp-001
       - HTTP_PORT=8081
+      - HTTP_HOST=0.0.0.0
       - STORAGE_TYPE=file
       - DATA_DIR=/app/data
       - LOG_LEVEL=${LOG_LEVEL:-info}
@@ -179,15 +188,19 @@ services:
       - io_data:/app/data
       - ./logs:/app/logs
     depends_on:
-      - service-registry
-      - fr0g-ai-master-control
+      service-registry:
+        condition: service_healthy
+      fr0g-ai-master-control:
+        condition: service_healthy
     networks:
       - fr0g-ai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/health && nc -z localhost 9092"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 45s
+    restart: unless-stopped
 
   # Optional: Add OpenWebUI for complete AI chat interface
   # Uncomment to enable full AI chat capabilities
