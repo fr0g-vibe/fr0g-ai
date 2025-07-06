@@ -19,7 +19,8 @@ type Config struct {
 
 // ValidationConfig represents validation-specific configuration
 type ValidationConfig struct {
-	StrictMode bool `yaml:"strict_mode"`
+	StrictMode   bool `yaml:"strict_mode"`
+	EnableStrict bool `yaml:"enable_strict"`
 }
 
 // ClientConfig represents client-specific configuration

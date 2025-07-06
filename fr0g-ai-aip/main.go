@@ -50,12 +50,12 @@ func main() {
 	// Initialize registry client
 	var registryClient *registry.RegistryClient
 	if os.Getenv("ENABLE_REGISTRY") != "false" {
-		registryClient, err = registry.NewRegistryClient("http://localhost:8500")
+		registryClient, err = registry.NewRegistryClientSimple("http://localhost:8500")
 		if err != nil {
 			log.Printf("Warning: Failed to create registry client: %v", err)
 		} else {
 			// Register service
-			if err := registryClient.RegisterService("fr0g-ai-aip", cfg.HTTP.Port, cfg.GRPC.Port); err != nil {
+			if err := registryClient.RegisterServiceSimple("fr0g-ai-aip", cfg.HTTP.Port, cfg.GRPC.Port); err != nil {
 				log.Printf("Warning: Failed to register service: %v", err)
 			}
 		}

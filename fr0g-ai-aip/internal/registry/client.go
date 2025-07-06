@@ -254,13 +254,13 @@ func (rc *RegistryClient) Shutdown() error {
 	return rc.DeregisterService()
 }
 
-// NewRegistryClient creates a new registry client with URL
-func NewRegistryClient(registryURL string) (*RegistryClient, error) {
+// NewRegistryClientSimple creates a new registry client with URL (simple version)
+func NewRegistryClientSimple(registryURL string) (*RegistryClient, error) {
 	return NewRegistryClient(registryURL, nil), nil
 }
 
-// RegisterService registers a service with the registry
-func (rc *RegistryClient) RegisterService(serviceName, httpPort, grpcPort string) error {
+// RegisterServiceSimple registers a service with the registry (simple version)
+func (rc *RegistryClient) RegisterServiceSimple(serviceName, httpPort, grpcPort string) error {
 	serviceInfo := &ServiceInfo{
 		ID:      serviceName + "-" + httpPort,
 		Name:    serviceName,

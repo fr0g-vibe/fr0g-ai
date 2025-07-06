@@ -13,6 +13,7 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/political"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/preferences"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/attributes/psychographics"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
@@ -22,7 +23,7 @@ import (
 // Service provides core business logic for persona and identity management
 type Service struct {
 	storage                 storage.Storage
-	config                  *sharedconfig.ValidationConfig
+	config                  *config.ValidationConfig
 	demographicsProcessor   *demographics.Processor
 	psychographicsProcessor *psychographics.Processor
 	lifeHistoryProcessor    *lifehistory.Processor
@@ -35,8 +36,9 @@ type Service struct {
 
 // NewService creates a new persona service with all attribute processors
 func NewService(storage storage.Storage) *Service {
-	// Use default validation config
-	validationConfig := &sharedconfig.ValidationConfig{
+	// Use local validation config that matches what processors expect
+	validationConfig := &config.ValidationConfig{
+		StrictMode:   false,
 		EnableStrict: false,
 	}
 
