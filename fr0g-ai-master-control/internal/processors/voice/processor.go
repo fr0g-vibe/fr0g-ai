@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"fr0g-ai-master-control/internal/config"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/config"
 )
 
 // Processor handles voice call threat detection and analysis
