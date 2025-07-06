@@ -46,18 +46,11 @@ send_system_prompt() {
     
     # Send the system prompt as a regular chat message
     if [[ -n "$prompt_content" ]]; then
-        # Use a simpler approach - send the entire prompt at once using tmux's literal mode
-        # First, create a temporary file with the prompt content
-        local temp_file=$(mktemp)
-        echo "$prompt_content" > "$temp_file"
+        # Convert newlines to spaces to send as single message
+        local single_line_prompt=$(echo "$prompt_content" | tr '\n' ' ' | sed 's/  */ /g')
         
-        # Send the content using tmux load-buffer and paste-buffer
-        tmux load-buffer "$temp_file"
-        tmux paste-buffer -t $SESSION_NAME:$window
-        tmux send-keys -t $SESSION_NAME:$window C-m
-        
-        # Clean up temp file
-        rm "$temp_file"
+        # Send the entire prompt as one message using send-keys with proper escaping
+        tmux send-keys -t $SESSION_NAME:$window "$single_line_prompt" C-m
     fi
 }
 
