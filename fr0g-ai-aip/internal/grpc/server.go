@@ -1,24 +1,20 @@
 package grpc
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"os"
 	"strconv"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/registry"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 	"github.com/sirupsen/logrus"
 	
 	// pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb" // Commented out until protobuf is generated
@@ -44,7 +40,7 @@ func StartGRPCServer(port string) error {
 	// Create a default service for the standalone server
 	memStorage := storage.NewMemoryStorage()
 	service := persona.NewService(memStorage)
-	personaServer := &PersonaServer{
+	_ = &PersonaServer{
 		service: service,
 	}
 
@@ -111,7 +107,7 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
 
 	// Register the persona service (commented out until protobuf is generated)
-	personaServer := NewPersonaServer(cfg, service)
+	_ = NewPersonaServer(cfg, service)
 	// pb.RegisterPersonaServiceServer(s, personaServer)
 
 	// Register with service registry
