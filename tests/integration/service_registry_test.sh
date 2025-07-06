@@ -21,6 +21,12 @@ MAX_RETRIES=12
 # Expected services
 EXPECTED_SERVICES=("fr0g-ai-aip" "fr0g-ai-bridge" "fr0g-ai-io" "fr0g-ai-master-control")
 
+# Test results tracking
+TEST_RESULTS=()
+TOTAL_TESTS=0
+PASSED_TESTS=0
+FAILED_TESTS=0
+
 echo -e "${BLUE}fr0g.ai Service Registry Integration Test${NC}"
 echo "=============================================="
 
@@ -32,6 +38,7 @@ wait_for_registry() {
     while [ $retries -lt $MAX_RETRIES ]; do
         if curl -sf "$REGISTRY_URL/health" >/dev/null 2>&1; then
             echo -e "${GREEN}COMPLETED READY${NC}"
+            log_test "Registry Startup" "PASS" "Registry ready after $((retries * RETRY_INTERVAL)) seconds"
             return 0
         fi
         retries=$((retries + 1))
@@ -39,7 +46,30 @@ wait_for_registry() {
     done
     
     echo -e "${RED}CRITICAL REGISTRY NOT READY${NC}"
+    log_test "Registry Startup" "FAIL" "Registry not ready after $((MAX_RETRIES * RETRY_INTERVAL)) seconds"
     return 1
+}
+
+# Function to log test results
+log_test() {
+    local test_name="$1"
+    local result="$2"
+    local message="$3"
+    
+    TOTAL_TESTS=$((TOTAL_TESTS + 1))
+    
+    if [ "$result" = "PASS" ]; then
+        echo -e "${GREEN}PASS $test_name: $message${NC}"
+        TEST_RESULTS+=("PASS: $test_name - $message")
+        PASSED_TESTS=$((PASSED_TESTS + 1))
+    elif [ "$result" = "FAIL" ]; then
+        echo -e "${RED}FAIL $test_name: $message${NC}"
+        TEST_RESULTS+=("FAIL: $test_name - $message")
+        FAILED_TESTS=$((FAILED_TESTS + 1))
+    elif [ "$result" = "SKIP" ]; then
+        echo -e "${YELLOW}SKIP $test_name: $message${NC}"
+        TEST_RESULTS+=("SKIP: $test_name - $message")
+    fi
 }
 
 # Function to check service registration
@@ -54,11 +84,13 @@ check_service_registration() {
         local response=$(curl -s "$REGISTRY_URL$endpoint" 2>/dev/null)
         if echo "$response" | jq -e '. | length > 0' >/dev/null 2>&1; then
             echo -e "${GREEN}COMPLETED REGISTERED${NC}"
+            log_test "$service_name Registration" "PASS" "Service is properly registered"
             return 0
         fi
     done
     
     echo -e "${RED}CRITICAL NOT REGISTERED${NC}"
+    log_test "$service_name Registration" "FAIL" "Service not found in registry"
     return 1
 }
 
@@ -86,10 +118,31 @@ test_service_discovery() {
     local services_response=$(curl -s "$REGISTRY_URL/v1/catalog/services" 2>/dev/null)
     if [ -n "$services_response" ] && [ "$services_response" != "{}" ]; then
         echo -e "${GREEN}COMPLETED SERVICES FOUND${NC}"
+        log_test "Service Discovery" "PASS" "Service catalog responding with data"
+        
+        # Count services
+        local service_count=$(echo "$services_response" | jq '. | length' 2>/dev/null || echo "0")
+        log_test "Service Count" "PASS" "$service_count services in registry"
+        
         echo "Registered services:"
         echo "$services_response" | jq -r 'keys[]' 2>/dev/null | sed 's/^/  - /' || echo "$services_response"
+        
+        # Test performance of discovery
+        local start_time=$(date +%s%N)
+        curl -s "$REGISTRY_URL/v1/catalog/services" >/dev/null 2>&1
+        local end_time=$(date +%s%N)
+        local response_time=$(( (end_time - start_time) / 1000000 ))
+        
+        if [ $response_time -lt 100 ]; then
+            log_test "Discovery Performance" "PASS" "Fast discovery: ${response_time}ms"
+        elif [ $response_time -lt 500 ]; then
+            log_test "Discovery Performance" "PASS" "Good discovery: ${response_time}ms"
+        else
+            log_test "Discovery Performance" "FAIL" "Slow discovery: ${response_time}ms"
+        fi
     else
         echo -e "${RED}CRITICAL NO SERVICES REGISTERED${NC}"
+        log_test "Service Discovery" "FAIL" "No services found in registry"
         return 1
     fi
     
@@ -109,11 +162,24 @@ test_registration_endpoints() {
     
     if [ "$reg_code" = "200" ] || [ "$reg_code" = "201" ]; then
         echo -e "${GREEN}COMPLETED OPERATIONAL${NC}"
+        log_test "Registration Endpoint" "PASS" "Service registration working (HTTP $reg_code)"
+        
+        # Test service appears in catalog
+        if curl -sf "$REGISTRY_URL/v1/catalog/services" | grep -q "test-service"; then
+            log_test "Service Catalog Update" "PASS" "Registered service appears in catalog"
+        else
+            log_test "Service Catalog Update" "FAIL" "Registered service not found in catalog"
+        fi
         
         # Clean up test service
-        curl -s "$REGISTRY_URL/v1/agent/service/deregister/test-service" -X PUT >/dev/null 2>&1
+        if curl -s "$REGISTRY_URL/v1/agent/service/deregister/test-service" -X PUT >/dev/null 2>&1; then
+            log_test "Service Deregistration" "PASS" "Service deregistration working"
+        else
+            log_test "Service Deregistration" "FAIL" "Service deregistration failed"
+        fi
     else
         echo -e "${RED}CRITICAL ENDPOINT FAILED (HTTP $reg_code)${NC}"
+        log_test "Registration Endpoint" "FAIL" "Service registration failed (HTTP $reg_code)"
         return 1
     fi
     
@@ -187,11 +253,34 @@ main() {
         verify_service_health "$service" || exit_code=1
     done
     
+    # Summary
+    echo -e "\n${BLUE}Service Registry Test Summary${NC}"
+    echo "============================="
+    
+    echo -e "Total Tests: $TOTAL_TESTS"
+    echo -e "${GREEN}Passed: $PASSED_TESTS${NC}"
+    echo -e "${RED}Failed: $FAILED_TESTS${NC}"
+    echo -e "${YELLOW}Skipped: $((TOTAL_TESTS - PASSED_TESTS - FAILED_TESTS))${NC}"
+    
+    # Show failed tests
+    if [ $FAILED_TESTS -gt 0 ]; then
+        echo -e "\n${RED}Failed Tests:${NC}"
+        for result in "${TEST_RESULTS[@]}"; do
+            if [[ $result == FAIL:* ]]; then
+                echo -e "${RED}  $result${NC}"
+            fi
+        done
+    fi
+    
     if [ $exit_code -eq 0 ]; then
         echo -e "\n${GREEN}SUCCESS: Service registry integration working properly${NC}"
     else
         echo -e "\n${RED}CRITICAL: Service registry integration has issues${NC}"
         echo -e "${RED}Check service logs and registry configuration${NC}"
+        echo -e "\n${BLUE}Troubleshooting Commands:${NC}"
+        echo "  docker-compose logs service-registry"
+        echo "  curl -v $REGISTRY_URL/health"
+        echo "  make diagnose-registry"
     fi
     
     exit $exit_code

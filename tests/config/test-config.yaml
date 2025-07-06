@@ -1,0 +1,91 @@
+# fr0g.ai Test Configuration
+# Defines test parameters and coverage requirements for all components
+
+test_suites:
+  unit:
+    description: "Unit tests for individual components"
+    timeout: "5m"
+    parallel: true
+    coverage_threshold: 80
+    
+  integration:
+    description: "Integration tests between services"
+    timeout: "10m"
+    parallel: false
+    requires_services: true
+    
+  performance:
+    description: "Performance and load tests"
+    timeout: "15m"
+    parallel: false
+    requires_services: true
+    
+  race:
+    description: "Race condition detection"
+    timeout: "10m"
+    parallel: true
+    
+  benchmark:
+    description: "Benchmark and performance profiling"
+    timeout: "20m"
+    parallel: false
+
+components:
+  pkg/config:
+    test_patterns:
+      - "./..."
+    coverage_threshold: 90
+    benchmark_tests: true
+    
+  fr0g-ai-aip:
+    test_patterns:
+      - "./internal/..."
+      - "./cmd/..."
+    coverage_threshold: 85
+    integration_tests: true
+    benchmark_tests: true
+    
+  fr0g-ai-bridge:
+    test_patterns:
+      - "./internal/..."
+      - "./cmd/..."
+    coverage_threshold: 85
+    integration_tests: true
+    
+  fr0g-ai-master-control:
+    test_patterns:
+      - "./internal/..."
+      - "./cmd/..."
+    coverage_threshold: 80
+    integration_tests: true
+    
+  fr0g-ai-io:
+    test_patterns:
+      - "./internal/..."
+      - "./cmd/..."
+    coverage_threshold: 80
+    integration_tests: true
+    
+  fr0g-ai-registry:
+    test_patterns:
+      - "./internal/..."
+      - "./cmd/..."
+    coverage_threshold: 85
+    integration_tests: true
+    benchmark_tests: true
+
+test_flags:
+  unit: "-v -race -cover"
+  integration: "-v -tags=integration"
+  performance: "-v -tags=performance"
+  race: "-race"
+  benchmark: "-bench=. -benchmem"
+  coverage: "-coverprofile=coverage.out -covermode=atomic"
+
+reporting:
+  formats:
+    - "console"
+    - "junit"
+    - "html"
+  output_dir: "test-results"
+  coverage_dir: "coverage"
