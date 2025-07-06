@@ -149,23 +149,7 @@ func TestUnitPerformanceMetrics(t *testing.T) {
 	})
 }
 
-// Helper functions and types for unit tests
-
-type ServiceInfo struct {
-	ID      string            `json:"id"`
-	Name    string            `json:"name"`
-	Address string            `json:"address"`
-	Port    int               `json:"port"`
-	Tags    []string          `json:"tags,omitempty"`
-	Meta    map[string]string `json:"meta,omitempty"`
-	Check   *HealthCheck      `json:"check,omitempty"`
-}
-
-type HealthCheck struct {
-	HTTP     string `json:"http,omitempty"`
-	Interval string `json:"interval,omitempty"`
-	Timeout  string `json:"timeout,omitempty"`
-}
+// Helper functions for unit tests (types are imported from types.go)
 
 type InMemoryRegistry struct {
 	services map[string]ServiceInfo
