@@ -36,13 +36,18 @@ func main() {
 	grpcServer := grpc.NewServer()
 	// TODO: Register bridge services here
 
-	grpcListener, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Server.GRPCPort))
+	grpcPort := os.Getenv("GRPC_PORT")
+	if grpcPort == "" {
+		grpcPort = "9091" // Docker-compose authority: Bridge gRPC :9091
+	}
+
+	grpcListener, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
-		log.Fatalf("Failed to listen on gRPC port %d: %v", cfg.Server.GRPCPort, err)
+		log.Fatalf("Failed to listen on gRPC port %s: %v", grpcPort, err)
 	}
 
 	go func() {
-		log.Printf("gRPC server starting on port %d", cfg.Server.GRPCPort)
+		log.Printf("gRPC server starting on port %s", grpcPort)
 		if err := grpcServer.Serve(grpcListener); err != nil {
 			log.Printf("gRPC server error: %v", err)
 		}
@@ -53,9 +58,19 @@ func main() {
 
 	// Health check endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		httpPort := os.Getenv("HTTP_PORT")
+		if httpPort == "" {
+			httpPort = "8082"
+		}
+		grpcPort := os.Getenv("GRPC_PORT")
+		if grpcPort == "" {
+			grpcPort = "9091"
+		}
+		
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok","service":"fr0g-ai-bridge","version":"1.0.0","ports":{"http":8082,"grpc":9091}}`))
+		response := fmt.Sprintf(`{"status":"ok","service":"fr0g-ai-bridge","version":"1.0.0","ports":{"http":%s,"grpc":%s}}`, httpPort, grpcPort)
+		w.Write([]byte(response))
 	})
 
 	// OpenWebUI compatible endpoints
@@ -88,13 +103,18 @@ func main() {
 		w.Write([]byte(`{"response":"Bridge service operational","status":"success"}`))
 	})
 
+	httpPort := os.Getenv("HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "8082" // Docker-compose authority: Bridge HTTP :8082
+	}
+
 	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Server.HTTPPort),
+		Addr:    ":" + httpPort,
 		Handler: mux,
 	}
 
 	go func() {
-		log.Printf("HTTP server starting on port %d", cfg.Server.HTTPPort)
+		log.Printf("HTTP server starting on port %s", httpPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("HTTP server error: %v", err)
 		}
