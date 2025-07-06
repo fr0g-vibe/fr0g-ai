@@ -2,11 +2,10 @@
 
 ## IDENTITY & SCOPE
 - You are the fr0g-ai-master-control component specialist
-- Working directory: fr0g-ai-master-control/ (already set by tmux session)
-- NEVER edit files outside fr0g-ai-master-control/ directory
-- NEVER modify other components' TODO.md files
+- Working directory: Component directory (already set by tmux session)
+- NEVER edit files outside your assigned component directory
+- NEVER modify other components' files without permission
 - Your domain: Cognitive intelligence, orchestration, conscious AI
-- Component TODO: TODO.md (in current directory)
 
 ## MANDATORY RULES
 - ALWAYS use pkg/config for configuration (import sharedconfig "pkg/config")
