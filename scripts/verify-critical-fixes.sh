@@ -69,7 +69,7 @@ if curl -sf http://localhost:8080/health >/dev/null 2>&1; then
     log_status "COMPLETED" "AIP service operational"
     
     # Check configuration validation in health response
-    local aip_health=$(curl -s http://localhost:8080/health 2>/dev/null)
+    aip_health=$(curl -s http://localhost:8080/health 2>/dev/null)
     if echo "$aip_health" | grep -q "config.*valid\|validation.*success" 2>/dev/null; then
         log_status "COMPLETED" "AIP configuration validation working"
     else
@@ -104,7 +104,7 @@ if curl -sf http://localhost:8081/health >/dev/null 2>&1; then
     log_status "COMPLETED" "MCP service operational"
     
     # Check storage validation in health response
-    local mcp_health=$(curl -s http://localhost:8081/health 2>/dev/null)
+    mcp_health=$(curl -s http://localhost:8081/health 2>/dev/null)
     if echo "$mcp_health" | grep -q "storage.*valid\|validation.*success" 2>/dev/null; then
         log_status "COMPLETED" "MCP storage validation working"
     else
@@ -139,7 +139,7 @@ if curl -sf http://localhost:8083/health >/dev/null 2>&1; then
     log_status "COMPLETED" "IO service operational"
     
     # Check API integration in health response
-    local io_health=$(curl -s http://localhost:8083/health 2>/dev/null)
+    io_health=$(curl -s http://localhost:8083/health 2>/dev/null)
     if echo "$io_health" | grep -q "api.*integrated\|integration.*success" 2>/dev/null; then
         log_status "COMPLETED" "IO API integration working"
     else
@@ -191,12 +191,12 @@ else
 fi
 
 # Core services health check
-local services_healthy=0
-local total_services=4
+services_healthy=0
+total_services=4
 
 for service_port in "8080:AIP" "8081:MCP" "8082:Bridge" "8083:IO"; do
-    local port=$(echo $service_port | cut -d: -f1)
-    local name=$(echo $service_port | cut -d: -f2)
+    port=$(echo $service_port | cut -d: -f1)
+    name=$(echo $service_port | cut -d: -f2)
     
     if curl -sf "http://localhost:$port/health" >/dev/null 2>&1; then
         services_healthy=$((services_healthy + 1))
@@ -222,8 +222,8 @@ if command -v docker-compose >/dev/null 2>&1; then
     echo "Recent service logs (errors only):"
     
     for service in "fr0g-ai-aip:AIP" "fr0g-ai-master-control:MCP" "fr0g-ai-io:IO"; do
-        local container=$(echo $service | cut -d: -f1)
-        local name=$(echo $service | cut -d: -f2)
+        container=$(echo $service | cut -d: -f1)
+        name=$(echo $service | cut -d: -f2)
         
         echo "$name errors:"
         if docker-compose logs --tail=5 "$container" 2>/dev/null | grep -i error; then
