@@ -10,6 +10,18 @@ SESSION_NAME="fr0g-ai"
 PROJECT_ROOT="$(pwd)"
 AIDER_CMD="aider --dark-mode"
 
+# Function to create aider command with system prompt
+create_aider_cmd() {
+    local prompt_file="$1"
+    local files="$2"
+    if [[ -f "$prompt_file" ]]; then
+        local prompt_content=$(cat "$prompt_file" | tr '\n' ' ' | sed 's/"/\\"/g')
+        echo "$AIDER_CMD --message \"$prompt_content\" $files"
+    else
+        echo "$AIDER_CMD $files"
+    fi
+}
+
 
 echo "STARTING Starting fr0g-ai Development Environment..."
 echo "📁 Project Root: $PROJECT_ROOT"
@@ -57,7 +69,8 @@ tmux send-keys -t $SESSION_NAME:0 "echo 'Role: Overall project coordination, arc
 tmux send-keys -t $SESSION_NAME:0 "echo 'Focus: README.md, docker-compose.yml, Makefile, project-wide decisions'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Key Files: README.md, docker-compose.yml, Makefile, TODO.md, .env.example'" C-m
 tmux send-keys -t $SESSION_NAME:0 "echo 'Environment: .env file ready COMPLETED'" C-m
-tmux send-keys -t $SESSION_NAME:0 "$AIDER_CMD --file README.md --file docker-compose.yml --file Makefile --file TODO.md --file .env.example" C-m
+LEAD_CMD=$(create_aider_cmd ".prompts/project-lead.md" "--file README.md --file docker-compose.yml --file Makefile --file TODO.md --file .env.example")
+tmux send-keys -t $SESSION_NAME:0 "$LEAD_CMD" C-m
 tmux send-keys -t $SESSION_NAME:0 "/load .prompts/project-lead.md" C-m
 
 # ============================================================================
@@ -71,7 +84,8 @@ tmux send-keys -t $SESSION_NAME:1 "echo 'Role: Core AI processing engine, person
 tmux send-keys -t $SESSION_NAME:1 "echo 'Ports: HTTP :8080, gRPC :9090'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Status: Demographics COMPLETED, Other attributes need implementation'" C-m
 tmux send-keys -t $SESSION_NAME:1 "cd fr0g-ai-aip" C-m
-tmux send-keys -t $SESSION_NAME:1 "$AIDER_CMD --file TODO.md" C-m
+AIP_CMD=$(create_aider_cmd "../.prompts/aip-agent.md" "--file TODO.md")
+tmux send-keys -t $SESSION_NAME:1 "$AIP_CMD" C-m
 tmux send-keys -t $SESSION_NAME:1 "/load ../.prompts/aip-agent.md" C-m
 
 # Window 2: fr0g-ai-bridge (Integration Service)
@@ -81,7 +95,8 @@ tmux send-keys -t $SESSION_NAME:2 "echo 'Role: OpenWebUI integration, REST/gRPC 
 tmux send-keys -t $SESSION_NAME:2 "echo 'Ports: HTTP :8082, gRPC :9091'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Status: Fully operational COMPLETED'" C-m
 tmux send-keys -t $SESSION_NAME:2 "cd fr0g-ai-bridge" C-m
-tmux send-keys -t $SESSION_NAME:2 "$AIDER_CMD --file TODO.md" C-m
+BRIDGE_CMD=$(create_aider_cmd "../.prompts/bridge-agent.md" "--file TODO.md")
+tmux send-keys -t $SESSION_NAME:2 "$BRIDGE_CMD" C-m
 tmux send-keys -t $SESSION_NAME:2 "/load ../.prompts/bridge-agent.md" C-m
 
 # Window 3: fr0g-ai-master-control (Cognitive Engine)
@@ -91,7 +106,8 @@ tmux send-keys -t $SESSION_NAME:3 "echo 'Role: System orchestration, cognitive e
 tmux send-keys -t $SESSION_NAME:3 "echo 'Port: HTTP :8081'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL COMPLETED (Learning Rate: 0.100+)'" C-m
 tmux send-keys -t $SESSION_NAME:3 "cd fr0g-ai-master-control" C-m
-tmux send-keys -t $SESSION_NAME:3 "$AIDER_CMD --file TODO.md" C-m
+MCP_CMD=$(create_aider_cmd "../.prompts/mcp-agent.md" "--file TODO.md")
+tmux send-keys -t $SESSION_NAME:3 "$MCP_CMD" C-m
 tmux send-keys -t $SESSION_NAME:3 "/load ../.prompts/mcp-agent.md" C-m
 
 # Window 4: fr0g-ai-io (Input/Output Processing)
@@ -101,7 +117,8 @@ tmux send-keys -t $SESSION_NAME:4 "echo 'Role: Input/Output processing, threat v
 tmux send-keys -t $SESSION_NAME:4 "echo 'Ports: HTTP :8083, gRPC :9092'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Status: NEW SERVICE - SMS, Voice, IRC, ESMTP, Discord processors'" C-m
 tmux send-keys -t $SESSION_NAME:4 "cd fr0g-ai-io" C-m
-tmux send-keys -t $SESSION_NAME:4 "$AIDER_CMD --file TODO.md" C-m
+IO_CMD=$(create_aider_cmd "../.prompts/io-agent.md" "--file TODO.md")
+tmux send-keys -t $SESSION_NAME:4 "$IO_CMD" C-m
 tmux send-keys -t $SESSION_NAME:4 "/load ../.prompts/io-agent.md" C-m
 
 # Window 5: Configuration Expert
@@ -110,7 +127,8 @@ tmux send-keys -t $SESSION_NAME:5 "echo 'CONFIGURATION EXPERT'" C-m
 tmux send-keys -t $SESSION_NAME:5 "echo 'Role: Environment variables, shared config library, validation systems'" C-m
 tmux send-keys -t $SESSION_NAME:5 "echo 'Focus: .env, pkg/config/ - validation, loading, shared types'" C-m
 tmux send-keys -t $SESSION_NAME:5 "echo 'Key Files: .env, pkg/config/*.go'" C-m
-tmux send-keys -t $SESSION_NAME:5 "$AIDER_CMD --file .env.example --file .env --file pkg/config/config.go --file pkg/config/validation.go --file pkg/config/loader.go --file pkg/config/examples_test.go --file pkg/config/README.md" C-m
+CONFIG_CMD=$(create_aider_cmd ".prompts/config-agent.md" "--file .env.example --file .env --file pkg/config/config.go --file pkg/config/validation.go --file pkg/config/loader.go --file pkg/config/examples_test.go --file pkg/config/README.md")
+tmux send-keys -t $SESSION_NAME:5 "$CONFIG_CMD" C-m
 tmux send-keys -t $SESSION_NAME:5 "/load .prompts/config-agent.md" C-m
 
 # ============================================================================
@@ -123,7 +141,8 @@ tmux send-keys -t $SESSION_NAME:6 "echo 'DEVOPS & INFRASTRUCTURE AGENT'" C-m
 tmux send-keys -t $SESSION_NAME:6 "echo 'Role: Docker, deployment, CI/CD, infrastructure automation'" C-m
 tmux send-keys -t $SESSION_NAME:6 "echo 'Focus: docker-compose.yml, Makefile, .env configuration'" C-m
 tmux send-keys -t $SESSION_NAME:6 "echo 'Services: service-registry:8500, aip:8080/9090, bridge:8082/9091, mcp:8081, io:8083/9092'" C-m
-tmux send-keys -t $SESSION_NAME:6 "$AIDER_CMD --file docker-compose.yml --file Makefile --file .env.example" C-m
+DEVOPS_CMD=$(create_aider_cmd ".prompts/devops-agent.md" "--file docker-compose.yml --file Makefile --file .env.example")
+tmux send-keys -t $SESSION_NAME:6 "$DEVOPS_CMD" C-m
 tmux send-keys -t $SESSION_NAME:6 "/load .prompts/devops-agent.md" C-m
 
 # Window 7: Registry Agent
@@ -133,7 +152,8 @@ tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Service discovery, registration, 
 tmux send-keys -t $SESSION_NAME:7 "echo 'Port: HTTP :8500'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
 tmux send-keys -t $SESSION_NAME:7 "cd fr0g-ai-registry" C-m
-tmux send-keys -t $SESSION_NAME:7 "$AIDER_CMD --file TODO.md" C-m
+REGISTRY_CMD=$(create_aider_cmd "../.prompts/registry-agent.md" "--file TODO.md")
+tmux send-keys -t $SESSION_NAME:7 "$REGISTRY_CMD" C-m
 tmux send-keys -t $SESSION_NAME:7 "/load ../.prompts/registry-agent.md" C-m
 
 # Window 8: Build & Test Runner
