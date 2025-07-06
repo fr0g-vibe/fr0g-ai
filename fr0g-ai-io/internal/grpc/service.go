@@ -12,14 +12,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/queue"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
 // IOService implements the gRPC service for fr0g-ai-io
 type IOService struct {
-	inputQueue  queue.Queue
-	outputQueue queue.Queue
 	config      *sharedconfig.GRPCConfig
 	server      *grpc.Server
 	listener    net.Listener
@@ -118,11 +115,9 @@ type ThreatAnalysisResult struct {
 }
 
 // NewIOService creates a new gRPC I/O service
-func NewIOService(inputQueue, outputQueue queue.Queue, config *sharedconfig.GRPCConfig) *IOService {
+func NewIOService(config *sharedconfig.GRPCConfig) *IOService {
 	return &IOService{
-		inputQueue:  inputQueue,
-		outputQueue: outputQueue,
-		config:      config,
+		config: config,
 	}
 }
 
@@ -261,27 +256,8 @@ func (s *IOService) ProcessOutputCommand(ctx context.Context, command *OutputCom
 
 // processOutputCommandDirect processes a command directly without review
 func (s *IOService) processOutputCommandDirect(ctx context.Context, command *OutputCommand, validationIssues []ValidationIssue) (*OutputResponse, error) {
-	// Convert to queue message and send to output queue
-	message := &queue.Message{
-		ID:          command.ID,
-		Type:        command.Type,
-		Source:      "master-control",
-		Destination: command.Target,
-		Content:     command.Content,
-		Metadata:    command.Metadata,
-		Timestamp:   time.Now(),
-		Retries:     0,
-		MaxRetries:  3,
-	}
-
-	if err := s.outputQueue.Enqueue(message); err != nil {
-		return &OutputResponse{
-			CommandID: command.ID,
-			Success:   false,
-			Message:   fmt.Sprintf("Failed to queue command: %v", err),
-			Timestamp: time.Now(),
-		}, nil
-	}
+	// Process the command directly (no queue needed for now)
+	log.Printf("gRPC Service: Processing command %s directly", command.ID)
 
 	log.Printf("gRPC Service: Successfully queued output command %s", command.ID)
 	
@@ -457,25 +433,9 @@ func (s *IOService) SendInputEvent(ctx context.Context, event *InputEvent) (*Inp
 }
 
 // ProcessInputMessage processes an input message and sends it to master-control
-func (s *IOService) ProcessInputMessage(message *queue.Message) error {
+func (s *IOService) ProcessInputMessage(event *InputEvent) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-
-	// Convert queue message to input event
-	content, ok := message.Content.(string)
-	if !ok {
-		return fmt.Errorf("message content is not a string")
-	}
-
-	event := &InputEvent{
-		ID:        message.ID,
-		Type:      message.Type,
-		Source:    message.Source,
-		Content:   content,
-		Metadata:  message.Metadata,
-		Timestamp: message.Timestamp,
-		Priority:  0, // Default priority since queue.Message doesn't have Priority field
-	}
 
 	response, err := s.SendInputEvent(ctx, event)
 	if err != nil {
@@ -493,24 +453,8 @@ func (s *IOService) ProcessInputMessage(message *queue.Message) error {
 			Priority: event.Priority,
 		}
 
-		// Send to output queue for processing
-		outputMessage := &queue.Message{
-			ID:          outputCommand.ID,
-			Type:        outputCommand.Type,
-			Source:      "master-control-response",
-			Destination: outputCommand.Target,
-			Content:     outputCommand.Content,
-			Metadata:    outputCommand.Metadata,
-			Timestamp:   time.Now(),
-			Retries:     0,
-			MaxRetries:  3,
-		}
-
-		if err := s.outputQueue.Enqueue(outputMessage); err != nil {
-			log.Printf("gRPC Service: Error queuing output action: %v", err)
-		} else {
-			log.Printf("gRPC Service: Queued output action %s", outputCommand.ID)
-		}
+		// Process the command directly
+		log.Printf("gRPC Service: Processing output action %s", outputCommand.ID)
 	}
 
 	return nil
