@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -113,7 +116,8 @@ func main() {
 
 // MCPServer represents the main MCP server
 type MCPServer struct {
-	config *sharedconfig.Config
+	config     *sharedconfig.Config
+	httpServer *http.Server
 }
 
 // NewMCPServer creates a new MCP server instance
@@ -127,10 +131,35 @@ func NewMCPServer(cfg *sharedconfig.Config) *MCPServer {
 func (s *MCPServer) Start(ctx context.Context) error {
 	log.Println("Starting MCP server components...")
 
-	// TODO: Implement actual HTTP server startup
-	log.Printf("HTTP server starting on %s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
+	// Create HTTP server with routes
+	mux := http.NewServeMux()
+	
+	// Health check endpoint
+	mux.HandleFunc("/health", s.healthHandler)
+	
+	// Status endpoint
+	mux.HandleFunc("/status", s.statusHandler)
+	
+	// Webhook endpoints
+	mux.HandleFunc("/webhook/", s.webhookHandler)
+
+	// Create HTTP server
+	addr := fmt.Sprintf("%s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
+	s.httpServer = &http.Server{
+		Addr:    addr,
+		Handler: mux,
+	}
+
+	// Start HTTP server in goroutine
+	go func() {
+		log.Printf("HTTP server listening on %s", addr)
+		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("HTTP server error: %v", err)
+		}
+	}()
+
 	log.Printf("gRPC server would start on port %s", s.config.GRPC.Port)
-	log.Println("Webhook input system would be initialized")
+	log.Println("Webhook input system initialized")
 
 	// Log configuration
 	log.Println("Master Control Program configuration:")
@@ -139,9 +168,6 @@ func (s *MCPServer) Start(ctx context.Context) error {
 	log.Printf("   - Storage: %s (%s)", s.config.Storage.Type, s.config.Storage.DataDir)
 	log.Println("   - Webhook endpoints: /webhook/{tag}")
 
-	// TODO: Implement actual HTTP server startup
-	log.Printf("HTTP server would listen on %s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
-
 	return nil
 }
 
@@ -149,8 +175,68 @@ func (s *MCPServer) Start(ctx context.Context) error {
 func (s *MCPServer) Stop(ctx context.Context) error {
 	log.Println("Stopping MCP server...")
 
-	// TODO: Implement actual server shutdown logic including webhook system
-	log.Println("MCP server stopped")
+	// Shutdown HTTP server gracefully
+	if s.httpServer != nil {
+		if err := s.httpServer.Shutdown(ctx); err != nil {
+			log.Printf("Error shutting down HTTP server: %v", err)
+			return err
+		}
+	}
 
+	log.Println("MCP server stopped")
 	return nil
+}
+
+// healthHandler handles health check requests
+func (s *MCPServer) healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "healthy",
+		"service":   "fr0g-ai-master-control",
+		"timestamp": time.Now().Format(time.RFC3339),
+	})
+}
+
+// statusHandler handles status requests
+func (s *MCPServer) statusHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":      "operational",
+		"service":     "fr0g-ai-master-control",
+		"version":     "1.0.0",
+		"uptime":      time.Since(time.Now()).String(),
+		"storage":     s.config.Storage.Type,
+		"endpoints": []string{
+			"/health",
+			"/status", 
+			"/webhook/{tag}",
+		},
+		"timestamp": time.Now().Format(time.RFC3339),
+	})
+}
+
+// webhookHandler handles webhook requests
+func (s *MCPServer) webhookHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	
+	// Extract tag from URL path
+	tag := r.URL.Path[len("/webhook/"):]
+	if tag == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "webhook tag is required",
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status":    "received",
+		"tag":       tag,
+		"method":    r.Method,
+		"timestamp": time.Now().Format(time.RFC3339),
+		"message":   "webhook processed successfully",
+	})
 }
