@@ -20,6 +20,8 @@ import (
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
 	"github.com/sirupsen/logrus"
+	
+	// pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb" // Commented out until protobuf is generated
 )
 
 // PersonaServer implements the gRPC PersonaService
@@ -46,7 +48,7 @@ func StartGRPCServer(port string) error {
 		service: service,
 	}
 
-	pb.RegisterPersonaServiceServer(s, personaServer)
+	// pb.RegisterPersonaServiceServer(s, personaServer) // Commented out until protobuf is generated
 
 	// Enable reflection for development/testing
 	if os.Getenv("GRPC_ENABLE_REFLECTION") == "true" {
@@ -197,7 +199,8 @@ func (s *PersonaServer) CreatePersona(ctx context.Context, req *pb.CreatePersona
 }
 */
 
-// GetPersona retrieves a persona by ID
+// GetPersona retrieves a persona by ID (temporarily disabled until protobuf generation)
+/*
 func (s *PersonaServer) GetPersona(ctx context.Context, req *pb.GetPersonaRequest) (*pb.GetPersonaResponse, error) {
 	if req.Id == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "persona ID is required")
@@ -216,6 +219,10 @@ func (s *PersonaServer) GetPersona(ctx context.Context, req *pb.GetPersonaReques
 		Persona: types.PersonaToProto(&p),
 	}, nil
 }
+*/
+
+/*
+// All protobuf-dependent methods temporarily disabled until protobuf generation
 
 // ListPersonas returns all personas
 func (s *PersonaServer) ListPersonas(ctx context.Context, req *pb.ListPersonasRequest) (*pb.ListPersonasResponse, error) {
@@ -412,3 +419,4 @@ func (s *PersonaServer) DeleteIdentity(ctx context.Context, req *pb.DeleteIdenti
 
 	return &pb.DeleteIdentityResponse{}, nil
 }
+*/
