@@ -142,25 +142,8 @@ func (s *MCPServer) Start(ctx context.Context) error {
 	log.Printf("   - Storage: %s (%s)", s.config.Storage.Type, s.config.Storage.DataDir)
 	log.Println("   - Webhook endpoints: /webhook/{tag}")
 
-	// Start a basic HTTP server for health checks
-	go func() {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"status": "healthy",
-				"service": "fr0g-ai-master-control",
-				"timestamp": time.Now().Format(time.RFC3339),
-			})
-		})
-		
-		addr := fmt.Sprintf("%s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
-		log.Printf("HTTP server listening on %s", addr)
-		if err := http.ListenAndServe(addr, mux); err != nil {
-			log.Printf("HTTP server error: %v", err)
-		}
-	}()
+	// TODO: Implement actual HTTP server startup
+	log.Printf("HTTP server would listen on %s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
 
 	return nil
 }
