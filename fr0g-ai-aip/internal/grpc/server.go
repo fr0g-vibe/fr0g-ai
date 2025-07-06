@@ -167,7 +167,8 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 	return s.Serve(lis)
 }
 
-// CreatePersona creates a new persona
+// CreatePersona creates a new persona (temporarily disabled until protobuf generation)
+/*
 func (s *PersonaServer) CreatePersona(ctx context.Context, req *pb.CreatePersonaRequest) (*pb.CreatePersonaResponse, error) {
 	if req.Persona == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "persona is required")
@@ -194,6 +195,7 @@ func (s *PersonaServer) CreatePersona(ctx context.Context, req *pb.CreatePersona
 		Persona: types.PersonaToProto(p),
 	}, nil
 }
+*/
 
 // GetPersona retrieves a persona by ID
 func (s *PersonaServer) GetPersona(ctx context.Context, req *pb.GetPersonaRequest) (*pb.GetPersonaResponse, error) {

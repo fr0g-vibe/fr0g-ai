@@ -51,15 +51,14 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := server.Start(ctx); err != nil {
-		log.Fatalf("Failed to start HTTP server: %v", err)
-	}
+	go func() {
+		if err := server.Start(ctx); err != nil {
+			log.Fatalf("Failed to start HTTP server: %v", err)
+		}
+	}()
 
 	// Start gRPC server
-	grpcServer, err := grpc.NewServer(cfg)
-	if err != nil {
-		log.Fatalf("Failed to create gRPC server: %v", err)
-	}
+	grpcServer := grpc.NewServer(cfg)
 
 	go func() {
 		log.Printf("Starting gRPC server on %s:%s", cfg.GRPC.Host, cfg.GRPC.Port)
