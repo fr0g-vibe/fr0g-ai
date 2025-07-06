@@ -135,23 +135,42 @@ DATABASE_URL=postgres://user:pass@host:5432/fr0g_ai
 ### Networking
 
 #### Port Configuration
+- **fr0g-ai-registry**: HTTP 8500
 - **fr0g-ai-aip**: HTTP 8080, gRPC 9090
-- **fr0g-ai-bridge**: HTTP 8081, gRPC 9091
+- **fr0g-ai-bridge**: HTTP 8082, gRPC 9091
+- **fr0g-ai-master-control**: HTTP 8081
+- **fr0g-ai-io**: HTTP 8083, gRPC 9093
 
 #### Load Balancer Configuration
 ```nginx
 # Nginx example
+upstream fr0g-ai-registry {
+    server fr0g-ai-registry:8500;
+}
+
 upstream fr0g-ai-aip {
     server fr0g-ai-aip:8080;
 }
 
 upstream fr0g-ai-bridge {
-    server fr0g-ai-bridge:8081;
+    server fr0g-ai-bridge:8082;
+}
+
+upstream fr0g-ai-master-control {
+    server fr0g-ai-master-control:8081;
+}
+
+upstream fr0g-ai-io {
+    server fr0g-ai-io:8083;
 }
 
 server {
     listen 80;
     server_name api.fr0g.ai;
+    
+    location /registry/ {
+        proxy_pass http://fr0g-ai-registry/;
+    }
     
     location /aip/ {
         proxy_pass http://fr0g-ai-aip/;
@@ -159,6 +178,14 @@ server {
     
     location /bridge/ {
         proxy_pass http://fr0g-ai-bridge/;
+    }
+    
+    location /control/ {
+        proxy_pass http://fr0g-ai-master-control/;
+    }
+    
+    location /io/ {
+        proxy_pass http://fr0g-ai-io/;
     }
 }
 ```

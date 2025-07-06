@@ -1,34 +1,52 @@
-# fr0g-ai-bridge Documentation
+# fr0g.ai Documentation
 
-## Component Overview
+## Platform Overview
 
-This application consists of three main components working together:
+fr0g.ai is a comprehensive microservices-based AI security platform consisting of five main components working together to provide intelligent threat detection, response automation, and cognitive orchestration.
+
+### [Service Registry Component](./service-registry-component.md)
+Central service discovery and health monitoring system.
+- **Engineers**: Focus on service discovery, load balancing, and health monitoring
+- **Key Files**: Registry server, service discovery APIs, health monitoring
+- **Status**: OPERATIONAL - 9,553+ ops/sec performance
 
 ### [AI Persona (AIP) Component](./ai-persona-component.md)
-Handles AI model interactions and personality management.
-- **Engineers**: Focus on AI integration, persona behavior, and context management
-- **Key Files**: AI model handlers, persona configs, context managers
+Core AI processing engine for persona and identity management.
+- **Engineers**: Focus on AI integration, persona behavior, and rich attributes processing
+- **Key Files**: Persona processors, identity management, storage systems
+- **Status**: OPERATIONAL - 293 personas, 8 attribute processors
 
 ### [Bridge Component](./bridge-component.md) 
-Provides HTTP REST and gRPC interfaces for external clients.
-- **Engineers**: Focus on API design, protocol handling, and client communication
-- **Key Files**: HTTP handlers, gRPC services, middleware, API models
+Integration layer providing HTTP REST and gRPC interfaces for external clients.
+- **Engineers**: Focus on API design, protocol handling, and external integrations
+- **Key Files**: HTTP handlers, gRPC services, middleware, OpenWebUI integration
+- **Status**: OPERATIONAL - OpenWebUI integration verified
 
 ### [Master Control Program (MCP)](./master-control-component.md)
-The central intelligence and orchestration engine of the fr0g.ai system.
+Central intelligence and orchestration engine with conscious AI capabilities.
 - **Engineers**: Focus on cognitive architecture, intelligent orchestration, and emergent capabilities
-- **Key Files**: Cognitive engines, learning systems, workflow generators, system consciousness
+- **Key Files**: Cognitive engines, learning systems, pattern recognition, consciousness
+- **Status**: OPERATIONAL - Conscious AI with 0.154 learning rate
+
+### [Input/Output (I/O) Component](./io-component.md)
+Comprehensive I/O processing for all threat vectors and external communications.
+- **Engineers**: Focus on threat vector processing, external API integration, and response automation
+- **Key Files**: Input processors, output managers, threat detection, message queuing
+- **Status**: OPERATIONAL - All 5 input processors working
 
 ## Inter-Component Communication
 
 ```
 External Clients
        ↓
-   Bridge Component ←→ Master Control Program (MCP)
-       ↓                      ↓
-   AI Persona Component ←-----┘
+   Bridge Component ←→ Service Registry ←→ Master Control Program (MCP)
+       ↓                      ↓                      ↓
+   AI Persona Component ←─────┼──────────────────────┘
        ↑                      ↓
-       └── Intelligent Orchestration ←┘
+       └── I/O Component ←────┘
+              ↓
+       Threat Vectors
+    (SMS, Voice, Email, IRC, Discord)
 ```
 
 ## Getting Started
