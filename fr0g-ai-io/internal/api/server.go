@@ -108,8 +108,7 @@ func (s *Server) Start(ctx context.Context) error {
 
 	// Start HTTP server
 	go func() {
-		httpAddr := fmt.Sprintf("%s:%s", s.config.HTTP.Host, s.config.HTTP.Port)
-		log.Printf("HTTP server listening on %s", httpAddr)
+		log.Printf("HTTP server listening on %s", s.httpServer.Addr)
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("HTTP server error: %v", err)
 		}

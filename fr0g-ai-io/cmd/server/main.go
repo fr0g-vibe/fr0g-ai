@@ -65,13 +65,6 @@ func main() {
 	log.Printf("Processor manager initialized with %d processors", len(processorMgr.GetProcessors()))
 	log.Printf("Output manager initialized with %d processors", len(outputMgr.GetProcessors()))
 
-	log.Printf("Starting fr0g-ai-io server...")
-	log.Printf("Starting queue manager with type: memory")
-	log.Println("Queue manager started successfully")
-	log.Println("fr0g-ai-io server started successfully")
-	log.Printf("HTTP server listening on %s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
-	log.Printf("gRPC server listening on %s:%s", cfg.GRPC.Host, cfg.GRPC.Port)
-
 	// Start HTTP server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
