@@ -353,7 +353,16 @@ This multi-agent dispatch system enables coordinated development across the enti
 - Production-ready security configuration verified
 - Service isolation and networking properly configured
 
-### REMAINING ISSUE 1: Service Registry API Enhancement - HIGH PRIORITY
+### CRITICAL ISSUE 1: Bridge Service API Endpoint Missing - HIGH PRIORITY
+**IMPACT**: Chat completions API not accessible, blocking OpenWebUI integration
+**ISSUE**: Bridge service returning 404 for `/v1/chat/completions` endpoint
+**VERIFIED STATUS**: 
+- Bridge service health endpoint working (port 8082)
+- Chat completions endpoint missing or misconfigured
+- AIP service working correctly (4 personas accessible)
+**FIX REQUIRED**: Implement or fix `/v1/chat/completions` endpoint in Bridge service
+
+### REMAINING ISSUE 2: Service Registry API Enhancement - MEDIUM PRIORITY
 **IMPACT**: Service auto-registration and discovery not working
 **ISSUE**: Registry missing Consul-compatible API endpoints
 **GAPS IDENTIFIED**:
@@ -362,7 +371,7 @@ This multi-agent dispatch system enables coordinated development across the enti
 - Services not auto-registering with registry on startup
 **FIX REQUIRED**: Implement complete Consul-compatible API for service discovery
 
-### REMAINING ISSUE 2: Service Auto-Registration - MEDIUM PRIORITY
+### REMAINING ISSUE 3: Service Auto-Registration - LOW PRIORITY
 **IMPACT**: Manual service management instead of automatic discovery
 **ISSUE**: Services not automatically registering with registry
 **GAPS IDENTIFIED**:
@@ -370,12 +379,6 @@ This multi-agent dispatch system enables coordinated development across the enti
 - No automatic health check registration
 - Missing service metadata and tags
 **FIX REQUIRED**: Add registry client to all services for auto-registration
-
-### REMAINING ISSUE 3: gRPC Health Enhancement - LOW PRIORITY
-**IMPACT**: gRPC health checks showing as unhealthy
-**ISSUE**: gRPC health check endpoints may need enhancement
-**STATUS**: HTTP health working correctly, gRPC health needs investigation
-**FIX REQUIRED**: Enhance gRPC health check implementation
 
 ### VERIFICATION STATUS SUMMARY:
 - **Build verification**: make build - SUCCESS (binary builds)
@@ -768,7 +771,7 @@ Test Execution Time: 0.005s (excellent performance)
 
 **fr0g-ai-aip**: ✅ FULLY OPERATIONAL - Complete gRPC and REST servers with 4 personas loaded, file storage working, running on correct ports 8080/9090, health endpoint responding correctly.
 
-**fr0g-ai-bridge**: ✅ MOSTLY OPERATIONAL - REST API working on port 8082, gRPC on 9092 (corrected from 9091), health endpoint responding, OpenWebUI integration ready.
+**fr0g-ai-bridge**: ⚠️ PARTIALLY OPERATIONAL - Health endpoint working on port 8082, but `/v1/chat/completions` API endpoint returning 404, blocking OpenWebUI integration.
 
 **fr0g-ai-master-control**: ✅ OPERATIONAL - Service healthy and responding on port 8081, storage validation issues resolved in containerized environment.
 
