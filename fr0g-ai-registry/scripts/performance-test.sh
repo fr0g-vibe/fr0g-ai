@@ -16,11 +16,11 @@ echo
 
 # Check if registry is running
 if ! curl -s "$REGISTRY_URL/health" > /dev/null; then
-    echo "❌ Registry not running at $REGISTRY_URL"
+    echo "MISSING Registry not running at $REGISTRY_URL"
     exit 1
 fi
 
-echo "✅ Registry is running"
+echo "COMPLETED Registry is running"
 
 # Register test services
 echo "📝 Registering $TEST_SERVICES test services..."
@@ -37,7 +37,7 @@ for i in $(seq 1 $TEST_SERVICES); do
         }" > /dev/null
 done
 
-echo "✅ Registered $TEST_SERVICES services"
+echo "COMPLETED Registered $TEST_SERVICES services"
 
 # Test discovery performance under load
 echo "⚡ Testing discovery performance with $CONCURRENT_REQUESTS concurrent requests..."
@@ -82,17 +82,17 @@ echo
 # Check if target is met
 TARGET_LATENCY=50
 if (( $(echo "$AVG_LATENCY < $TARGET_LATENCY" | bc -l) )); then
-    echo "✅ SUCCESS: Average latency (${AVG_LATENCY}ms) is below target (${TARGET_LATENCY}ms)"
+    echo "COMPLETED SUCCESS: Average latency (${AVG_LATENCY}ms) is below target (${TARGET_LATENCY}ms)"
     SUCCESS=true
 else
-    echo "❌ FAILED: Average latency (${AVG_LATENCY}ms) exceeds target (${TARGET_LATENCY}ms)"
+    echo "CRITICAL FAILED: Average latency (${AVG_LATENCY}ms) exceeds target (${TARGET_LATENCY}ms)"
     SUCCESS=false
 fi
 
 if (( $(echo "$P95_LATENCY < $TARGET_LATENCY" | bc -l) )); then
-    echo "✅ SUCCESS: 95th percentile (${P95_LATENCY}ms) is below target (${TARGET_LATENCY}ms)"
+    echo "COMPLETED SUCCESS: 95th percentile (${P95_LATENCY}ms) is below target (${TARGET_LATENCY}ms)"
 else
-    echo "❌ FAILED: 95th percentile (${P95_LATENCY}ms) exceeds target (${TARGET_LATENCY}ms)"
+    echo "CRITICAL FAILED: 95th percentile (${P95_LATENCY}ms) exceeds target (${TARGET_LATENCY}ms)"
     SUCCESS=false
 fi
 
@@ -107,9 +107,9 @@ CACHE_LATENCY=$(( (CACHE_END - CACHE_START) / 1000000 ))
 echo "Cache hit latency: ${CACHE_LATENCY}ms"
 
 if (( CACHE_LATENCY < 10 )); then
-    echo "✅ SUCCESS: Cache performance is excellent (<10ms)"
+    echo "COMPLETED SUCCESS: Cache performance is excellent (<10ms)"
 else
-    echo "⚠️  WARNING: Cache performance could be improved (${CACHE_LATENCY}ms)"
+    echo "WARNING: Cache performance could be improved (${CACHE_LATENCY}ms)"
 fi
 
 # Test Redis persistence
@@ -128,9 +128,9 @@ curl -s -X PUT "$REGISTRY_URL/v1/agent/service/register" \
 
 # Check if service is discoverable
 if curl -s "$REGISTRY_URL/v1/catalog/services" | grep -q "$REDIS_TEST_SERVICE"; then
-    echo "✅ SUCCESS: Service persisted and discoverable"
+    echo "COMPLETED SUCCESS: Service persisted and discoverable"
 else
-    echo "❌ FAILED: Service not found after registration"
+    echo "CRITICAL FAILED: Service not found after registration"
     SUCCESS=false
 fi
 
@@ -145,7 +145,7 @@ curl -s -X PUT "$REGISTRY_URL/v1/agent/service/deregister/$REDIS_TEST_SERVICE" >
 # Cleanup temp files
 rm -rf "$TEMP_DIR"
 
-echo "✅ Cleanup complete"
+echo "COMPLETED Cleanup complete"
 echo
 
 # Final result
