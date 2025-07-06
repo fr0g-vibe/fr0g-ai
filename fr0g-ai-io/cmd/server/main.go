@@ -25,7 +25,7 @@ func main() {
 	if grpcPort := os.Getenv("GRPC_PORT"); grpcPort != "" {
 		cfg.GRPC.Port = grpcPort
 	} else {
-		cfg.GRPC.Port = "9093"
+		cfg.GRPC.Port = "9092"
 	}
 	
 	// Set host to listen on all interfaces in container

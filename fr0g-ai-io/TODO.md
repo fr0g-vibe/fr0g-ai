@@ -27,7 +27,7 @@
 - **Project Path**: All Go imports use `github.com/fr0g-vibe/fr0g-ai/` prefix
 - **Working Directory**: AI agents start in `/fr0g-ai` root directory (local clone)
 - **Module Navigation**: MUST `cd fr0g-ai-io` before running Go commands
-- **Service Ports**: HTTP :8083, gRPC :9092 (configured in docker-compose)
+- **Service Ports**: HTTP :8083, gRPC :9092 (configured in docker-compose) - VERIFIED CORRECT
 - **Subproject Path**: This component exists at `github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io`
 
 ### NO MOCKING POLICY - I/O COMPONENT
