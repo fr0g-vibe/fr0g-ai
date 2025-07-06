@@ -131,7 +131,7 @@ tmux send-keys -t fr0g-ai:9 "git status" C-m
 - **fr0g-ai-aip**: OPERATIONAL - Running in container, health check passing, 4 personas loaded
 - **fr0g-ai-bridge**: OPERATIONAL - Running in container, health check passing, HTTP/gRPC operational
 - **fr0g-ai-master-control**: OPERATIONAL - **FIXED!** Now responding on port 8081, health check passing
-- **fr0g-ai-io**: BUILDS BUT DOWN - Compiles successfully but service not responding on port 8083
+- **fr0g-ai-io**: ✅ OPERATIONAL - Service healthy, responding on port 8083, duplicate server issue fixed
 - **fr0g-ai-registry**: OPERATIONAL - Running in container, health check passing, service discovery working
 
 ### IMMEDIATE ACTIONS REQUIRED:
