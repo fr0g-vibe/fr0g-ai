@@ -181,7 +181,7 @@ make lint fmt
 
 ### fr0g-ai-io (Input/Output Processing)
 - **HTTP**: http://localhost:8083
-- **gRPC**: localhost:9093
+- **gRPC**: localhost:9092
 - **Health**: http://localhost:8083/health
 
 ## Configuration

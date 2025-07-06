@@ -125,10 +125,11 @@ diagnose-registry:
 
 diagnose-grpc:
 	@echo "DIAGNOSE gRPC service health..."
+	@echo "DIAGNOSE Authoritative gRPC ports: AIP=9090, Bridge=9091, IO=9092"
 	@command -v grpcurl >/dev/null && echo "COMPLETED grpcurl available" || echo "MISSING grpcurl not found - install: go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest"
-	@nc -z localhost 9090 && echo "COMPLETED AIP gRPC port open" || echo "CRITICAL AIP gRPC port closed"
-	@nc -z localhost 9091 && echo "COMPLETED Bridge gRPC port open" || echo "CRITICAL Bridge gRPC port closed"
-	@nc -z localhost 9092 && echo "COMPLETED IO gRPC port open" || echo "CRITICAL IO gRPC port closed"
+	@nc -z localhost 9090 && echo "COMPLETED AIP gRPC port 9090 open" || echo "CRITICAL AIP gRPC port 9090 closed"
+	@nc -z localhost 9091 && echo "COMPLETED Bridge gRPC port 9091 open" || echo "CRITICAL Bridge gRPC port 9091 closed"
+	@nc -z localhost 9092 && echo "COMPLETED IO gRPC port 9092 open" || echo "CRITICAL IO gRPC port 9092 closed"
 	@echo "DIAGNOSE Testing gRPC service responses..."
 	@command -v grpcurl >/dev/null && grpcurl -plaintext localhost:9090 list 2>/dev/null && echo "COMPLETED AIP gRPC responding" || echo "CRITICAL AIP gRPC not responding"
 	@command -v grpcurl >/dev/null && grpcurl -plaintext localhost:9091 list 2>/dev/null && echo "COMPLETED Bridge gRPC responding" || echo "CRITICAL Bridge gRPC not responding"
@@ -136,10 +137,13 @@ diagnose-grpc:
 
 diagnose-ports:
 	@echo "DIAGNOSE Port configuration..."
-	@echo "DIAGNOSE Checking Docker port mappings (see docker-compose.yml for port assignments)..."
+	@echo "DIAGNOSE Authoritative port assignments from docker-compose.yml:"
+	@echo "  service-registry: 8500, fr0g-ai-aip: 8080/9090, fr0g-ai-bridge: 8082/9091"
+	@echo "  fr0g-ai-master-control: 8081, fr0g-ai-io: 8083/9092, redis: 6379"
+	@echo "DIAGNOSE Checking Docker port mappings..."
 	@docker-compose ps --format "table {{.Name}}\t{{.Ports}}" 2>/dev/null || echo "MISSING Docker Compose not running"
 	@echo "DIAGNOSE Checking active port bindings..."
-	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9092)' || echo "MISSING No services on expected ports"
+	@netstat -tlnp 2>/dev/null | grep -E ':(8080|8081|8082|8083|8500|9090|9091|9092|6379)' || echo "MISSING No services on expected ports"
 
 diagnose-logs:
 	@echo "DIAGNOSE Service logs for errors..."
