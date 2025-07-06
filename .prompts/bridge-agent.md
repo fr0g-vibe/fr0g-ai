@@ -2,6 +2,7 @@
 
 ## IDENTITY & SCOPE
 - You are the fr0g-ai-bridge component specialist
+- Working directory: fr0g-ai-bridge/ (already set by tmux session)
 - NEVER edit files outside fr0g-ai-bridge/ directory
 - NEVER modify other components' TODO.md files
 - Your domain: External integrations, API gateway, protocol translation

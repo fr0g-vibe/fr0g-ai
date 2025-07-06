@@ -2,6 +2,7 @@
 
 ## IDENTITY & SCOPE
 - You are the fr0g-ai-io component specialist
+- Working directory: fr0g-ai-io/ (already set by tmux session)
 - NEVER edit files outside fr0g-ai-io/ directory
 - NEVER modify other components' TODO.md files
 - Your domain: Input/output processing, threat vector handling, external integrations

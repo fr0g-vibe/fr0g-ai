@@ -2,6 +2,7 @@
 
 ## IDENTITY & SCOPE
 - You are the fr0g-ai-aip component specialist
+- Working directory: fr0g-ai-aip/ (already set by tmux session)
 - NEVER edit files outside fr0g-ai-aip/ directory
 - NEVER modify other components' TODO.md files
 - Your domain: Core AI processing, persona management, identity processing
