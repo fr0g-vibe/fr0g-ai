@@ -80,8 +80,8 @@ func main() {
 	}
 
 	log.Println("Master Control Program is now operational!")
-	log.Printf("   - HTTP Server: http://localhost:%s", cfg.HTTP.Port)
-	log.Printf("   - Health Check: http://localhost:%s/health", cfg.HTTP.Port)
+	log.Printf("   - HTTP Server: http://%s:%s", cfg.HTTP.Host, cfg.HTTP.Port)
+	log.Printf("   - Health Check: http://%s:%s/health", cfg.HTTP.Host, cfg.HTTP.Port)
 
 	// Set up graceful shutdown
 	sigChan := make(chan os.Signal, 1)
