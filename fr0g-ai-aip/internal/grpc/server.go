@@ -5,24 +5,29 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/config"
-	pb "github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/grpc/pb"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/persona"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/registry"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/storage"
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-aip/internal/types"
+	"github.com/sirupsen/logrus"
 )
 
 // PersonaServer implements the gRPC PersonaService
 type PersonaServer struct {
-	pb.UnimplementedPersonaServiceServer
-	service *persona.Service
-	config  *config.Config
+	service        *persona.Service
+	config         *config.Config
+	registryClient *registry.RegistryClient
+	logger         *logrus.Logger
 }
 
 // StartGRPCServer starts a real gRPC server using protobuf
@@ -98,9 +103,44 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 
 	s := grpc.NewServer(opts...)
 
-	// Register the persona service
+	// Register health service
+	healthServer := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(s, healthServer)
+	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
+
+	// Register the persona service (commented out until protobuf is generated)
 	personaServer := NewPersonaServer(cfg, service)
-	pb.RegisterPersonaServiceServer(s, personaServer)
+	// pb.RegisterPersonaServiceServer(s, personaServer)
+
+	// Register with service registry
+	logger := logrus.New()
+	registryClient := registry.NewRegistryClient("http://localhost:8500", logger)
+	
+	port, _ := strconv.Atoi(cfg.GRPC.Port)
+	serviceInfo := &registry.ServiceInfo{
+		ID:      "fr0g-ai-aip-" + cfg.GRPC.Port,
+		Name:    "fr0g-ai-aip",
+		Address: "localhost",
+		Port:    port,
+		Tags:    []string{"grpc", "personas"},
+		Meta: map[string]string{
+			"version":   "1.0.0",
+			"grpc_port": cfg.GRPC.Port,
+		},
+		Check: &registry.HealthCheck{
+			HTTP:     fmt.Sprintf("http://localhost:%s/health", cfg.HTTP.Port),
+			Interval: "30s",
+			Timeout:  "10s",
+		},
+	}
+	
+	go func() {
+		if err := registryClient.RegisterService(serviceInfo); err != nil {
+			logger.Errorf("Failed to register service: %v", err)
+		} else {
+			logger.Info("Service registered with registry")
+		}
+	}()
 
 	// Conditionally enable gRPC reflection - check environment variable at runtime
 	enableReflection := os.Getenv("GRPC_ENABLE_REFLECTION") == "true"
@@ -122,7 +162,7 @@ func StartGRPCServerWithConfig(cfg *config.Config, service *persona.Service) err
 	}
 
 	fmt.Printf("gRPC server listening on port %s\n", cfg.GRPC.Port)
-	fmt.Println("Using real gRPC with protobuf")
+	fmt.Println("Using real gRPC with health checks and service registration")
 
 	return s.Serve(lis)
 }

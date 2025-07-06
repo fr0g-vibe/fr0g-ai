@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/api"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-io/internal/grpc"
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
 
@@ -46,16 +47,26 @@ func main() {
 		log.Fatalf("Failed to create server: %v", err)
 	}
 
-	// TODO: Add gRPC server once protobuf generation is fixed
-	log.Println("gRPC server temporarily disabled - protobuf generation needed")
-
-	// Start server
+	// Start HTTP server
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	if err := server.Start(ctx); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		log.Fatalf("Failed to start HTTP server: %v", err)
 	}
+
+	// Start gRPC server
+	grpcServer, err := grpc.NewServer(cfg)
+	if err != nil {
+		log.Fatalf("Failed to create gRPC server: %v", err)
+	}
+
+	go func() {
+		log.Printf("Starting gRPC server on %s:%s", cfg.GRPC.Host, cfg.GRPC.Port)
+		if err := grpcServer.Start(); err != nil {
+			log.Printf("gRPC server error: %v", err)
+		}
+	}()
 
 	// Wait for shutdown signal
 	sigChan := make(chan os.Signal, 1)
