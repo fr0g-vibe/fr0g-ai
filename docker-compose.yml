@@ -1,4 +1,19 @@
-services:
+  # Redis for Registry Persistence
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fr0g-ai-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: redis-server --appendonly yes
+
   # Service Discovery Registry
   service-registry:
     build:
@@ -9,8 +24,13 @@ services:
     environment:
       - REGISTRY_PORT=8500
       - REGISTRY_HOST=0.0.0.0
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
     networks:
       - fr0g-ai-network
+    depends_on:
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8500/health"]
       interval: 30s
@@ -197,4 +217,6 @@ volumes:
   openwebui_data:
     driver: local
   registry-data:
+    driver: local
+  redis_data:
     driver: local
