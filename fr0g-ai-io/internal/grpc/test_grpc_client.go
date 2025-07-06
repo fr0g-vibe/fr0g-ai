@@ -1,13 +1,3 @@
-package main
-
-import (
-	"context"
-	"fmt"
-	"log"
-	"time"
-
-	"github.com/fr0g-vibe/fr0g.ai/fr0g-ai-io/internal/grpc"
-)
 
 func main() {
 	fmt.Println("=== gRPC MCP Client Test for fr0g-ai-io ===")
