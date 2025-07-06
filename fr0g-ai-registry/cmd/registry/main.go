@@ -310,7 +310,7 @@ func (r *Registry) registerHandler(w http.ResponseWriter, req *http.Request) {
 		metrics.DiscoveryRequests.WithLabelValues("register").Inc()
 	}()
 	
-	if req.Method != http.MethodPut {
+	if req.Method != http.MethodPut && req.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -464,7 +464,7 @@ func main() {
 	router := mux.NewRouter()
 	
 	// Service registration endpoints
-	router.HandleFunc("/v1/agent/service/register", registry.registerHandler).Methods("PUT")
+	router.HandleFunc("/v1/agent/service/register", registry.registerHandler).Methods("PUT", "POST")
 	router.HandleFunc("/v1/agent/service/deregister/{serviceId}", registry.deregisterHandler).Methods("PUT")
 	router.HandleFunc("/v1/catalog/services", registry.servicesHandler).Methods("GET")
 	router.HandleFunc("/v1/health/service/{serviceId}", registry.healthServiceHandler).Methods("GET")
