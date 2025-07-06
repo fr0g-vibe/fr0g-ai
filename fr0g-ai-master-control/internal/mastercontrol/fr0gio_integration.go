@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
-	"fr0g-ai-master-control/internal/grpc"
-	"fr0g-ai-master-control/internal/mastercontrol/input"
-	"fr0g-ai-master-control/internal/mastercontrol/workflow"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/grpc"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/input"
+	"github.com/fr0g-vibe/fr0g-ai/fr0g-ai-master-control/internal/mastercontrol/workflow"
 )
 
 // Fr0gIOIntegration manages the integration with fr0g-ai-io service
