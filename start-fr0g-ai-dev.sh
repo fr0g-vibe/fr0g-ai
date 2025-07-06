@@ -46,18 +46,18 @@ send_system_prompt() {
     
     # Send the system prompt as a regular chat message
     if [[ -n "$prompt_content" ]]; then
-        # Send the prompt content directly as a chat message
-        # Escape any special characters and send line by line
-        echo "$prompt_content" | while IFS= read -r line || [[ -n "$line" ]]; do
-            if [[ -n "$line" ]]; then
-                # Escape quotes and special characters for tmux
-                local escaped_line=$(printf '%s\n' "$line" | sed 's/"/\\"/g' | sed "s/'/\\'/g")
-                tmux send-keys -t $SESSION_NAME:$window "$escaped_line" C-m
-                sleep 0.1
-            fi
-        done
-        # Send an empty line to finish the message
-        tmux send-keys -t $SESSION_NAME:$window "" C-m
+        # Use a simpler approach - send the entire prompt at once using tmux's literal mode
+        # First, create a temporary file with the prompt content
+        local temp_file=$(mktemp)
+        echo "$prompt_content" > "$temp_file"
+        
+        # Send the content using tmux load-buffer and paste-buffer
+        tmux load-buffer "$temp_file"
+        tmux paste-buffer -t $SESSION_NAME:$window
+        tmux send-keys -t $SESSION_NAME:$window C-m
+        
+        # Clean up temp file
+        rm "$temp_file"
     fi
 }
 
