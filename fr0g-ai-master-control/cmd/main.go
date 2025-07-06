@@ -36,8 +36,12 @@ func main() {
 			Port: "8081",
 		},
 		GRPC: sharedconfig.GRPCConfig{
-			Host: "0.0.0.0", 
-			Port: "9091",
+			Host:               "0.0.0.0", 
+			Port:               "9091",
+			MaxRecvMsgSize:     4 * 1024 * 1024, // 4MB
+			MaxSendMsgSize:     4 * 1024 * 1024, // 4MB
+			ConnectionTimeout:  30 * time.Second,
+			EnableReflection:   false,
 		},
 		Storage: sharedconfig.StorageConfig{
 			Type:    "file",
