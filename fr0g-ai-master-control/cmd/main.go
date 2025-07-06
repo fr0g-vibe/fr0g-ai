@@ -77,7 +77,7 @@ func main() {
 		Input: mastercontrol.InputConfig{
 			Webhook: mastercontrol.WebhookConfig{
 				Host:         cfg.HTTP.Host,
-				Port:         8082, // Use port 8082 for MCP
+				Port:         8081, // Use port 8081 for MCP (matches docker-compose.yml)
 				ReadTimeout:  30 * time.Second,
 				WriteTimeout: 30 * time.Second,
 			},
