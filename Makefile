@@ -188,8 +188,11 @@ docker-restart:
 
 docker-restart-unhealthy:
 	@echo "DOCKER Restarting unhealthy services..."
-	@docker-compose ps --filter "health=unhealthy" --format "{{.Names}}" | xargs -r docker-compose restart
-	@sleep 10
+	@echo "DIAGNOSE Checking for unhealthy containers..."
+	@docker-compose ps --format "table {{.Name}}\t{{.Status}}" | grep -E "(unhealthy|starting)" || echo "No unhealthy containers found"
+	@echo "DOCKER Restarting Master Control service (most likely to be unhealthy)..."
+	@docker-compose restart fr0g-ai-master-control || echo "Master Control restart failed"
+	@sleep 15
 	@$(MAKE) health
 
 docker-rebuild:
