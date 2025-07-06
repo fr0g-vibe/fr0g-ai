@@ -116,9 +116,7 @@ func (f *Fr0gIOIntegration) Start() error {
 		}
 		
 		// Start simulation of input events for demonstration
-		if serverImpl, ok := f.grpcServer.(*grpc.Fr0gIOInputServer); ok {
-			serverImpl.StartSimulation()
-		}
+		f.grpcServer.StartSimulation()
 	}
 
 	// Test connection to fr0g-ai-io service
