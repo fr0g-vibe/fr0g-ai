@@ -424,3 +424,9 @@ func ValidateLogFormat(format string, fieldName string) *ValidationError {
 	validFormats := []string{"json", "text"}
 	return ValidateEnum(format, validFormats, fieldName)
 }
+
+// ValidateStorageType validates storage type values
+func ValidateStorageType(storageType string, fieldName string) *ValidationError {
+	validTypes := []string{"file", "memory", "redis", "postgres", "sqlite"}
+	return ValidateEnum(storageType, validTypes, fieldName)
+}

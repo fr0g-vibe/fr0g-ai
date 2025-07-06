@@ -334,16 +334,21 @@ func (c *SecurityConfig) Validate() ValidationErrors {
 func (c *StorageConfig) Validate() ValidationErrors {
 	var errors []ValidationError
 
-	validTypes := []string{"memory", "file", "redis", "postgres"}
-	if !Contains(validTypes, c.Type) {
+	validTypes := []string{"memory", "file", "redis", "postgres", "sqlite"}
+	if c.Type == "" {
 		errors = append(errors, ValidationError{
 			Field:   "storage.type",
-			Message: fmt.Sprintf("invalid storage type, must be one of: %s", strings.Join(validTypes, ", ")),
+			Message: "storage type is required",
+		})
+	} else if !Contains(validTypes, c.Type) {
+		errors = append(errors, ValidationError{
+			Field:   "storage.type",
+			Message: fmt.Sprintf("invalid storage type '%s', must be one of: %s", c.Type, strings.Join(validTypes, ", ")),
 		})
 	}
 
 	if c.Type == "file" {
-		if err := ValidateRequired(c.DataDir, "data_dir"); err != nil {
+		if err := ValidateRequired(c.DataDir, "storage.data_dir"); err != nil {
 			errors = append(errors, *err)
 		}
 	}
