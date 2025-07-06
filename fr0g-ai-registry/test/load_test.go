@@ -153,7 +153,10 @@ func TestRegistryLoadUnderConcurrentServices(t *testing.T) {
 
 		wg.Wait()
 		duration := time.Since(start)
-		avgLatency := totalLatency / time.Duration(successCount)
+		var avgLatency time.Duration
+		if successCount > 0 {
+			avgLatency = totalLatency / time.Duration(successCount)
+		}
 
 		t.Logf("Concurrent discovery results:")
 		t.Logf("  Total requests: %d", numDiscoveryRequests)

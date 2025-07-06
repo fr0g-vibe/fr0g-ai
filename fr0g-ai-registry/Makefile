@@ -14,6 +14,23 @@ clean:
 test:
 	go test ./...
 
+# Run unit tests only (no service required)
+test-unit:
+	@echo "Running unit tests (no service required)..."
+	@go test -run "^TestUnit" ./test/
+
+# Run integration tests (requires running service)
+test-integration:
+	@echo "Running integration tests (requires service on :8500)..."
+	@echo "Make sure registry service is running: make run"
+	@go test -run "^TestRegistry" ./test/
+
+# Run load tests (requires running service)
+test-load:
+	@echo "Running load tests (requires service on :8500)..."
+	@echo "Make sure registry service is running: make run"
+	@go test -run "^TestRegistryLoad" ./test/
+
 # Run the service
 run: build
 	./bin/fr0g-ai-registry

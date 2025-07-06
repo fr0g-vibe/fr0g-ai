@@ -234,6 +234,18 @@ test-registry:
 	@chmod +x tests/integration/service_registry_test.sh
 	@./tests/integration/service_registry_test.sh
 
+test-registry-unit:
+	@echo "TESTING Running registry unit tests..."
+	@cd fr0g-ai-registry && $(MAKE) test-unit
+
+test-registry-integration:
+	@echo "TESTING Running registry integration tests..."
+	@cd fr0g-ai-registry && $(MAKE) test-integration
+
+test-registry-load:
+	@echo "PERFORMANCE Running registry load tests..."
+	@cd fr0g-ai-registry && $(MAKE) test-load
+
 test-api:
 	@echo "🔌 Running API tests..."
 	@chmod +x tests/integration/api_test.sh
