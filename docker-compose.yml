@@ -126,14 +126,17 @@ services:
       - mcp_data:/app/data
       - ./logs:/app/logs
     depends_on:
-      - service-registry
+      service-registry:
+        condition: service_healthy
     networks:
       - fr0g-ai-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
 
   # AI Input/Output Processing Service
   fr0g-ai-io:

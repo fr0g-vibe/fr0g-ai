@@ -86,7 +86,8 @@ echo -e "${BLUE}6. PERFORMANCE BENCHMARKS${NC}"
 echo "----------------------------"
 echo -n "CHECKING Registry response time... "
 RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' http://localhost:8500/health)
-if (( $(echo "$RESPONSE_TIME < 0.1" | bc -l) )); then
+# Use awk instead of bc for floating point comparison
+if awk "BEGIN {exit !($RESPONSE_TIME < 0.1)}"; then
     echo -e "${GREEN}PASSED${NC} (${RESPONSE_TIME}s)"
     ((PASSED++))
 else
@@ -100,10 +101,11 @@ for i in {1..100}; do
     curl -s http://localhost:8500/v1/catalog/services >/dev/null
 done
 END_TIME=$(date +%s.%N)
-TOTAL_TIME=$(echo "$END_TIME - $START_TIME" | bc)
-AVG_TIME=$(echo "scale=4; $TOTAL_TIME / 100" | bc)
+# Use awk for floating point arithmetic instead of bc
+TOTAL_TIME=$(awk "BEGIN {print $END_TIME - $START_TIME}")
+AVG_TIME=$(awk "BEGIN {printf \"%.4f\", $TOTAL_TIME / 100}")
 
-if (( $(echo "$AVG_TIME < 0.01" | bc -l) )); then
+if awk "BEGIN {exit !($AVG_TIME < 0.01)}"; then
     echo -e "${GREEN}PASSED${NC} (avg ${AVG_TIME}s per lookup)"
     ((PASSED++))
 else
