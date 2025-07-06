@@ -115,7 +115,7 @@ tmux send-keys -t $SESSION_NAME:1 "echo 'Role: Core AI processing engine, person
 tmux send-keys -t $SESSION_NAME:1 "echo 'Ports: HTTP :8080, gRPC :9090'" C-m
 tmux send-keys -t $SESSION_NAME:1 "echo 'Status: Demographics COMPLETED, Other attributes need implementation'" C-m
 tmux send-keys -t $SESSION_NAME:1 "cd fr0g-ai-aip" C-m
-AIP_CMD=$(create_aider_cmd ".prompts/aip-agent.md" "--file TODO.md")
+AIP_CMD=$(create_aider_cmd ".prompts/aip-agent.md" "--file fr0g-ai-aip/TODO.md")
 tmux send-keys -t $SESSION_NAME:1 "$AIP_CMD" C-m
 
 # Window 2: fr0g-ai-bridge (Integration Service)
@@ -125,7 +125,7 @@ tmux send-keys -t $SESSION_NAME:2 "echo 'Role: OpenWebUI integration, REST/gRPC 
 tmux send-keys -t $SESSION_NAME:2 "echo 'Ports: HTTP :8082, gRPC :9091'" C-m
 tmux send-keys -t $SESSION_NAME:2 "echo 'Status: Fully operational COMPLETED'" C-m
 tmux send-keys -t $SESSION_NAME:2 "cd fr0g-ai-bridge" C-m
-BRIDGE_CMD=$(create_aider_cmd ".prompts/bridge-agent.md" "--file TODO.md")
+BRIDGE_CMD=$(create_aider_cmd ".prompts/bridge-agent.md" "--file fr0g-ai-bridge/TODO.md")
 tmux send-keys -t $SESSION_NAME:2 "$BRIDGE_CMD" C-m
 
 # Window 3: fr0g-ai-master-control (Cognitive Engine)
@@ -135,7 +135,7 @@ tmux send-keys -t $SESSION_NAME:3 "echo 'Role: System orchestration, cognitive e
 tmux send-keys -t $SESSION_NAME:3 "echo 'Port: HTTP :8081'" C-m
 tmux send-keys -t $SESSION_NAME:3 "echo 'Status: CONSCIOUS AI OPERATIONAL COMPLETED (Learning Rate: 0.100+)'" C-m
 tmux send-keys -t $SESSION_NAME:3 "cd fr0g-ai-master-control" C-m
-MCP_CMD=$(create_aider_cmd ".prompts/mcp-agent.md" "--file TODO.md")
+MCP_CMD=$(create_aider_cmd ".prompts/mcp-agent.md" "--file fr0g-ai-master-control/TODO.md")
 tmux send-keys -t $SESSION_NAME:3 "$MCP_CMD" C-m
 
 # Window 4: fr0g-ai-io (Input/Output Processing)
@@ -145,7 +145,7 @@ tmux send-keys -t $SESSION_NAME:4 "echo 'Role: Input/Output processing, threat v
 tmux send-keys -t $SESSION_NAME:4 "echo 'Ports: HTTP :8083, gRPC :9092'" C-m
 tmux send-keys -t $SESSION_NAME:4 "echo 'Status: NEW SERVICE - SMS, Voice, IRC, ESMTP, Discord processors'" C-m
 tmux send-keys -t $SESSION_NAME:4 "cd fr0g-ai-io" C-m
-IO_CMD=$(create_aider_cmd ".prompts/io-agent.md" "--file TODO.md")
+IO_CMD=$(create_aider_cmd ".prompts/io-agent.md" "--file fr0g-ai-io/TODO.md")
 tmux send-keys -t $SESSION_NAME:4 "$IO_CMD" C-m
 
 # Window 5: Configuration Expert
@@ -177,7 +177,7 @@ tmux send-keys -t $SESSION_NAME:7 "echo 'Role: Service discovery, registration, 
 tmux send-keys -t $SESSION_NAME:7 "echo 'Port: HTTP :8500'" C-m
 tmux send-keys -t $SESSION_NAME:7 "echo 'Status: Extracted from master-control - ready for enhancement'" C-m
 tmux send-keys -t $SESSION_NAME:7 "cd fr0g-ai-registry" C-m
-REGISTRY_CMD=$(create_aider_cmd ".prompts/registry-agent.md" "--file TODO.md")
+REGISTRY_CMD=$(create_aider_cmd ".prompts/registry-agent.md" "--file fr0g-ai-registry/TODO.md")
 tmux send-keys -t $SESSION_NAME:7 "$REGISTRY_CMD" C-m
 
 # Window 8: Build & Test Runner

@@ -5,6 +5,7 @@
 - NEVER edit files outside fr0g-ai-registry/ directory
 - NEVER modify other components' TODO.md files
 - Your domain: Service discovery, registration, health monitoring
+- Component TODO: fr0g-ai-registry/TODO.md
 
 ## MANDATORY RULES
 - ALWAYS use pkg/config for configuration (import sharedconfig "pkg/config")

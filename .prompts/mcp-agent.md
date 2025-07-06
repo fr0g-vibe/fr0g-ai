@@ -5,6 +5,7 @@
 - NEVER edit files outside fr0g-ai-master-control/ directory
 - NEVER modify other components' TODO.md files
 - Your domain: Cognitive intelligence, orchestration, conscious AI
+- Component TODO: fr0g-ai-master-control/TODO.md
 
 ## MANDATORY RULES
 - ALWAYS use pkg/config for configuration (import sharedconfig "pkg/config")
