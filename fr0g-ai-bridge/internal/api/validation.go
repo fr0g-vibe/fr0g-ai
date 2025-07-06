@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 
 	sharedconfig "github.com/fr0g-vibe/fr0g-ai/pkg/config"
 )
@@ -73,30 +74,34 @@ func ValidateChatCompletionRequest(req *ChatCompletionRequest) error {
 	return nil
 }
 
-// ValidateMessage validates a single chat message using shared validation
+// ValidateMessage validates a single chat message
 func ValidateMessage(role, content string) error {
-	// Use shared validation for role
-	if err := sharedconfig.ValidateRole(role); err != nil {
-		return fmt.Errorf(err.Message)
+	// Validate role
+	if err := validateRole(role); err != nil {
+		return err
 	}
 
-	// Use shared validation for required content
-	if err := sharedconfig.ValidateRequired(content, "content"); err != nil {
-		return fmt.Errorf(err.Message)
+	// Validate required content
+	if err := validateRequired(content, "content"); err != nil {
+		return err
 	}
 
-	// Use shared validation for content length
-	if err := sharedconfig.ValidateLength(content, 1, 32000, "content"); err != nil {
-		return fmt.Errorf(err.Message)
+	// Validate content length
+	if err := validateLength(content, 1, 32000, "content"); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-// ValidateModel checks if the model name is valid using shared validation
+// ValidateModel checks if the model name is valid
 func ValidateModel(model string) error {
-	if err := sharedconfig.ValidateModel(model); err != nil {
-		return fmt.Errorf(err.Message)
+	if err := validateRequired(model, "model"); err != nil {
+		return err
+	}
+
+	if err := validateLength(model, 1, 100, "model"); err != nil {
+		return err
 	}
 
 	// Check against known supported models
@@ -107,20 +112,49 @@ func ValidateModel(model string) error {
 		"mistral-7b", "mixtral-8x7b",
 	}
 
-	if err := sharedconfig.ValidateEnum(model, supportedModels, "model"); err != nil {
-		// Allow custom models - just return nil for unsupported but valid format
-		return nil
-	}
-
+	// Allow custom models - just validate format
 	return nil
 }
 
-// ValidatePersonaPrompt validates the persona prompt if provided using shared validation
+// ValidatePersonaPrompt validates the persona prompt if provided
 func ValidatePersonaPrompt(prompt *string) error {
-	if prompt != nil {
-		if err := sharedconfig.ValidateLength(*prompt, 1, 8000, "persona_prompt"); err != nil {
-			return fmt.Errorf(err.Message)
+	if prompt != nil && *prompt != "" {
+		if err := validateLength(*prompt, 1, 8000, "persona_prompt"); err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+// Helper validation functions
+func validateRole(role string) error {
+	if role == "" {
+		return fmt.Errorf("role is required")
+	}
+	
+	validRoles := []string{"user", "assistant", "system", "function"}
+	for _, validRole := range validRoles {
+		if role == validRole {
+			return nil
+		}
+	}
+	return fmt.Errorf("invalid role: %s", role)
+}
+
+func validateRequired(value, fieldName string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("%s is required", fieldName)
+	}
+	return nil
+}
+
+func validateLength(value string, min, max int, fieldName string) error {
+	length := len(value)
+	if length < min {
+		return fmt.Errorf("%s must be at least %d characters", fieldName, min)
+	}
+	if length > max {
+		return fmt.Errorf("%s must be at most %d characters", fieldName, max)
 	}
 	return nil
 }

@@ -88,7 +88,8 @@ func (s *RESTServer) setupRoutes() {
 	s.router.HandleFunc("/health", s.handleHealth).Methods("GET")
 
 	// Chat completion endpoint (OpenAI compatible)
-	s.router.HandleFunc("/api/chat/completions", s.handleChatCompletion).Methods("POST")
+	s.router.HandleFunc("/v1/chat/completions", s.handleChatCompletion).Methods("POST")
+	s.router.HandleFunc("/api/chat/completions", s.handleChatCompletion).Methods("POST") // Legacy support
 
 	// Legacy simple chat endpoint
 	s.router.HandleFunc("/api/v1/chat", s.handleSimpleChat).Methods("POST")
@@ -228,8 +229,20 @@ func (s *RESTServer) handleChatCompletion(w http.ResponseWriter, r *http.Request
 	}
 
 	// Validate request
-	if err := s.validateChatCompletionRequest(&req); err != nil {
+	if err := ValidateChatCompletionRequest(&ChatCompletionRequest{
+		Model:       req.Model,
+		Messages:    convertToValidationMessages(req.Messages),
+		Temperature: req.Temperature,
+		MaxTokens:   convertMaxTokens(req.MaxTokens),
+		Stream:      req.Stream != nil && *req.Stream,
+	}); err != nil {
 		s.writeError(w, http.StatusBadRequest, "Invalid request", err)
+		return
+	}
+
+	// Validate persona prompt if provided
+	if err := ValidatePersonaPrompt(&req.PersonaPrompt); err != nil {
+		s.writeError(w, http.StatusBadRequest, "Invalid persona prompt", err)
 		return
 	}
 
@@ -321,44 +334,25 @@ func (s *RESTServer) handleModels(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// validateChatCompletionRequest validates the chat completion request
-func (s *RESTServer) validateChatCompletionRequest(req *models.ChatCompletionRequest) error {
-	if req.Model == "" {
-		return fmt.Errorf("model is required")
-	}
-	if len(req.Messages) == 0 {
-		return fmt.Errorf("messages are required")
-	}
-	if len(req.Messages) > 100 {
-		return fmt.Errorf("too many messages (max 100)")
-	}
-	for i, msg := range req.Messages {
-		if msg.Role == "" {
-			return fmt.Errorf("message %d: role is required", i)
-		}
-		if msg.Content == "" {
-			return fmt.Errorf("message %d: content is required", i)
-		}
-		if len(msg.Content) > 10000 {
-			return fmt.Errorf("message %d: content too long (max 10000 characters)", i)
-		}
-		// Sanitize role to prevent injection
-		if !isValidRole(msg.Role) {
-			return fmt.Errorf("message %d: invalid role", i)
+// convertToValidationMessages converts models.ChatMessage to validation.Message
+func convertToValidationMessages(messages []models.ChatMessage) []Message {
+	result := make([]Message, len(messages))
+	for i, msg := range messages {
+		result[i] = Message{
+			Role:    msg.Role,
+			Content: msg.Content,
 		}
 	}
-	// Validate persona prompt length
-	if len(req.PersonaPrompt) > 5000 {
-		return fmt.Errorf("persona prompt too long (max 5000 characters)")
+	return result
+}
+
+// convertMaxTokens converts *int to *int32 for validation
+func convertMaxTokens(maxTokens *int) *int32 {
+	if maxTokens == nil {
+		return nil
 	}
-	// Validate optional parameters
-	if req.Temperature != nil && (*req.Temperature < 0 || *req.Temperature > 2) {
-		return fmt.Errorf("temperature must be between 0 and 2")
-	}
-	if req.MaxTokens != nil && (*req.MaxTokens < 1 || *req.MaxTokens > 4096) {
-		return fmt.Errorf("max_tokens must be between 1 and 4096")
-	}
-	return nil
+	val := int32(*maxTokens)
+	return &val
 }
 
 // writeError writes an error response
